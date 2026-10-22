@@ -1,9 +1,10 @@
 /* TurboUniverse: retain the app shell and last successful project list offline. */
-const VERSION = 'v5-color-covers';
+const VERSION = 'v6-cinematic';
 const SHELL_CACHE = `turbo-universe-shell-${VERSION}`;
 const PROJECT_CACHE = `turbo-universe-projects-${VERSION}`;
 const SHELL_FILES = [
   '/', '/release.json', '/manifest.webmanifest', '/favicon.svg', '/icon.svg', '/icon-192.png', '/icon-512.png',
+  '/images/cinematic-horizon.webp', '/images/cinematic-nebula.webp',
   '/images/earth-hero.webp', '/images/earth-detail.webp', '/images/earth-spring.webp', '/images/earth-winter.webp',
   ...Array.from({ length: 6 }, (_, index) => `/images/space-${String(index + 1).padStart(2, '0')}.webp`),
 ];

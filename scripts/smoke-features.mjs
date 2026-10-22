@@ -32,6 +32,46 @@ try {
   await page.getByRole('heading', { name: 'TurboHome', exact: true }).waitFor();
   await page.getByRole('status', { name: 'Latest update' }).waitFor();
   await page.waitForFunction(() => document.documentElement.dataset.theme === 'space' && document.documentElement.dataset.scheme === 'light' && document.documentElement.dataset.palette === 'classic');
+
+  const orbitPlacement = await page.locator('.orbit-scene').evaluate(scene => ({
+    top: scene.getBoundingClientRect().top,
+    heroBottom: document.querySelector('.hero').getBoundingClientRect().bottom,
+    insideHero: !!scene.closest('.hero'),
+  }));
+  assert.equal(orbitPlacement.insideHero, false, 'Neptune has its own discovery section');
+  assert.ok(orbitPlacement.top >= orbitPlacement.heroBottom, 'Neptune appears below the cinematic title');
+
+  const popular = page.locator('.popular-worlds');
+  const destinations = [
+    { title: 'TurboChat', url: 'https://turbo-chat-five.vercel.app/' },
+    { title: 'TurboGames', url: 'https://turbouniversegames.vercel.app/' },
+    { title: 'TurboStocks', url: 'https://turbostocks.vercel.app/' },
+    { title: 'Orbit Study', url: 'https://studyorbitv1.vercel.app/' },
+  ];
+  assert.deepEqual(await popular.locator('.popular-world-name strong').allTextContents(), destinations.map(item => item.title));
+  assert.equal(await popular.getByRole('button', { name: /^Discover / }).count(), 4);
+  for (const destination of destinations) {
+    await popular.getByRole('button', { name: `Discover ${destination.title}`, exact: true }).click();
+    const detail = page.getByRole('dialog');
+    await detail.getByRole('heading', { name: destination.title, exact: true }).waitFor();
+    assert.equal(await detail.getByRole('link', { name: /^Explore (website|app)$/ }).getAttribute('href'), destination.url, 'Popular destinations retain their real project links');
+    assert.doesNotMatch(await detail.locator('.detail-content > p').textContent(), /Part of the Turbo universe, shared on TurboHome/);
+    await page.keyboard.press('Escape');
+  }
+
+  const firstCover = page.locator('.project-card .cinematic-project-art').first();
+  await firstCover.scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => {
+    const image = document.querySelector('.project-card .cinematic-project-art > img');
+    return image?.complete && image.naturalWidth > 0;
+  });
+  const titlePlacement = await firstCover.evaluate(cover => {
+    const bounds = cover.getBoundingClientRect();
+    const title = cover.querySelector('h3').getBoundingClientRect();
+    return { x: Math.abs(title.x + title.width / 2 - bounds.x - bounds.width / 2), y: Math.abs(title.y + title.height / 2 - bounds.y - bounds.height / 2) };
+  });
+  assert.ok(titlePlacement.x < 3 && titlePlacement.y < 3, 'The project name sits in the center of its image');
+
   const lightBlue = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent'));
   await page.locator('.appearance-bar').getByRole('button', { name: 'Dark', exact: true }).click();
   await page.waitForFunction(() => document.documentElement.dataset.scheme === 'dark');
@@ -46,8 +86,9 @@ try {
     await page.getByRole('button', { name: mode === 'earth' ? 'Earth' : 'Space', exact: true }).click();
     await page.getByRole('button', { name: 'Appearance options', exact: true }).click();
     await page.getByLabel('Color palette', { exact: true }).selectOption('seasonal');
-    assert.equal(await page.locator('.simple-art .mini-browser').count(), catalog.filter(project => !project.coverUrl).length, 'Projects use simple colorful illustrations in either atmosphere');
-    assert.equal(await page.locator('.space-cover-image').count(), 0, 'Project cards no longer use landscape or space photos');
+    const covers = await page.locator('.project-card .cinematic-project-art > img').evaluateAll(images => images.map(image => image.getAttribute('src')));
+    assert.equal(covers.length, catalog.length, 'Every project has a cinematic image cover');
+    assert.ok(covers.every(src => mode === 'earth' ? src.startsWith('/images/earth-') : /^\/images\/(?:space-|cinematic-)/.test(src)), 'Project backgrounds match the selected Earth or Space atmosphere');
     for (const season of ['spring', 'summer', 'autumn', 'winter']) {
       await page.getByLabel('Season', { exact: true }).selectOption(season);
       await page.waitForFunction(({ mode, season }) => document.documentElement.dataset.theme === mode && document.documentElement.dataset.season === season, { mode, season });
@@ -112,7 +153,7 @@ try {
   await calendar.getByLabel('Your hemisphere', { exact: true }).selectOption('south');
   await calendar.waitForFunction(() => document.documentElement.dataset.season === 'autumn');
   assert.deepEqual(errors, []);
-  console.log('Feature checks passed: Space+Light defaults, distinct/persisted light and dark blues, simple colorful project covers, seasonal themes, saved worlds, orbit discovery, announcements and mobile layout.');
+  console.log('Feature checks passed: Space+Light defaults, centered cinematic image titles, four real popular destinations, Neptune below the hero, distinct/persisted light and dark blues, seasonal themes, saved worlds, orbit discovery, announcements and mobile layout.');
 } finally {
   await browser?.close();
   await new Promise(resolve => server.close(resolve));

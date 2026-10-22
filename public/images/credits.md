@@ -23,3 +23,12 @@ Two additional original landscapes were generated with OpenAI image generation f
 | --- | --- |
 | `earth-spring.webp` | Sage-green alpine meadow, small wildflowers, golden dawn, and misty mountain ridges |
 | `earth-winter.webp` | Snowy pine valley, icy blue shadows, mist, and warm sunrise along mountain peaks |
+
+## Cinematic redesign
+
+Two new original, high-detail astronomy illustrations were generated for the centered-title redesign, inspired by the supplied space-documentary references. The artwork contains no text, logos, people, or spacecraft. The PNG originals are retained in `/workspace/generated_images`; optimized 1672 × 941 WebP versions ship with the app.
+
+| Asset | Scene |
+| --- | --- |
+| `cinematic-horizon.webp` | Cobalt planetary horizon, blue atmosphere, and a distant sunrise |
+| `cinematic-nebula.webp` | Turquoise and amber dust clouds surrounding a deep-blue star field |

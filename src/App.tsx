@@ -5,8 +5,10 @@ import OwnerLogin from './components/OwnerLogin';
 import { apiFetch, getOwnerKey, setOwnerKey, OWNER_SESSION_EXPIRED } from './api';
 import AppearanceControls from './components/AppearanceControls';
 import OrbitScene from './components/OrbitScene';
+import PopularWorlds from './components/PopularWorlds';
 import UpdateAnnouncement from './components/UpdateAnnouncement';
 import { useAppearance } from './useAppearance';
+import { getWorldPresentation } from './popularWorlds';
 
 const SAVED_WORLDS_KEY = 'turbo-universe-saved-worlds';
 function readSavedWorlds(): string[] {
@@ -36,15 +38,15 @@ function Mark({ small = false }: { small?: boolean }) {
   return <span className={`brand-mark ${small ? 'small' : ''}`} aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M23 2 6 23h12l-2 15 18-23H22l1-13Z" fill="currentColor" /></svg></span>;
 }
 
-function ProjectArt({ project, large = false }: { project: Project; large?: boolean }) {
-  if (project.coverUrl) return <div className={`project-art uploaded ${large ? 'large' : ''}`}><img src={project.coverUrl} alt={`${project.title} cover`} loading="lazy" /></div>;
-  const scene = [...project.id].reduce((hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0, 0) % 6 + 1;
-  return <div className={`project-art simple-art cover-color-${scene} ${project.type === 'app' ? 'app-art' : 'site-art'} ${large ? 'large' : ''}`} aria-hidden="true">
-    <div className="art-grid" /><span className="art-orbit art-orbit-one" /><span className="art-orbit art-orbit-two" />
-    <div className="mini-browser"><div className="mini-browser-top"><i /><i /><i /><span>{project.type === 'app' ? 'A NEW WAY TO PLAY' : 'WELCOME TO MY WORLD'}</span></div>
-      <div className="mini-browser-content"><Mark /><strong>{project.title.toUpperCase()}</strong><span>PART OF THE TURBO UNIVERSE</span><div className="mini-browser-line" /><ArrowUpRight size={21} /></div>
-    </div>
-    <span className="art-caption">{project.type === 'app' ? 'BUILT TO GO BEYOND.' : 'A LITTLE CURIOSITY. A WHOLE NEW WORLD.'}</span>
+function ProjectArt({ project, mode, large = false }: { project: Project; mode: 'earth' | 'space'; large?: boolean }) {
+  const scene = [...project.id].reduce((hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0, 0) % 6;
+  const spaceScenes = ['cinematic-horizon', 'cinematic-nebula', 'space-03', 'space-04', 'space-05', 'space-06'];
+  const earthScenes = ['earth-spring', 'earth-hero', 'earth-detail', 'earth-winter'];
+  const image = project.coverUrl || (mode === 'space' ? getWorldPresentation(project)?.image : undefined) || `/images/${mode === 'earth' ? earthScenes[scene % earthScenes.length] : spaceScenes[scene]}.webp`;
+  return <div className={`project-art cinematic-project-art ${large ? 'large' : ''}`}>
+    <img src={image} alt="" loading="lazy" decoding="async" width="1600" height="900" />
+    <span className="project-art-shade" aria-hidden="true" />
+    <div className="project-art-title"><span>{project.category}</span>{large ? <strong>{project.title}</strong> : <h3>{project.title}</h3>}<span>{project.type === 'app' ? 'AN APP BY TURBO' : 'A TURBO ORIGINAL'}</span></div>
   </div>;
 }
 
@@ -88,7 +90,7 @@ function StoryFilm({ onClose }: { onClose: () => void }) {
   </div>;
 }
 
-function ProjectDetails({ project, onClose, onDelete, editable, saved, onToggleSaved }: { project: Project; onClose: () => void; onDelete: (id: string) => Promise<void>; editable: boolean; saved: boolean; onToggleSaved: () => void }) {
+function ProjectDetails({ project, onClose, onDelete, editable, saved, onToggleSaved, mode }: { project: Project; onClose: () => void; onDelete: (id: string) => Promise<void>; editable: boolean; saved: boolean; onToggleSaved: () => void; mode: 'earth' | 'space' }) {
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -96,7 +98,7 @@ function ProjectDetails({ project, onClose, onDelete, editable, saved, onToggleS
   useDialogFocus(ref, onClose);
   return <div className="dialog-backdrop" onClick={e => e.target === e.currentTarget && onClose()}><div className="detail-dialog" ref={ref} role="dialog" aria-modal="true" aria-labelledby="project-detail-title">
     <button className="icon-button detail-close" aria-label="Close project" onClick={onClose}><X /></button>
-    <ProjectArt project={project} large />
+    <ProjectArt project={project} mode={mode} large />
     <div className="detail-content"><div className="project-tags"><span className="project-tag">{project.type}</span><span>{project.category}</span></div><h2 id="project-detail-title">{project.title}</h2><p>{project.description || 'A new world in the Turbo universe. Open it and explore.'}</p>
       <div className="detail-actions">{project.url && <a className="primary-button" href={project.url} target="_blank" rel="noopener noreferrer">Explore {project.type === 'app' ? 'app' : 'website'}<ArrowUpRight size={18} /></a>}{project.fileUrl && <a className="secondary-button" href={project.fileUrl} download={project.fileName}><Download size={18} />Download project</a>}<button className="secondary-button" onClick={onToggleSaved} aria-pressed={saved}><Star size={16} fill={saved ? 'currentColor' : 'none'} />{saved ? 'World saved' : 'Save this world'}</button></div>
       {editable && <div className="detail-bottom">{confirm ? <div className="delete-confirm"><span>Remove from your universe?</span><button className="danger-button" disabled={busy} onClick={async () => { setBusy(true); try { await onDelete(project.id); onClose(); } catch(e) { setError(e instanceof Error ? e.message : 'Could not remove project.'); setBusy(false); } }}>{busy ? 'Removing…' : 'Remove'}</button><button className="text-button" onClick={() => setConfirm(false)}>Cancel</button></div> : <><span>PART OF THE TURBO UNIVERSE</span><button className="text-button" onClick={() => setConfirm(true)}><Trash2 size={14} /> Remove project</button></>}{error && <p className="form-error" role="alert">{error}</p>}</div>}
@@ -137,7 +139,10 @@ export default function App() {
       const response = await fetch('/api/projects');
       if (!response.ok) throw new Error('Your universe couldn’t load. Check the connection and try again.');
       const data = await response.json();
-      setProjects(data.projects); setError('');
+      setProjects(data.projects.map((project: Project) => {
+        const presentation = getWorldPresentation(project);
+        return presentation ? { ...project, title: presentation.displayTitle, description: presentation.description } : project;
+      })); setError('');
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not load your universe.'); }
     finally { setLoading(false); }
   }, []);
@@ -218,12 +223,13 @@ export default function App() {
 
     <main>
       {view === 'universe' && <>
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="hero-copy"><div className="eyebrow hero-eyebrow"><span className="status-dot" /> WELCOME TO MY CORNER OF THE INTERNET</div><h1 id="hero-title">ONE MIND.<br /><span>MANY WORLDS.</span></h1><p>A home for everything Turbo.<br />The websites. The apps. The ideas that became real.</p><div className="hero-actions"><button className="primary-button" onClick={explore}>Explore the universe <ArrowUpRight size={19} /></button><button className="film-button" onClick={() => setFilm(true)}><span className="play-circle"><CirclePlay size={21} strokeWidth={1.5} /></span> The life of Turbo <span className="film-duration">3 CHAPTERS</span></button></div><div className="creator-caption"><div className="creator-avatar"><Mark small /></div><span>BUILT BY TURBO.<br /><strong>MADE FOR THE CURIOUS.</strong></span><span className="caption-line" /></div></div>
-          <OrbitScene projects={projects} onSelect={setSelected} />
-          <div className="hero-bottom"><span><span className="tiny-cross">+</span> INDEPENDENT CREATOR. INFINITE POSSIBILITIES.</span><button onClick={explore}>SCROLL TO DISCOVER <ArrowDown size={14} /></button></div>
+        <section className="hero cinematic-hero" aria-labelledby="hero-title">
+          <div className="hero-cinema-grain" aria-hidden="true" />
+          <div className="hero-copy"><div className="eyebrow hero-eyebrow"><span className="hero-coordinate">A WORLD OF IDEAS</span><span className="hero-eyebrow-line" /><span>BY TURBO</span></div><h1 id="hero-title" aria-label="TurboUniverse"><span className="hero-title-prefix">TURBO</span>UNIVERSE</h1><p className="hero-lead">One mind. Infinite possibilities.</p><p className="hero-description">A constellation of websites, apps, and ideas.<br />Built from curiosity. Made for you to explore.</p><div className="hero-actions"><button className="primary-button" onClick={explore}>Find your next world <ArrowUpRight size={18} /></button><button className="film-button" onClick={() => setFilm(true)}><CirclePlay size={19} strokeWidth={1.4} /> The life of Turbo</button></div></div>
+          <div className="hero-bottom"><span>01 / A UNIVERSE IN THE MAKING</span><button onClick={explore}>BEGIN EXPLORING <ArrowDown size={13} /></button><span className="hero-live"><span className="status-dot" /> {projects.length} WORLDS & COUNTING</span></div>
         </section>
-        <div className="universe-strip"><span>SMALL IDEAS. <strong>BIG WORLDS.</strong></span><Sparkles size={19} /><span>ALWAYS CURIOUS. <strong>ALWAYS CREATING.</strong></span><Sparkles size={19} /><span>ONE CREATOR. <strong>NO LIMITS.</strong></span><Sparkles size={19} /><span className="strip-extra">WELCOME TO <strong>THE TURBO ERA.</strong></span></div>
+        <section className="neptune-section content-section" aria-labelledby="neptune-title"><div className="neptune-copy"><div className="section-kicker"><span className="short-line" /> THE TURBO SYSTEM</div><h2 id="neptune-title">A little gravity.<br /><span>A lot of possibility.</span></h2><p>Every idea needs a place to land. This is where Turbo’s experiments become worlds of their own—places to connect, play, learn, and see what’s next.</p><p className="neptune-invitation">Pick a world in orbit, or let curiosity choose for you.</p><div className="neptune-coordinate"><span>INSPIRED BY NEPTUNE</span><span>IMAGINATION HAS NO OUTER LIMIT.</span></div></div><OrbitScene projects={projects} onSelect={setSelected} /></section>
+        <PopularWorlds mode={preferences.mode} projects={projects} onSelect={setSelected} />
       </>}
 
       {view === 'story' ? <section className="story-page content-section"><div className="section-kicker"><span className="short-line" /> THE PERSON BEHIND THE PIXELS</div><div className="story-heading"><h1>A life in<br /><em>creation.</em></h1><div><p>Every universe starts somewhere.<br />This one starts with Turbo.</p><button className="secondary-button" onClick={() => setFilm(true)}><CirclePlay size={19} /> Play the cinematic story</button></div></div><div className="story-chapters">{story.map(chapter => <article key={chapter.number}><span className="chapter-number">{chapter.number}</span><div><span className="eyebrow">{chapter.label}</span><h2>{chapter.title}</h2><p>{chapter.text}</p></div><Sparkles size={24} /></article>)}</div><div className="story-ending"><Mark /><h2>The next chapter is<br /><span>already loading.</span></h2><button className="primary-button" onClick={explore}>Explore what’s been built <ArrowUpRight size={18} /></button></div></section> : <section className={`projects-section content-section ${view === 'collection' ? 'collection-page' : ''}`} id="projects">
@@ -231,7 +237,7 @@ export default function App() {
         {view === 'collection' && <div className="collection-stats"><div><Layers3 size={20} /><strong>{projects.length}</strong><span>Total projects</span></div><div><Globe2 size={20} /><strong>{websites}</strong><span>Websites</span></div><div><Smartphone size={20} /><strong>{apps}</strong><span>Apps</span></div><button className="secondary-button" onClick={exportProjects} disabled={!projects.length}><ArrowDownToLine size={17} /> Export project list</button></div>}
         <div className="project-toolbar"><div className="filters" role="group" aria-label="Filter projects"><button className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}><LayoutGrid size={15} /> All worlds <span>{projects.length}</span></button><button className={filter === 'website' ? 'active' : ''} onClick={() => setFilter('website')}><Globe2 size={15} /> Websites <span>{websites}</span></button><button className={filter === 'app' ? 'active' : ''} onClick={() => setFilter('app')}><Smartphone size={15} /> Apps <span>{apps}</span></button><button className={`saved-filter ${filter === 'saved' ? 'active' : ''}`} onClick={() => setFilter('saved')}><Star size={15} /> Saved <span>{savedCount}</span></button></div><label className="search-field"><Search size={16} /><input ref={searchRef} type="search" aria-label="Search projects" placeholder="Find your world…" value={search} onChange={e => setSearch(e.target.value)} /><kbd><Command size={10} /> K</kbd></label></div>
         {error ? <div className="empty-state"><WifiOff size={28} /><h3>We lost the signal.</h3><p role="alert">{error}</p><button className="secondary-button" onClick={() => { setLoading(true); void loadProjects(); }}>Try again</button></div> : loading ? <div className="project-grid" aria-busy="true" aria-label="Loading projects"><div className="skeleton-card" /><div className="skeleton-card" /><div className="skeleton-card" /></div> : <div className="project-grid">
-          {filtered.map((project, index) => <article className="project-card" key={project.id}><button className="project-image-button" onClick={() => setSelected(project)} aria-label={`View ${project.title}`}><ProjectArt project={project} /><span className="card-index">{String(index + 1).padStart(2, '0')} / TURBO ORIGINAL</span>{project.featured && <span className="featured-badge"><Sparkles size={11} /> FEATURED</span>}<span className="card-open"><ArrowUpRight size={20} /></span></button><button className={`save-project-button ${savedIds.includes(project.id) ? 'saved' : ''}`} aria-label={`${savedIds.includes(project.id) ? 'Unsave' : 'Save'} ${project.title}`} aria-pressed={savedIds.includes(project.id)} onClick={() => toggleSaved(project)}><Star size={15} fill={savedIds.includes(project.id) ? 'currentColor' : 'none'} /></button><div className="project-card-body"><div className="project-tags"><span className="project-tag">{project.type === 'website' ? <Globe2 size={10} /> : <Smartphone size={10} />}{project.type}</span><span>{project.category}</span></div><button className="project-title-button" onClick={() => setSelected(project)}><h3>{project.title}</h3><ArrowUpRight size={21} /></button><p>{project.description || 'A new world in the Turbo universe. Open it and explore.'}</p><div className="card-foot"><span className="status-dot" /> IN THE UNIVERSE<span>TURBO ORIGINAL</span></div></div></article>)}
+          {filtered.map((project, index) => <article className="project-card" key={project.id}><button className="project-image-button" onClick={() => setSelected(project)} aria-label={`View ${project.title}`}><ProjectArt project={project} mode={preferences.mode} /><span className="card-index">{String(index + 1).padStart(2, '0')} / TURBO ORIGINAL</span>{project.featured && <span className="featured-badge"><Sparkles size={11} /> FEATURED</span>}<span className="card-open"><ArrowUpRight size={20} /></span></button><button className={`save-project-button ${savedIds.includes(project.id) ? 'saved' : ''}`} aria-label={`${savedIds.includes(project.id) ? 'Unsave' : 'Save'} ${project.title}`} aria-pressed={savedIds.includes(project.id)} onClick={() => toggleSaved(project)}><Star size={15} fill={savedIds.includes(project.id) ? 'currentColor' : 'none'} /></button><div className="project-card-body"><div className="project-tags"><span className="project-tag">{project.type === 'website' ? <Globe2 size={10} /> : <Smartphone size={10} />}{project.type}</span><span>{project.category}</span></div><button className="project-explore-link" onClick={() => setSelected(project)}><span>Explore {project.type === 'app' ? 'app' : 'website'}</span><ArrowUpRight size={17} /></button><p>{project.description || 'A new world in the Turbo universe. Open it and explore.'}</p><div className="card-foot"><span className="status-dot" /> IN THE UNIVERSE<span>TURBO ORIGINAL</span></div></div></article>)}
           {!filtered.length && projects.length > 0 && <div className="empty-state filter-empty"><Compass size={29} /><h3>{filter === 'saved' && !search ? 'Keep your favorite worlds close.' : filter === 'app' && !search ? 'Your next app belongs here.' : 'No worlds found.'}</h3><p>{filter === 'saved' && !search ? 'Tap the star on any project to save it on this device.' : filter === 'app' && !search ? (editable ? 'Add an app link or upload a project to expand your universe.' : 'There are more worlds on the way. Explore the rest of the collection.') : 'Try another search or explore a different category.'}</p><button className="secondary-button" onClick={() => { setSearch(''); setFilter('all'); }}>Show all worlds <ArrowRight size={16} /></button></div>}
           {editable && <button className="add-world-card" onClick={() => setDialog(true)} disabled={offline}><span className="add-world-orbit"><Plus size={28} strokeWidth={1.2} /></span><span className="eyebrow">THERE’S ALWAYS ROOM FOR MORE</span><strong>Your next world<br />starts here.</strong><span className="add-world-link">Add a project <ArrowUpRight size={16} /></span><span className="add-world-hint">A website, an app, a new possibility.</span></button>}
         </div>}
@@ -248,7 +254,7 @@ export default function App() {
     {dialog && editable && <ProjectDialog maxUploadBytes={capabilities.maxUploadBytes} onClose={() => setDialog(false)} onCreated={() => { void loadProjects(); setToast('A new world has entered your universe.'); }} />}
     {login && capabilities.canManage && <OwnerLogin onClose={() => setLogin(false)} onSuccess={() => { setOwner(true); setLogin(false); setToast('Welcome back. Your universe is ready to manage.'); }} />}
     {film && <StoryFilm onClose={closeFilm} />}
-    {selected && <ProjectDetails editable={editable} project={selected} onClose={closeDetails} onDelete={removeProject} saved={savedIds.includes(selected.id)} onToggleSaved={() => toggleSaved(selected)} />}
+    {selected && <ProjectDetails mode={preferences.mode} editable={editable} project={selected} onClose={closeDetails} onDelete={removeProject} saved={savedIds.includes(selected.id)} onToggleSaved={() => toggleSaved(selected)} />}
     {showInstall && <InstallDialog dialogRef={installRef} onClose={closeInstall} installed={installed} prompt={installPrompt} onInstall={async () => { if (!installPrompt) return; await installPrompt.prompt(); const choice = await installPrompt.userChoice; setInstallPrompt(null); if (choice.outcome === 'accepted') setShowInstall(false); }} />}
     {toast && <div className="toast" role="status"><Check size={17} />{toast}<button aria-label="Dismiss notification" onClick={() => setToast('')}><X size={15} /></button></div>}
   </div>;

@@ -37,7 +37,7 @@ During local development, project metadata and uploads persist in `data/`, which
 
 The cinematic story is a creative introduction to Turbo’s work, rather than a factual personal biography.
 
-The default is Space + Light with a professional white, black, and blue palette. Dark mode uses near-black surfaces and an icy blue accent. Websites and apps use simple, colorful cover illustrations; custom uploaded covers take precedence. Cinematic background images are compressed, hosted locally, and available offline.
+The default is Space + Light with a professional white, black, and blue palette. Dark mode uses near-black surfaces and an icy blue accent. The centered TurboUniverse title sits over cinematic space artwork. Website and app names sit in the center of image covers, with matching natural landscapes in Earth mode; custom uploaded covers take precedence. A Neptune-inspired discovery planet sits below the hero, followed by four curated popular destinations: TurboChat, TurboGames, TurboStocks, and Orbit Study. Cinematic background images are compressed, hosted locally, and available offline.
 
 ## Make it your atmosphere
 

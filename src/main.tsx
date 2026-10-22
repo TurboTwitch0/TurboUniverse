@@ -11,6 +11,9 @@ import App from './App';
 import './styles.css';
 import './themes.css';
 import './features.css';
+import './cinematic.css';
+import './neptune.css';
+import './popular-worlds.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><App /></React.StrictMode>,

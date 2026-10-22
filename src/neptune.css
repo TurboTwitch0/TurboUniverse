@@ -1,0 +1,81 @@
+/* A Neptune-inspired discovery scene, below the cinematic introduction. */
+.orbit-scene.neptune-orbit-scene {
+  --core-size: clamp(230px, 23vw, 310px);
+  --orbit-accent: #478bde;
+  --orbit-ring: #6b9fe255;
+  --orbit-glow: #559cff24;
+  --orbit-text: var(--theme-text, #173450);
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-width: 640px;
+  height: 560px;
+  margin: 0 auto;
+  isolation: isolate;
+  perspective: 1000px;
+}
+.neptune-orbit-scene .neptune-starfield {
+  position: absolute;
+  inset: 42px 2% 82px;
+  background: radial-gradient(circle at 9% 15%, #669ad9 0 1px, transparent 1.5px), radial-gradient(circle at 21% 68%, #729bd6 0 .7px, transparent 1.3px), radial-gradient(circle at 89% 65%, #66a1e3 0 .9px, transparent 1.3px), radial-gradient(circle at 72% 8%, #70a5e9 0 .7px, transparent 1px), radial-gradient(circle at 47% 84%, #78a8db 0 1px, transparent 1.5px), radial-gradient(circle at 93% 27%, #669ad9 0 .6px, transparent 1px), radial-gradient(circle at 31% 28%, #85b0e8 0 .6px, transparent 1.1px);
+  opacity: .7;
+  pointer-events: none;
+}
+.neptune-orbit-scene .orbit-system-label { top: 20px; left: 50%; transform: translateX(-50%); font-size: 8px; letter-spacing: 2.2px; white-space: nowrap; color: var(--theme-muted); }
+.neptune-orbit-scene .orbit-system-label .status-dot { background: #5c9aed; box-shadow: 0 0 12px #3d9bff55; }
+.neptune-orbit-scene .turbo-orbit-halo { inset: 38px -2% 34px; background: radial-gradient(ellipse, #5f9bea21 0%, #5f9bea0d 42%, transparent 68%); filter: blur(13px); }
+.neptune-orbit-scene .turbo-orbit-core {
+  top: 48%;
+  transform: rotate(-15deg);
+  background: radial-gradient(ellipse at 24% 21%, #b9e8ff75, transparent 43%), linear-gradient(178deg, #398adb 0%, #286acb 10%, #2864bd 18%, #2d75ce 25%, #3a91de 29%, #2c73ca 32%, #2260b8 43%, #2267bd 49%, #3886d2 53%, #4d9de1 56%, #3783d0 59%, #2464ba 65%, #2a70c8 73%, #2262b8 81%, #1f52a3 91%, #143b80 100%);
+  box-shadow: inset 4px 3px 7px #bef1ff79, inset -25px -13px 38px #000b22bb, inset -5px -3px 9px #000f29, 0 0 3px 1px #79bfff70, 0 0 33px #4f96de25, 0 22px 70px #0f366c25;
+}
+.neptune-orbit-scene .turbo-orbit-core::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 25% 28%, transparent 24%, #0019450b 44%, #00091c91 83%, #000613e0 100%); pointer-events: none; }
+.neptune-orbit-scene .turbo-orbit-core:hover { filter: brightness(1.08); box-shadow: inset 4px 3px 7px #bef1ff99, inset -25px -13px 38px #000b22bb, inset -5px -3px 9px #000f29, 0 0 3px 1px #79bfff99, 0 0 50px #4f96de3a, 0 22px 70px #0f366c25; }
+.neptune-orbit-scene .neptune-clouds { position: absolute; inset: 0; background: repeating-linear-gradient(178deg, transparent 0 13px, #d6f6ff08 14px 15px, transparent 17px 25px, #08285a17 26px 28px); opacity: .9; }
+.neptune-orbit-scene .neptune-storm { position: absolute; width: 27%; height: 8%; left: 23%; top: 58%; border-radius: 50%; background: radial-gradient(ellipse, #082d7966, #1f66bc44 45%, transparent 72%); transform: rotate(-6deg); filter: blur(2px); }
+.neptune-orbit-scene .neptune-cloud-streak { position: absolute; width: 33%; height: 2%; left: 13%; top: 37%; border-radius: 50%; background: linear-gradient(90deg, transparent, #d9f6ffb0, #a9dfff55, transparent); transform: rotate(-3deg); filter: blur(1.5px); box-shadow: 24px 9px 3px -1px #d9efff2e, 50px 68px 3px -1px #d9efff36; }
+.neptune-orbit-scene .core-grain { inset: 0; background: repeating-linear-gradient(179deg, transparent 0 2px, #f0f8ff07 2.5px, transparent 3px 7px); transform: none; opacity: .45; }
+.neptune-orbit-scene .core-letter { z-index: 1; top: 45%; left: 47%; font-size: 30px; line-height: 1; transform: none; color: #e3f3ff; opacity: .27; text-shadow: 0 1px 10px #b0e0ff44; }
+.neptune-orbit-scene .core-glint { background: radial-gradient(ellipse at 27% 18%, #b9f1ff30, transparent 52%); }
+.neptune-orbit-scene .turbo-orbit-track { left: 1%; width: 98%; top: 34%; height: 27%; border-color: #75a8de4d; transform: rotate(-24deg); }
+.neptune-orbit-scene .track-back { border-style: solid; }
+.neptune-orbit-scene .track-cross { left: 14%; top: 17%; width: 72%; height: 62%; transform: rotate(31deg); opacity: .32; }
+.neptune-orbit-scene .track-front { z-index: 3; border-width: 1px; border-color: transparent transparent #76b2e47a #76b2e450; filter: none; }
+.neptune-orbit-scene .orbit-world { padding: 12px 14px; gap: 10px; max-width: 205px; border: 1px solid var(--theme-line); background: color-mix(in srgb, var(--theme-panel, #fff) 92%, transparent); border-radius: 12px; box-shadow: 0 9px 32px #18375c0c; color: var(--theme-text); }
+.neptune-orbit-scene .orbit-world:hover { border-color: #659be5; background: var(--theme-panel); }
+.neptune-orbit-scene .orbit-world-1 { top: 17%; right: 0; transform: none; }
+.neptune-orbit-scene .orbit-world-2 { left: 0; bottom: 26%; transform: none; }
+.neptune-orbit-scene .orbit-world-3 { right: 0; bottom: 17%; transform: none; }
+.neptune-orbit-scene .orbit-world-icon { color: #568fce; }
+.neptune-orbit-scene .orbit-world strong { font-size: 11px; font-weight: 500; max-width: 125px; }
+.neptune-orbit-scene .orbit-world small { color: var(--theme-muted); font-size: 5px; letter-spacing: 1.2px; }
+.neptune-orbit-scene .orbit-world > svg { display: block; color: #568fce; }
+.neptune-orbit-scene .orbit-star-one { top: 11%; right: 28%; font-size: 19px; color: #6da8df; }
+.neptune-orbit-scene .orbit-star-two { left: 7%; top: 33%; font-size: 13px; color: #6da8df; }
+.neptune-orbit-scene .orbit-bottom-label { bottom: 49px; left: 50%; color: var(--theme-muted); font-size: 7px; letter-spacing: 1.7px; gap: 8px; }
+.neptune-orbit-scene .orbit-discover { bottom: 6px; padding: 10px 0; color: var(--theme-text); font-size: 10px; border-color: #6192ce70; }
+.neptune-orbit-scene.is-spinning .turbo-orbit-core { animation: neptune-pulse .48s ease-in-out; }
+@keyframes neptune-pulse { 50% { transform: rotate(-9deg) scale(1.035); } }
+@media (max-width: 1100px) {
+  .orbit-scene.neptune-orbit-scene { --core-size: 265px; height: 515px; }
+  .neptune-orbit-scene .orbit-world { padding: 11px; gap: 8px; max-width: 180px; }
+  .neptune-orbit-scene .orbit-world strong { font-size: 10px; max-width: 108px; }
+}
+@media (max-width: 800px) { .orbit-scene.neptune-orbit-scene { --core-size: 290px; max-width: 580px; height: 540px; margin: 10px auto 0; } }
+@media (max-width: 540px) {
+  .orbit-scene.neptune-orbit-scene { --core-size: min(63vw, 252px); height: 465px; margin-top: 4px; }
+  .neptune-orbit-scene .orbit-system-label { top: 15px; font-size: 6px; letter-spacing: 1.5px; }
+  .neptune-orbit-scene .orbit-world { max-width: 155px; padding: 10px; gap: 7px; border-radius: 9px; }
+  .neptune-orbit-scene .orbit-world strong { font-size: 9px; max-width: 107px; }
+  .neptune-orbit-scene .orbit-world small { font-size: 4px; letter-spacing: .8px; }
+  .neptune-orbit-scene .orbit-world > svg { display: none; }
+  .neptune-orbit-scene .orbit-world-1 { top: 17%; right: 0; }
+  .neptune-orbit-scene .orbit-world-2 { bottom: 26%; left: 0; }
+  .neptune-orbit-scene .orbit-world-3 { bottom: 16%; right: 0; }
+  .neptune-orbit-scene .orbit-bottom-label { bottom: 44px; font-size: 5px; letter-spacing: 1px; }
+  .neptune-orbit-scene .orbit-bottom-label svg { width: 10px; }
+  .neptune-orbit-scene .orbit-discover { bottom: 0; font-size: 10px; }
+  .neptune-orbit-scene .orbit-star-one { top: 10%; font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .neptune-orbit-scene *, .neptune-orbit-scene *::before, .neptune-orbit-scene *::after { animation: none !important; transition: none !important; } }

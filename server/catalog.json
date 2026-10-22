@@ -37,7 +37,7 @@
     "title": "TurboGames",
     "type": "website",
     "url": "https://turbouniversegames.vercel.app/",
-    "description": "Part of the Turbo universe, shared on TurboHome.",
+    "description": "Leave the ordinary behind. A playful corner of the universe for new favorites, a little adventure, and your next great game.",
     "category": "Gaming",
     "year": 2026,
     "featured": true,
@@ -158,21 +158,21 @@
     "title": "TurboChat",
     "type": "website",
     "url": "https://turbo-chat-five.vercel.app/",
-    "description": "Part of the Turbo universe, shared on TurboHome.",
+    "description": "Every great idea starts with a conversation. Step into Turbo’s corner of connection and keep the conversation moving.",
     "category": "Community",
     "year": 2026,
-    "featured": false,
+    "featured": true,
     "createdAt": "2026-10-22T03:57:36.711Z"
   },
   {
     "id": "082fc48b-9cd7-4ae9-ba7a-18bf1ec83dd7",
-    "title": "TurboStudy",
+    "title": "Orbit Study",
     "type": "website",
     "url": "https://studyorbitv1.vercel.app/",
-    "description": "Part of the Turbo universe, shared on TurboHome.",
+    "description": "Make space for your next discovery. A destination for curiosity, learning, and the next thing you want to understand.",
     "category": "Tools",
     "year": 2026,
-    "featured": false,
+    "featured": true,
     "createdAt": "2026-10-22T03:57:36.715Z"
   },
   {
@@ -180,10 +180,10 @@
     "title": "TurboStocks",
     "type": "website",
     "url": "https://turbostocks.vercel.app/",
-    "description": "Part of the Turbo universe, shared on TurboHome.",
+    "description": "A different perspective on the market. Explore the world of stocks with a little curiosity and the unmistakable energy of Turbo.",
     "category": "Tools",
     "year": 2026,
-    "featured": false,
+    "featured": true,
     "createdAt": "2026-10-22T03:57:36.718Z"
   },
   {
