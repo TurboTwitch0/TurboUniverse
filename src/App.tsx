@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowDownToLine, ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronRight, CirclePlay, Code2, Command, Compass, Download, Expand, Globe2, Layers3, LayoutGrid, Menu, MonitorSmartphone, Plus, Search, Smartphone, Sparkles, Trash2, WifiOff, X } from 'lucide-react';
+import { ArrowDown, ArrowDownToLine, ArrowRight, ArrowUpRight, Check, CirclePlay, Command, Compass, Download, Globe2, Layers3, LayoutGrid, Menu, MonitorSmartphone, Plus, Search, Smartphone, Sparkles, Trash2, WifiOff, X } from 'lucide-react';
 import ProjectDialog from './components/ProjectDialog';
 import OwnerLogin from './components/OwnerLogin';
 import { apiFetch, getOwnerKey, setOwnerKey, OWNER_SESSION_EXPIRED } from './api';
@@ -26,12 +26,11 @@ function Mark({ small = false }: { small?: boolean }) {
 
 function ProjectArt({ project, large = false }: { project: Project; large?: boolean }) {
   if (project.coverUrl) return <div className={`project-art uploaded ${large ? 'large' : ''}`}><img src={project.coverUrl} alt={`${project.title} cover`} loading="lazy" /></div>;
-  return <div className={`project-art ${project.type === 'app' ? 'app-art' : 'site-art'} ${large ? 'large' : ''}`} aria-hidden="true">
-    <div className="art-grid" /><span className="art-orbit art-orbit-one" /><span className="art-orbit art-orbit-two" />
-    <div className="mini-browser"><div className="mini-browser-top"><i /><i /><i /><span>{project.type === 'app' ? 'A NEW WAY TO PLAY' : 'WELCOME TO MY WORLD'}</span></div>
-      <div className="mini-browser-content"><Mark /><strong>{project.title.toUpperCase()}</strong><span>PART OF THE TURBO UNIVERSE</span><div className="mini-browser-line" /><ArrowUpRight size={21} /></div>
-    </div>
-    <span className="art-caption">{project.type === 'app' ? 'BUILT TO GO BEYOND.' : 'A LITTLE CURIOSITY. A WHOLE NEW WORLD.'}</span>
+  const scene = [...project.id].reduce((hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0, 0) % 6 + 1;
+  return <div className={`project-art space-art space-art-${scene} ${large ? 'large' : ''}`} aria-hidden="true">
+    <img className="space-cover-image" src={`/images/space-${String(scene).padStart(2, '0')}.webp`} alt="" loading="lazy" decoding="async" width="1200" height="800" />
+    <div className="space-art-shade" />
+    <div className="space-art-label"><span className="orbit-symbol">{project.type === 'app' ? <Smartphone size={17} strokeWidth={1.3} /> : <Globe2 size={17} strokeWidth={1.3} />}</span><strong>{project.title}</strong><span>EXPLORE A NEW WORLD</span></div>
   </div>;
 }
 
@@ -68,7 +67,7 @@ function StoryFilm({ onClose }: { onClose: () => void }) {
   return <div className="dialog-backdrop film-backdrop" onClick={e => e.currentTarget === e.target && onClose()}>
     <div className="film-dialog" ref={ref} role="dialog" aria-modal="true" aria-labelledby="film-title">
       <div className="film-top"><span><Mark small /> TURBO ORIGINAL</span><button className="icon-button" onClick={onClose} aria-label="Close film"><X /></button></div>
-      <div className="film-grain" /><div className="film-orb" />
+      <div className="film-grain" />
       <div className="film-copy" key={chapter}><span className="eyebrow">CHAPTER {story[chapter].number} / {story[chapter].label}</span><h2 id="film-title">{story[chapter].title}</h2><p>{story[chapter].text}</p></div>
       <div className="film-controls"><button className="text-button" onClick={() => setPlaying(!playing)}>{playing ? 'Pause story' : 'Play story'}</button><div className="film-segments">{story.map((item, index) => <button aria-label={`Chapter ${item.number}`} aria-current={index === chapter ? 'step' : undefined} className={index === chapter ? 'active' : ''} key={item.number} onClick={() => setChapter(index)} />)}</div><span>{story[chapter].number} / 03</span></div>
     </div>
@@ -187,8 +186,8 @@ export default function App() {
     <main>
       {view === 'universe' && <>
         <section className="hero" aria-labelledby="hero-title">
-          <div className="hero-grid" /><div className="hero-copy"><div className="eyebrow hero-eyebrow"><span className="status-dot" /> WELCOME TO MY CORNER OF THE INTERNET</div><h1 id="hero-title">ONE MIND.<br /><span>MANY WORLDS.</span></h1><p>A home for everything Turbo.<br />The websites. The apps. The ideas that became real.</p><div className="hero-actions"><button className="primary-button" onClick={explore}>Explore the universe <ArrowUpRight size={19} /></button><button className="film-button" onClick={() => setFilm(true)}><span className="play-circle"><CirclePlay size={21} strokeWidth={1.5} /></span> The life of Turbo <span className="film-duration">3 CHAPTERS</span></button></div><div className="creator-caption"><div className="creator-avatar"><Mark small /></div><span>BUILT BY TURBO.<br /><strong>MADE FOR THE CURIOUS.</strong></span><span className="caption-line" /></div></div>
-          <div className="universe-art" aria-hidden="true"><div className="art-coordinate top-coordinate">TURBO SYSTEM / 001</div><div className="star star-one">✦</div><div className="star star-two">+</div><div className="orb-glow" /><div className="orbital-ring ring-one" /><div className="orbital-ring ring-two" /><div className="planet"><div className="planet-engraving">T</div><div className="planet-shine" /><div className="planet-equator" /></div><div className="orbital-ring ring-front" /><div className="satellite satellite-one"><Globe2 size={18} /><span>WEBSITES</span><i /></div><div className="satellite satellite-two"><Code2 size={18} /><span>IDEAS IN ORBIT</span></div><div className="satellite satellite-three"><Smartphone size={17} /><span>APPS</span><ArrowUpRight size={14} /></div><div className="art-coordinate bottom-coordinate"><span className="status-dot" /> A UNIVERSE IN THE MAKING</div><span className="planet-label">LIMITLESS BY DESIGN.</span></div>
+          <div className="hero-copy"><div className="eyebrow hero-eyebrow"><span className="status-dot" /> WELCOME TO MY CORNER OF THE INTERNET</div><h1 id="hero-title">ONE MIND.<br /><span>MANY WORLDS.</span></h1><p>A home for everything Turbo.<br />The websites. The apps. The ideas that became real.</p><div className="hero-actions"><button className="primary-button" onClick={explore}>Explore the universe <ArrowUpRight size={19} /></button><button className="film-button" onClick={() => setFilm(true)}><span className="play-circle"><CirclePlay size={21} strokeWidth={1.5} /></span> The life of Turbo <span className="film-duration">3 CHAPTERS</span></button></div><div className="creator-caption"><div className="creator-avatar"><Mark small /></div><span>BUILT BY TURBO.<br /><strong>MADE FOR THE CURIOUS.</strong></span><span className="caption-line" /></div></div>
+          <div className="landscape-caption" aria-hidden="true"><span className="eyebrow">EARTHBOUND / LIMITLESS</span><strong>Rooted in curiosity.<br />Drawn to the unknown.</strong><span className="landscape-coordinates">SOMEWHERE BETWEEN EARTH & INFINITY</span></div>
           <div className="hero-bottom"><span><span className="tiny-cross">+</span> INDEPENDENT CREATOR. INFINITE POSSIBILITIES.</span><button onClick={explore}>SCROLL TO DISCOVER <ArrowDown size={14} /></button></div>
         </section>
         <div className="universe-strip"><span>SMALL IDEAS. <strong>BIG WORLDS.</strong></span><Sparkles size={19} /><span>ALWAYS CURIOUS. <strong>ALWAYS CREATING.</strong></span><Sparkles size={19} /><span>ONE CREATOR. <strong>NO LIMITS.</strong></span><Sparkles size={19} /><span className="strip-extra">WELCOME TO <strong>THE TURBO ERA.</strong></span></div>
@@ -206,7 +205,7 @@ export default function App() {
         <div className="collection-note"><span><span className="status-dot" /> THE UNIVERSE IS ALWAYS EXPANDING</span>{editable ? <button className="text-button" onClick={() => setDialog(true)} disabled={offline}>Bring your projects together <ArrowRight size={15} /></button> : <span className="collection-readonly">Explore the collection. New worlds are added by Turbo.</span>}</div>
       </section>}
 
-      {view !== 'collection' && <section className="about-section content-section"><div className="about-art" aria-hidden="true"><div className="about-art-grid" /><span className="about-ring" /><Mark /><span className="about-art-label">THE CREATOR / THE EXPLORER / TURBO</span><span className="about-cross">+</span></div><div className="about-copy"><div className="section-kicker"><span className="short-line" /> MORE THAN A COLLECTION</div><h2>A little chaos.<br />A lot of <span>creation.</span></h2><p>Some people collect things. Turbo creates worlds. This is a living archive of the ideas, experiments, websites, and apps that make up one creative universe.</p><p>Different directions. One unmistakable energy.</p><button className="text-button about-story" onClick={() => navigate(view === 'story' ? 'universe' : 'story')}>{view === 'story' ? 'Back to the universe' : 'Get to know Turbo'} <ArrowUpRight size={18} /></button></div></section>}
+      {view !== 'collection' && <section className="about-section content-section"><div className="about-art about-landscape" aria-hidden="true"><span className="landscape-frame" /><span className="about-art-label">ROOTED HERE. REACHING FURTHER.</span><span className="about-cross">+</span></div><div className="about-copy"><div className="section-kicker"><span className="short-line" /> MORE THAN A COLLECTION</div><h2>A little chaos.<br />A lot of <span>creation.</span></h2><p>Some people collect things. Turbo creates worlds. This is a living archive of the ideas, experiments, websites, and apps that make up one creative universe.</p><p>Different directions. One unmistakable energy.</p><button className="text-button about-story" onClick={() => navigate(view === 'story' ? 'universe' : 'story')}>{view === 'story' ? 'Back to the universe' : 'Get to know Turbo'} <ArrowUpRight size={18} /></button></div></section>}
 
       <section className="app-banner content-section"><div className="app-banner-icon"><MonitorSmartphone size={29} /></div><div><span className="eyebrow">YOUR UNIVERSE. TO GO.</span><h2>Big ideas. Pocket-sized.</h2><p>Keep TurboUniverse one tap away. Install the app and take your worlds with you.</p></div><button className="secondary-button" onClick={() => setShowInstall(true)}>{installed ? <Check size={17} /> : <Download size={17} />}{installed ? 'App installed' : 'Get the app'}<ArrowUpRight size={16} /></button></section>
     </main>

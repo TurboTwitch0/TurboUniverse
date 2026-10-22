@@ -37,6 +37,8 @@ During local development, project metadata and uploads persist in `data/`, which
 
 The cinematic story is a creative introduction to Turbo’s work, rather than a factual personal biography.
 
+The visual theme uses warm earth tones, original people-free landscape backgrounds, and six space artworks for project covers. Images are hosted locally in `public/images/` and cached by the installed app for offline browsing. A custom uploaded cover takes precedence over the default space artwork.
+
 ## Import TurboHome
 
 With the local server running:

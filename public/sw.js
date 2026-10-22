@@ -1,8 +1,12 @@
 /* TurboUniverse: retain the app shell and last successful project list offline. */
-const VERSION = 'v1';
+const VERSION = 'v2-earth';
 const SHELL_CACHE = `turbo-universe-shell-${VERSION}`;
 const PROJECT_CACHE = `turbo-universe-projects-${VERSION}`;
-const SHELL_FILES = ['/', '/manifest.webmanifest', '/favicon.svg', '/icon.svg', '/icon-192.png', '/icon-512.png'];
+const SHELL_FILES = [
+  '/', '/manifest.webmanifest', '/favicon.svg', '/icon.svg', '/icon-192.png', '/icon-512.png',
+  '/images/earth-hero.webp', '/images/earth-detail.webp',
+  ...Array.from({ length: 6 }, (_, index) => `/images/space-${String(index + 1).padStart(2, '0')}.webp`),
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {

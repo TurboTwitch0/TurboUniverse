@@ -8,8 +8,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#080b09",
-  "theme_color": "#080b09",
+  "background_color": "#171612",
+  "theme_color": "#171612",
   "categories": ["entertainment", "lifestyle", "productivity"],
   "icons": [
     { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
