@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'Fresh in the universe',
-        description: 'A new TurboUniverse update has landed. Take a look around.',
+        title: 'More ways to explore',
+        description: 'Find your world with category filters, sorting, direct links, and a more polished experience.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

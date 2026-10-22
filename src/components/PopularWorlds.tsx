@@ -1,7 +1,7 @@
 import { ArrowUpRight } from 'lucide-react';
 import { getWorldPresentation, POPULAR_WORLDS } from '../popularWorlds';
 
-type Project = { id: string; title: string; type: 'website' | 'app'; url: string; description: string };
+type Project = { id: string; title: string; type: 'website' | 'app'; url: string; description: string; coverUrl?: string };
 
 export default function PopularWorlds<T extends Project>({ projects, onSelect, mode = 'space' }: { mode?: 'earth' | 'space'; projects: T[]; onSelect: (project: T) => void }) {
   const worlds = POPULAR_WORLDS.flatMap(world => {
@@ -16,13 +16,13 @@ export default function PopularWorlds<T extends Project>({ projects, onSelect, m
     <div className="popular-worlds-grid">
       {worlds.map(({ world, project }, index) => <article className="popular-world" key={world.id}>
         <button className="popular-world-image" onClick={() => onSelect({ ...project, title: world.displayTitle, description: world.description })} aria-label={`Discover ${world.displayTitle}`}>
-          <img src={mode === 'earth' ? `/images/${['earth-spring', 'earth-hero', 'earth-detail', 'earth-winter'][index]}.webp` : world.image} alt="" loading="lazy" decoding="async" width="1200" height="800" />
+          <img src={project.coverUrl || (mode === 'earth' ? `/images/${['earth-spring', 'earth-hero', 'earth-detail', 'earth-winter'][index]}.webp` : world.image)} alt="" loading="lazy" decoding="async" width="1200" height="800" />
           <span className="popular-world-shade" aria-hidden="true" />
           <span className="popular-world-number">0{index + 1} / {world.label}</span>
           <span className="popular-world-name"><strong>{world.displayTitle}</strong><span>{world.tagline}</span></span>
           <span className="popular-world-open" aria-hidden="true"><ArrowUpRight size={18} /></span>
         </button>
-        <div className="popular-world-copy"><span>{project.type === 'app' ? 'APP' : 'WEBSITE'} / {world.label}</span><p>{world.description}</p><button onClick={() => onSelect({ ...project, title: world.displayTitle, description: world.description })}>Explore {world.displayTitle} <ArrowUpRight size={14} /></button></div>
+        <div className="popular-world-copy"><span>{project.type === 'app' ? 'APP' : 'WEBSITE'} / {world.label}</span><p>{world.description}</p><div className="popular-world-actions"><a className="popular-world-launch" href={project.url} target="_blank" rel="noopener noreferrer" aria-label={`Open ${world.displayTitle}`} title={`Open ${world.displayTitle} in a new tab`}>Open {project.type === 'app' ? 'app' : 'website'} <ArrowUpRight size={14} /></a><button className="popular-world-details" onClick={() => onSelect({ ...project, title: world.displayTitle, description: world.description })} aria-label={`Details about ${world.displayTitle}`}>Details</button></div></div>
       </article>)}
     </div>
   </section>;

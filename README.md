@@ -31,9 +31,11 @@ The development frontend uses port 5173 and proxies the API on port 3001. For a 
 
 ## Your collection
 
-The collection starts with TurboHome and its imported project links. Add website/app links, upload cover images and project files, or bulk-import JSON or one URL per line. Search and filter the collection, open projects, download uploaded files, and export project metadata. Uploading an archive stores a downloadable copy; importing a link opens the original website. The app does not mirror external websites.
+The collection starts with TurboHome and its imported project links. Add website/app links, upload cover images and project files, or bulk-import JSON or one URL per line. Search the collection, narrow it by project type or category, and sort the results to find your next world. Open project details, download uploaded files, and export project metadata. Uploading an archive stores a downloadable copy; importing a link opens the original website. The app does not mirror external websites.
 
 During local development, project metadata and uploads persist in `data/`, which is ignored by Git. Keep this directory when restarting or upgrading. `DATA_DIR` can select another local storage location. Vercel deployments use private Blob storage instead. Metadata exports do not include uploaded files; back up local `data/` or your Blob store separately to retain them.
+
+Each project has a short introduction to help you choose where to explore. Existing imported placeholder descriptions receive the new copy without replacing owner-written descriptions. Popular destinations also have direct **Open** links, and a shared world URL opens that project’s details in TurboUniverse. Keyboard navigation, visible focus, and reduced-motion support keep the experience comfortable across devices.
 
 The cinematic story is a creative introduction to Turbo’s work, rather than a factual personal biography.
 
