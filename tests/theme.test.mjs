@@ -65,14 +65,13 @@ test('legacy settings migrate to the new Space and Light default without losing 
   assert.equal(DEFAULT_APPEARANCE.mode, 'space');
   assert.equal(DEFAULT_APPEARANCE.scheme, 'light');
   assert.equal(DEFAULT_APPEARANCE.palette, 'classic');
-  assert.equal(DEFAULT_APPEARANCE.artwork, 'monochrome');
 });
 
-test('modern appearance settings preserve independent atmosphere, brightness, palette, and artwork choices', () => {
-  const settings = { ...DEFAULT_APPEARANCE, mode: 'earth', scheme: 'dark', palette: 'seasonal', artwork: 'color' };
+test('modern appearance settings preserve independent atmosphere, brightness, and palette choices', () => {
+  const settings = { ...DEFAULT_APPEARANCE, mode: 'earth', scheme: 'dark', palette: 'seasonal' };
   assert.deepEqual(parseAppearancePreferences(JSON.stringify(settings)), settings);
+  assert.deepEqual(parseAppearancePreferences(JSON.stringify({ ...settings, artwork: 'monochrome' })), settings);
   const invalid = parseAppearancePreferences(JSON.stringify({ mode: 'earth', scheme: 'invalid', palette: 'invalid', artwork: 'invalid' }));
   assert.equal(invalid.scheme, 'light');
   assert.equal(invalid.palette, 'classic');
-  assert.equal(invalid.artwork, 'monochrome');
 });

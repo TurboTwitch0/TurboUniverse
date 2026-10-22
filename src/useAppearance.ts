@@ -17,12 +17,11 @@ export function useAppearance() {
     root.dataset.theme = preferences.mode;
     root.dataset.scheme = preferences.scheme;
     root.dataset.palette = preferences.palette;
-    root.dataset.artwork = preferences.artwork;
     root.dataset.season = season;
     root.dataset.motion = preferences.motion ? 'on' : 'off';
     const color = getComputedStyle(root).getPropertyValue('--theme-background').trim();
     if (color) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color);
-  }, [preferences.mode, preferences.scheme, preferences.palette, preferences.artwork, preferences.motion, season]);
+  }, [preferences.mode, preferences.scheme, preferences.palette, preferences.motion, season]);
 
   useEffect(() => {
     try { localStorage.setItem(APPEARANCE_STORAGE_KEY, JSON.stringify(preferences)); }

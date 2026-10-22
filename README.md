@@ -37,7 +37,7 @@ During local development, project metadata and uploads persist in `data/`, which
 
 The cinematic story is a creative introduction to Turbo’s work, rather than a factual personal biography.
 
-The default is Space + Light with a professional white, black, and blue palette. Dark mode uses near-black surfaces and an icy blue accent. Project covers match the atmosphere: space artwork in Space, natural landscapes in Earth. Choose black-and-white or full-color covers in Appearance options. Images are compressed, hosted locally, and available offline; custom uploaded covers take precedence.
+The default is Space + Light with a professional white, black, and blue palette. Dark mode uses near-black surfaces and an icy blue accent. Websites and apps use simple, colorful cover illustrations; custom uploaded covers take precedence. Cinematic background images are compressed, hosted locally, and available offline.
 
 ## Make it your atmosphere
 
