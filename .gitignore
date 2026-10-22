@@ -1,0 +1,11 @@
+node_modules/
+dist/
+data/
+.env
+.env.*
+!.env.example
+*.log
+playwright-results/
+__pycache__/
+*.pyc
+.vercel/
