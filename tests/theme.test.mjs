@@ -33,19 +33,19 @@ test('manual seasonal preview remains selected while automatic mode follows the 
 
 test('unavailable or malformed saved preferences recover to usable defaults', () => {
   for (const raw of [null, '', '{bad json', 'null', '42', 'true', '[]']) {
-    assert.deepEqual(parseAppearancePreferences(raw), { mode: 'earth', season: 'auto', hemisphere: 'north', motion: true });
+    assert.deepEqual(parseAppearancePreferences(raw), { ...DEFAULT_APPEARANCE });
   }
 });
 
 test('stored preferences validate fields independently and discard unknown settings', () => {
-  assert.deepEqual(parseAppearancePreferences(JSON.stringify({ mode: 'space', season: 'winter', hemisphere: 'south', motion: false, unexpected: 'ignored' })), {
-    mode: 'space', season: 'winter', hemisphere: 'south', motion: false,
+  assert.deepEqual(parseAppearancePreferences(JSON.stringify({ ...DEFAULT_APPEARANCE, mode: 'space', season: 'winter', hemisphere: 'south', motion: false, unexpected: 'ignored' })), {
+    ...DEFAULT_APPEARANCE, mode: 'space', season: 'winter', hemisphere: 'south', motion: false,
   });
   assert.deepEqual(parseAppearancePreferences(JSON.stringify({ mode: 'ocean', season: 'monsoon', hemisphere: 'east', motion: 'yes' })), {
-    mode: 'earth', season: 'auto', hemisphere: 'north', motion: true,
+    ...DEFAULT_APPEARANCE,
   });
   assert.deepEqual(parseAppearancePreferences(JSON.stringify({ mode: 'space', season: 'invalid', hemisphere: 'south' })), {
-    mode: 'space', season: 'auto', hemisphere: 'south', motion: true,
+    ...DEFAULT_APPEARANCE, mode: 'space', season: 'auto', hemisphere: 'south', motion: true,
   });
 });
 
@@ -55,4 +55,24 @@ test('motion defaults respect the device preference and an explicit saved pause 
   assert.equal(parseAppearancePreferences(JSON.stringify({ mode: 'space' }), true).motion, false);
   assert.equal(parseAppearancePreferences(JSON.stringify({ motion: false }), false).motion, false);
   assert.equal(DEFAULT_APPEARANCE.motion, true, 'parsing a device preference must not mutate shared defaults');
+});
+
+
+test('legacy settings migrate to the new Space and Light default without losing calendar or motion choices', () => {
+  assert.deepEqual(parseAppearancePreferences(JSON.stringify({ mode: 'earth', season: 'winter', hemisphere: 'south', motion: false })), {
+    ...DEFAULT_APPEARANCE, season: 'winter', hemisphere: 'south', motion: false,
+  });
+  assert.equal(DEFAULT_APPEARANCE.mode, 'space');
+  assert.equal(DEFAULT_APPEARANCE.scheme, 'light');
+  assert.equal(DEFAULT_APPEARANCE.palette, 'classic');
+  assert.equal(DEFAULT_APPEARANCE.artwork, 'monochrome');
+});
+
+test('modern appearance settings preserve independent atmosphere, brightness, palette, and artwork choices', () => {
+  const settings = { ...DEFAULT_APPEARANCE, mode: 'earth', scheme: 'dark', palette: 'seasonal', artwork: 'color' };
+  assert.deepEqual(parseAppearancePreferences(JSON.stringify(settings)), settings);
+  const invalid = parseAppearancePreferences(JSON.stringify({ mode: 'earth', scheme: 'invalid', palette: 'invalid', artwork: 'invalid' }));
+  assert.equal(invalid.scheme, 'light');
+  assert.equal(invalid.palette, 'classic');
+  assert.equal(invalid.artwork, 'monochrome');
 });

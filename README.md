@@ -37,11 +37,11 @@ During local development, project metadata and uploads persist in `data/`, which
 
 The cinematic story is a creative introduction to Turbo’s work, rather than a factual personal biography.
 
-The visual theme uses warm earth tones, original people-free landscape backgrounds, and six space artworks for project covers. Images are hosted locally in `public/images/` and cached by the installed app for offline browsing. A custom uploaded cover takes precedence over the default space artwork.
+The default is Space + Light with a professional white, black, and blue palette. Dark mode uses near-black surfaces and an icy blue accent. Project covers match the atmosphere: space artwork in Space, natural landscapes in Earth. Choose black-and-white or full-color covers in Appearance options. Images are compressed, hosted locally, and available offline; custom uploaded covers take precedence.
 
 ## Make it your atmosphere
 
-Choose **Earth** or **Space** in the appearance bar. Colors, landscape or galaxy backgrounds, and the T orbit change with the season. Automatic mode follows your local calendar using meteorological seasons; northern hemisphere is the default. **Appearance options** lets you select the southern hemisphere, preview a season, or pause motion. Preferences stay on your device, and reduced-motion device settings are respected.
+Choose **Earth** or **Space**, then **Light** or **Dark** in the appearance bar. Earth uses brighter landscape backgrounds. Signature blue is the default palette; select Seasonal colors for season-specific accents. Backgrounds and the T orbit follow the time of year. **Appearance options** also offers hemisphere selection, seasonal previews, and motion control. Preferences stay on your device, and reduced-motion settings are respected. Older saved settings migrate to the new Space + Light default while retaining their season, hemisphere, and motion choices.
 
 The restored T orbit has clickable project satellites. Tap the T or **Spin the universe** to discover a random real project. Star projects to save them on this device, then use the **Saved** filter to find them again. Saved worlds work for visitors too and do not change the public collection.
 

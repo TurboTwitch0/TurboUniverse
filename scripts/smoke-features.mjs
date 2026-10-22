@@ -31,12 +31,24 @@ try {
   await page.goto(origin);
   await page.getByRole('heading', { name: 'TurboHome', exact: true }).waitFor();
   await page.getByRole('status', { name: 'Latest update' }).waitFor();
+  await page.waitForFunction(() => document.documentElement.dataset.theme === 'space' && document.documentElement.dataset.scheme === 'light' && document.documentElement.dataset.palette === 'classic' && document.documentElement.dataset.artwork === 'monochrome');
+  const lightBlue = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent'));
+  await page.locator('.appearance-bar').getByRole('button', { name: 'Dark', exact: true }).click();
+  await page.waitForFunction(() => document.documentElement.dataset.scheme === 'dark');
+  assert.notEqual(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent')), lightBlue);
+  await page.reload();
+  await page.waitForFunction(() => document.documentElement.dataset.scheme === 'dark');
+  await page.locator('.appearance-bar').getByRole('button', { name: 'Light', exact: true }).click();
 
   const palettes = new Set();
   const backgrounds = new Set();
   for (const mode of ['earth', 'space']) {
     await page.getByRole('button', { name: mode === 'earth' ? 'Earth' : 'Space', exact: true }).click();
     await page.getByRole('button', { name: 'Appearance options', exact: true }).click();
+    await page.getByLabel('Color palette', { exact: true }).selectOption('seasonal');
+    await page.getByLabel('Project artwork', { exact: true }).selectOption('color');
+    const prefix = mode === 'earth' ? '/images/earth-' : '/images/space-';
+    assert.ok((await page.locator('.space-cover-image').first().getAttribute('src')).includes(prefix), 'Project artwork matches the selected atmosphere');
     for (const season of ['spring', 'summer', 'autumn', 'winter']) {
       await page.getByLabel('Season', { exact: true }).selectOption(season);
       await page.waitForFunction(({ mode, season }) => document.documentElement.dataset.theme === mode && document.documentElement.dataset.season === season, { mode, season });
@@ -101,7 +113,7 @@ try {
   await calendar.getByLabel('Your hemisphere', { exact: true }).selectOption('south');
   await calendar.waitForFunction(() => document.documentElement.dataset.season === 'autumn');
   assert.deepEqual(errors, []);
-  console.log('Feature browser checks passed: 8 seasonal themes/backgrounds, calendar rollover, hemisphere, persisted preferences/saved worlds, orbit discovery, motion pause, per-release dismissal and 48-hour expiry, mobile layout.');
+  console.log('Feature checks passed: Space+Light defaults, distinct/persisted light and dark blues, matching Earth/Space covers, seasonal themes, saved worlds, orbit discovery, announcements and mobile layout.');
 } finally {
   await browser?.close();
   await new Promise(resolve => server.close(resolve));

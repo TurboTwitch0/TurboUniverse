@@ -2,6 +2,9 @@ export type ThemeMode = 'earth' | 'space';
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
 export type AppearancePreferences = {
   mode: ThemeMode;
+  scheme: 'light' | 'dark';
+  palette: 'classic' | 'seasonal';
+  artwork: 'monochrome' | 'color';
   season: 'auto' | Season;
   hemisphere: 'north' | 'south';
   motion: boolean;
@@ -13,7 +16,7 @@ export const SEASON_LABELS: Record<Season, string> = {
   spring: 'Spring', summer: 'Summer', autumn: 'Autumn', winter: 'Winter',
 };
 export const DEFAULT_APPEARANCE: AppearancePreferences = {
-  mode: 'earth', season: 'auto', hemisphere: 'north', motion: true,
+  mode: 'space', scheme: 'light', palette: 'classic', artwork: 'monochrome', season: 'auto', hemisphere: 'north', motion: true,
 };
 
 /** Meteorological seasons follow the visitor's local calendar. */
@@ -39,7 +42,10 @@ export function parseAppearancePreferences(raw: string | null, reducedMotion = f
     if (!value || typeof value !== 'object' || Array.isArray(value)) return defaults;
     const saved = value as Record<string, unknown>;
     return {
-      mode: saved.mode === 'earth' || saved.mode === 'space' ? saved.mode : defaults.mode,
+      mode: saved.scheme !== undefined && (saved.mode === 'earth' || saved.mode === 'space') ? saved.mode : defaults.mode,
+      scheme: saved.scheme === 'dark' || saved.scheme === 'light' ? saved.scheme : defaults.scheme,
+      palette: saved.palette === 'seasonal' || saved.palette === 'classic' ? saved.palette : defaults.palette,
+      artwork: saved.artwork === 'color' || saved.artwork === 'monochrome' ? saved.artwork : defaults.artwork,
       season: saved.season === 'auto' || SEASONS.includes(saved.season as Season) ? saved.season as 'auto' | Season : defaults.season,
       hemisphere: saved.hemisphere === 'north' || saved.hemisphere === 'south' ? saved.hemisphere : defaults.hemisphere,
       motion: typeof saved.motion === 'boolean' ? saved.motion : defaults.motion,

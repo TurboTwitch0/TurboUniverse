@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Globe2, Leaf, Orbit, SlidersHorizontal, Snowflake, Sprout, Sun, X } from 'lucide-react';
+import { ChevronDown, Globe2, Leaf, Moon, Orbit, SlidersHorizontal, Snowflake, Sprout, Sun, X } from 'lucide-react';
 import { SEASONS, SEASON_LABELS, type AppearancePreferences, type Season } from '../theme';
 
 type Props = { preferences: AppearancePreferences; onChange: (preferences: AppearancePreferences) => void; season: Season };
@@ -38,7 +38,11 @@ export default function AppearanceControls({ preferences, onChange, season }: Pr
         <button className={preferences.mode === 'earth' ? 'active' : ''} aria-pressed={preferences.mode === 'earth'} onClick={() => onChange({ ...preferences, mode: 'earth' })}><Globe2 size={14} /> Earth</button>
         <button className={preferences.mode === 'space' ? 'active' : ''} aria-pressed={preferences.mode === 'space'} onClick={() => onChange({ ...preferences, mode: 'space' })}><Orbit size={14} /> Space</button>
       </div>
-      <span className="appearance-tagline">Two atmospheres. One universe.</span>
+      <div className="appearance-mode scheme-mode" role="group" aria-label="Color mode">
+        <button className={preferences.scheme === 'light' ? 'active' : ''} aria-pressed={preferences.scheme === 'light'} onClick={() => onChange({ ...preferences, scheme: 'light' })}><Sun size={14} /> Light</button>
+        <button className={preferences.scheme === 'dark' ? 'active' : ''} aria-pressed={preferences.scheme === 'dark'} onClick={() => onChange({ ...preferences, scheme: 'dark' })}><Moon size={14} /> Dark</button>
+      </div>
+      <span className="appearance-tagline">Your world. Your perspective.</span>
       <button className="season-trigger" ref={trigger} aria-label="Appearance options" aria-haspopup="dialog" onClick={() => setOpen(true)}><SeasonIcon size={14} /><span>{SEASON_LABELS[season]}<span className="season-auto"> / {preferences.season === 'auto' ? 'AUTO' : 'PREVIEW'}</span></span><ChevronDown size={12} /></button>
     </section>
     {open && <div className="dialog-backdrop appearance-backdrop" onClick={event => { if (event.currentTarget === event.target) setOpen(false); }}>
@@ -46,6 +50,10 @@ export default function AppearanceControls({ preferences, onChange, season }: Pr
         <div className="dialog-head"><div><span className="eyebrow"><SlidersHorizontal size={12} /> SET YOUR ATMOSPHERE</span><h2 id="appearance-title">A universe that feels like you.</h2></div><button className="icon-button" onClick={() => setOpen(false)} aria-label="Close appearance options"><X size={19} /></button></div>
         <p className="appearance-intro">Follow the seasons, find your favorite colors, and make a little space for yourself.</p>
         <div className="appearance-mode appearance-mode-large" role="group" aria-label="Choose atmosphere"><button className={preferences.mode === 'earth' ? 'active' : ''} aria-pressed={preferences.mode === 'earth'} onClick={() => onChange({ ...preferences, mode: 'earth' })}><Globe2 size={19} /><span><strong>Earth</strong><small>Landscapes & grounded colors</small></span></button><button className={preferences.mode === 'space' ? 'active' : ''} aria-pressed={preferences.mode === 'space'} onClick={() => onChange({ ...preferences, mode: 'space' })}><Orbit size={19} /><span><strong>Space</strong><small>Distant worlds & cosmic light</small></span></button></div>
+        <div className="appearance-choice-grid">
+          <label className="field">Color palette<select aria-label="Color palette" value={preferences.palette} onChange={event => onChange({ ...preferences, palette: event.target.value as AppearancePreferences['palette'] })}><option value="classic">Signature blue</option><option value="seasonal">Seasonal colors</option></select></label>
+          <label className="field">Project artwork<select aria-label="Project artwork" value={preferences.artwork} onChange={event => onChange({ ...preferences, artwork: event.target.value as AppearancePreferences['artwork'] })}><option value="monochrome">Black &amp; white</option><option value="color">Full color</option></select></label>
+        </div>
         <label className="field appearance-season-field">Season<select aria-label="Season" value={preferences.season} onChange={event => onChange({ ...preferences, season: event.target.value as AppearancePreferences['season'] })}><option value="auto">Follow the time of year</option>{SEASONS.map(item => <option key={item} value={item}>{SEASON_LABELS[item]} preview</option>)}</select></label>
         <p className="field-hint">Automatic colors and backgrounds change with your local calendar. Preview any season whenever you like.</p>
         <label className="field appearance-hemisphere-field">Your hemisphere<select aria-label="Your hemisphere" value={preferences.hemisphere} onChange={event => onChange({ ...preferences, hemisphere: event.target.value as AppearancePreferences['hemisphere'] })}><option value="north">Northern hemisphere</option><option value="south">Southern hemisphere</option></select></label>
