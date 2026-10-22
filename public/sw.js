@@ -1,10 +1,10 @@
 /* TurboUniverse: retain the app shell and last successful project list offline. */
-const VERSION = 'v2-earth';
+const VERSION = 'v3-seasons';
 const SHELL_CACHE = `turbo-universe-shell-${VERSION}`;
 const PROJECT_CACHE = `turbo-universe-projects-${VERSION}`;
 const SHELL_FILES = [
-  '/', '/manifest.webmanifest', '/favicon.svg', '/icon.svg', '/icon-192.png', '/icon-512.png',
-  '/images/earth-hero.webp', '/images/earth-detail.webp',
+  '/', '/release.json', '/manifest.webmanifest', '/favicon.svg', '/icon.svg', '/icon-192.png', '/icon-512.png',
+  '/images/earth-hero.webp', '/images/earth-detail.webp', '/images/earth-spring.webp', '/images/earth-winter.webp',
   ...Array.from({ length: 6 }, (_, index) => `/images/space-${String(index + 1).padStart(2, '0')}.webp`),
 ];
 
@@ -42,6 +42,14 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  if (url.pathname === '/release.json') {
+    event.respondWith((async () => {
+      try { return await cacheResponse(SHELL_CACHE, request, await fetch(request)); }
+      catch { return (await caches.match(request, { cacheName: SHELL_CACHE })) || new Response('{}', { status: 503, headers: { 'Content-Type': 'application/json' } }); }
+    })());
+    return;
+  }
 
   if (url.pathname === '/api/projects') {
     event.respondWith((async () => {

@@ -12,10 +12,11 @@
     "dev:api": "node --watch server/index.mjs",
     "build": "tsc --noEmit && vite build",
     "start": "node server/index.mjs",
-    "test": "node --test server/*.test.mjs",
+    "test": "node --test server/*.test.mjs tests/*.test.mjs",
     "test:import": "python3 scripts/import-turbohome.test.py",
     "test:ui": "node scripts/smoke.mjs",
-    "test:vercel": "node scripts/smoke-vercel.mjs"
+    "test:vercel": "node scripts/smoke-vercel.mjs",
+    "test:features": "node scripts/smoke-features.mjs"
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "^5.3.0",

@@ -39,6 +39,18 @@ The cinematic story is a creative introduction to Turbo’s work, rather than a 
 
 The visual theme uses warm earth tones, original people-free landscape backgrounds, and six space artworks for project covers. Images are hosted locally in `public/images/` and cached by the installed app for offline browsing. A custom uploaded cover takes precedence over the default space artwork.
 
+## Make it your atmosphere
+
+Choose **Earth** or **Space** in the appearance bar. Colors, landscape or galaxy backgrounds, and the T orbit change with the season. Automatic mode follows your local calendar using meteorological seasons; northern hemisphere is the default. **Appearance options** lets you select the southern hemisphere, preview a season, or pause motion. Preferences stay on your device, and reduced-motion device settings are respected.
+
+The restored T orbit has clickable project satellites. Tap the T or **Spin the universe** to discover a random real project. Star projects to save them on this device, then use the **Saved** filter to find them again. Saved worlds work for visitors too and do not change the public collection.
+
+## Update announcements
+
+Each build automatically emits `dist/release.json` with a release ID and a fixed publication timestamp. The site announces that update for exactly 48 hours from that timestamp. Reloading or visiting late never extends the window. Dismissing an announcement hides that release on your device while allowing the next release to appear. The banner also expires while a page stays open and can read cached release metadata offline.
+
+Vercel uses its Git commit ID to distinguish updates; other builds use the local commit or a source fingerprint. Publishing the next code update automatically creates its announcement without editing dates or adding a backend job.
+
 ## Import TurboHome
 
 With the local server running:
@@ -62,8 +74,9 @@ npm test
 python3 scripts/import-turbohome.test.py
 node scripts/smoke.mjs
 node scripts/smoke-vercel.mjs
+node scripts/smoke-features.mjs
 ```
 
-The browser smoke test uses Playwright and installed Chromium (`CHROMIUM_PATH` can override its location), starts an isolated server, and leaves your collection unchanged. Build first. The API tests use temporary storage and exercise real HTTP requests, persistence, validation, and multipart uploads.
+The browser checks use Playwright and installed Chromium (`CHROMIUM_PATH` can override its location), start isolated servers, and leave your collection unchanged. Build first. Feature checks cover all eight seasonal appearances, calendar rollover, hemisphere selection, saved-world persistence, orbit interactions, announcement expiry, and mobile layout. The API tests use temporary storage and exercise real HTTP requests, persistence, validation, and multipart uploads.
 
 The local server binds to loopback for a single-owner development workflow. The separate Vercel handler uses private Blob storage and owner authentication for public hosting. Its automated tests use a simulated Blob service; live Blob access is verified after you connect your store and deploy.
