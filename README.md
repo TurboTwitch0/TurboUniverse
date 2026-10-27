@@ -6,7 +6,7 @@ A cinematic home for Turbo’s websites and apps, with a responsive collection m
 
 Import **TurboTwitch0/TurboUniverse**, choose the **main** branch, and keep the project root at **./**. The checked-in `vercel.json` selects Vite, builds with `npm run build`, serves `dist/`, and routes API requests to a Node.js 24 serverless function. No custom start command is needed.
 
-The public site works immediately without environment variables: all 30 imported project links, cinematic story, search, filters, metadata export, and the installable app are available. Collection changes are hidden until owner storage is connected.
+The public site works immediately without environment variables: the project catalog, cinematic story, search, filters, AI demo, metadata export, and the installable app are available. Collection changes are hidden until owner storage is connected.
 
 To enable owner editing and persistent uploads:
 
@@ -40,6 +40,14 @@ Each project has a short introduction to help you choose where to explore. Exist
 The cinematic story is a creative introduction to Turbo’s work, rather than a factual personal biography.
 
 The default is Space + Light with a professional white, black, and blue palette. Dark mode uses near-black surfaces and an icy blue accent. The centered TurboUniverse title sits over cinematic space artwork. Website and app names sit in the center of image covers, with matching natural landscapes in Earth mode; custom uploaded covers take precedence. A Neptune-inspired discovery planet sits below the hero, followed by four curated popular destinations: TurboChat, TurboGames, TurboStocks, and Orbit Study. Cinematic background images are compressed, hosted locally, and available offline.
+
+## AI demo
+
+Open **AI demo** in the navigation or the home page preview. Chat, Writing, Studying, Coding, and Brainstorming each offer a starter prompt with a prewritten sample reply. Custom prompts explicitly receive an example rather than a generated answer. The demo runs in the browser without an API key, model requests, or web search. Clear chat resets it; changing activities starts a fresh conversation. It does not store conversations.
+
+## Current project destinations
+
+TurboChat, TurboGames, and TurboStocks retain their verified existing app links. Orbit Study points to **TurboTwitch0/StudyOrbit** on GitHub, and TurboWatch points to its existing GitHub project. Both show **Setup pending** because their owners have not confirmed a published app. These entries do not claim hosted accounts or other live services are available. Existing project IDs remain stable for saved and shared links.
 
 ## Make it your atmosphere
 
@@ -77,8 +85,17 @@ python3 scripts/import-turbohome.test.py
 node scripts/smoke.mjs
 node scripts/smoke-vercel.mjs
 node scripts/smoke-features.mjs
+node scripts/smoke-ai.mjs
 ```
 
 The browser checks use Playwright and installed Chromium (`CHROMIUM_PATH` can override its location), start isolated servers, and leave your collection unchanged. Build first. Feature checks cover all eight seasonal appearances, calendar rollover, hemisphere selection, saved-world persistence, orbit interactions, announcement expiry, and mobile layout. The API tests use temporary storage and exercise real HTTP requests, persistence, validation, and multipart uploads.
 
 The local server binds to loopback for a single-owner development workflow. The separate Vercel handler uses private Blob storage and owner authentication for public hosting. Its automated tests use a simulated Blob service; live Blob access is verified after you connect your store and deploy.
+
+## Daily GitHub refresh
+
+The **Daily catalog refresh** GitHub Actions workflow checks public TurboHome links daily at **9 a.m. America/Chicago**, respecting daylight saving time. It also supports **Actions → Daily catalog refresh → Run workflow**. GitHub may delay scheduled runs.
+
+The job appends new catalog projects after passing discovery tests, site tests, and the production build. Existing IDs, URLs, descriptions, covers, featured settings, and owner storage are preserved. Matching titles prevent stale TurboHome deployment links from duplicating curated projects. Unavailable, sign-in-only, empty, or incomplete discovery leaves the catalog unchanged and fails the run. No-change runs create no commits or announcements.
+
+Validated catalog additions are committed to the default branch for the existing Vercel Git integration to publish. GitHub Actions and repository write permission must be enabled; branch rules may block automated pushes. The existing release banner announces deployed changes.

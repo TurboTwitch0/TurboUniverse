@@ -46,7 +46,7 @@ try {
     { title: 'TurboChat', url: 'https://turbo-chat-five.vercel.app/' },
     { title: 'TurboGames', url: 'https://turbouniversegames.vercel.app/' },
     { title: 'TurboStocks', url: 'https://turbostocks.vercel.app/' },
-    { title: 'Orbit Study', url: 'https://studyorbitv1.vercel.app/' },
+    { title: 'Orbit Study', url: 'https://github.com/TurboTwitch0/StudyOrbit' },
   ];
   assert.deepEqual(await popular.locator('.popular-world-name strong').allTextContents(), destinations.map(item => item.title));
   assert.equal(await popular.getByRole('button', { name: /^Discover / }).count(), 4);
@@ -54,7 +54,7 @@ try {
     await popular.getByRole('button', { name: `Discover ${destination.title}`, exact: true }).click();
     const detail = page.getByRole('dialog');
     await detail.getByRole('heading', { name: destination.title, exact: true }).waitFor();
-    assert.equal(await detail.getByRole('link', { name: /^Explore (website|app)$/ }).getAttribute('href'), destination.url, 'Popular destinations retain their real project links');
+    assert.equal(await detail.getByRole('link', { name: /^(Explore (website|app)|View project on GitHub)$/ }).getAttribute('href'), destination.url, 'Popular destinations retain their verified project links');
     assert.doesNotMatch(await detail.locator('.detail-content > p').textContent(), /Part of the Turbo universe, shared on TurboHome/);
     await page.keyboard.press('Escape');
   }

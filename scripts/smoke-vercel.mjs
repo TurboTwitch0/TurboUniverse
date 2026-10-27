@@ -57,7 +57,7 @@ try {
 
   await page.goto(publicOrigin);
   await page.getByRole('heading', { name: 'TurboHome', exact: true }).waitFor();
-  assert.equal(await page.locator('.project-card').count(), 30);
+  assert.equal(await page.locator('.project-card').count(), catalog.length);
   assert.equal(await page.getByRole('button', { name: 'Add project', exact: true }).count(), 0);
   assert.equal(await page.getByRole('button', { name: 'Manage collection', exact: true }).count(), 0);
   assert.equal(await page.locator('.add-world-card').count(), 0);
@@ -65,7 +65,7 @@ try {
   assert.equal(await page.getByRole('button', { name: 'Remove project', exact: true }).count(), 0);
   await page.keyboard.press('Escape');
   await page.getByText('Explore the collection. New worlds are added by Turbo.', { exact: true }).waitFor();
-  console.log('Public Vercel mode: 30 projects, no mutation controls, no storage credentials required.');
+  console.log('Public Vercel mode: complete catalog, no mutation controls, no storage credentials required.');
 
   await page.goto(ownerOrigin);
   await page.getByRole('button', { name: 'Manage collection', exact: true }).click();
@@ -93,7 +93,7 @@ try {
   await page.getByRole('button', { name: 'Add to the universe', exact: true }).click();
   await page.getByRole('heading', { name: 'Owner browser project', exact: true }).waitFor();
   assert.equal(writeRequests, 1);
-  assert.equal((await store.list()).length, 31);
+  assert.equal((await store.list()).length, catalog.length + 1);
   await page.getByRole('button', { name: 'View Owner browser project', exact: true }).click();
   const downloadReady = page.waitForEvent('download');
   await page.getByRole('link', { name: 'Download project', exact: true }).click();
@@ -101,7 +101,7 @@ try {
   await page.getByRole('button', { name: 'Remove project', exact: true }).click();
   await page.getByRole('button', { name: 'Remove', exact: true }).click();
   await page.getByRole('dialog').waitFor({ state: 'hidden' });
-  assert.equal((await store.list()).length, 30);
+  assert.equal((await store.list()).length, catalog.length);
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await page.getByRole('button', { name: 'Manage collection', exact: true }).waitFor();
   assert.equal(await page.getByRole('button', { name: 'Add project', exact: true }).count(), 0);

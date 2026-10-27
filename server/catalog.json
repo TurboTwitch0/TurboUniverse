@@ -168,12 +168,13 @@
     "id": "082fc48b-9cd7-4ae9-ba7a-18bf1ec83dd7",
     "title": "Orbit Study",
     "type": "website",
-    "url": "https://studyorbitv1.vercel.app/",
-    "description": "Make space for your next discovery. A destination for curiosity, learning, and the next thing you want to understand.",
+    "url": "https://github.com/TurboTwitch0/StudyOrbit",
+    "description": "A focused space for learning, planning, and practice. Publishing is still pending; explore the StudyOrbit project on GitHub for now.",
     "category": "Tools",
     "year": 2026,
     "featured": true,
-    "createdAt": "2026-10-22T03:57:36.715Z"
+    "createdAt": "2026-10-22T03:57:36.715Z",
+    "status": "setup-pending"
   },
   {
     "id": "bb707a02-edd1-43c7-9e6e-e65e38e53af4",
@@ -328,5 +329,17 @@
     "year": 2026,
     "featured": false,
     "createdAt": "2026-10-22T03:57:36.745Z"
+  },
+  {
+    "id": "turbowatch",
+    "title": "TurboWatch",
+    "type": "website",
+    "url": "https://github.com/TurboTwitch0/TurboWatch",
+    "description": "Explore Turbo’s video project on GitHub. Hosted setup is pending, so a public app and live accounts are not available here yet.",
+    "category": "Entertainment",
+    "year": 2026,
+    "featured": false,
+    "createdAt": "2026-10-27T00:00:00.000Z",
+    "status": "setup-pending"
   }
 ]

@@ -17,7 +17,8 @@
     "test:ui": "node scripts/smoke.mjs",
     "test:vercel": "node scripts/smoke-vercel.mjs",
     "test:features": "node scripts/smoke-features.mjs",
-    "test:discovery": "node scripts/smoke-discovery.mjs"
+    "test:discovery": "node scripts/smoke-discovery.mjs",
+    "test:ai": "node scripts/smoke-ai.mjs"
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "^5.3.0",

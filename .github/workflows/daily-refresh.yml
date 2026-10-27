@@ -1,0 +1,49 @@
+name: Daily catalog refresh
+on:
+  schedule:
+    - cron: '0 9 * * *'
+      timezone: America/Chicago
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: daily-catalog-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - name: Check discovery and preservation
+        run: |
+          python3 scripts/import-turbohome.test.py
+          python3 scripts/refresh-catalog.test.py
+      - name: Discover new public projects
+        run: python3 scripts/refresh-catalog.py
+      - name: Validate refreshed site
+        run: |
+          npm test
+          npm run build
+      - name: Publish real additions
+        run: |
+          if git diff --quiet -- server/catalog.json; then
+            echo 'No new projects; no commit or release.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- server/catalog.json
+          git commit -m 'Refresh TurboHome project catalog'
+          git push
+          echo 'Published validated catalog additions.' >> "$GITHUB_STEP_SUMMARY"

@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { createApp } from '../server/index.mjs';
+import catalog from '../server/catalog.json' with { type: 'json' };
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const dataDir = await mkdtemp(path.join(tmpdir(), 'turbo-ui-'));
@@ -22,7 +23,7 @@ try {
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(origin);
   await page.getByRole('heading', { name: 'TurboHome', exact: true }).waitFor();
-  assert.equal(await page.locator('.project-card').count(), 30, 'All imported projects are visible');
+  assert.equal(await page.locator('.project-card').count(), catalog.length, 'All catalog projects are visible');
   await page.getByRole('button', { name: 'Add project', exact: true }).click();
   await page.getByLabel('Project name').fill('Smoke Project');
   await page.getByLabel('Project type').selectOption('app');
@@ -50,7 +51,7 @@ try {
   await page.getByLabel('Or paste project links').fill('https://example.com/one\nhttps://example.com/two');
   await page.getByRole('button', { name: 'Import projects', exact: true }).click();
   await page.getByRole('dialog').waitFor({ state: 'hidden' });
-  await page.waitForFunction(() => document.querySelectorAll('.project-card').length === 32);
+  await page.waitForFunction(count => document.querySelectorAll('.project-card').length === count, catalog.length + 2);
   await page.getByRole('button', { name: /The life of Turbo/ }).click();
   await page.getByRole('button', { name: 'Chapter 02' }).click();
   await page.getByRole('heading', { name: 'One idea opens another world.' }).waitFor();
@@ -75,10 +76,10 @@ try {
   await context.setOffline(true);
   await page.reload();
   await page.getByRole('heading', { name: 'TurboHome', exact: true }).waitFor();
-  assert.equal(await page.locator('.project-card').count(), 32, 'Offline collection uses the last successful project list');
+  assert.equal(await page.locator('.project-card').count(), catalog.length + 2, 'Offline collection uses the last successful project list');
   await page.getByRole('status').filter({ hasText: 'You’re offline' }).waitFor();
   assert.deepEqual(errors, [], 'No browser runtime errors');
-  console.log('Browser smoke passed: 30 real catalog entries, uploads/downloads, filtering/search, deletion, bulk import, story, mobile navigation, export, installation UI, and offline browsing.');
+  console.log('Browser smoke passed: catalog entries, uploads/downloads, filtering/search, deletion, bulk import, story, mobile navigation, export, installation UI, and offline browsing.');
 } finally {
   await browser?.close();
   await new Promise(resolve => server.close(resolve));

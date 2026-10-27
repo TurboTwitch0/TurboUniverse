@@ -54,7 +54,7 @@ html { scroll-padding-top:110px; }
   .appearance-mode > button { min-height:36px; }
   .season-trigger { min-height:36px; }
   .appearance-bar { gap:8px; padding-top:12px; padding-bottom:12px; }
-  .main-nav.open { top:68px; }
+  .main-nav.open { top:68px; flex-wrap:wrap; gap:8px 20px; }
   .filters { flex-wrap:wrap; gap:6px; }
   .filters > button { min-height:40px; font-size:10px; padding:9px 10px; }
   .project-toolbar { gap:14px; }

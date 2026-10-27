@@ -35,10 +35,10 @@ export const POPULAR_WORLDS = [
     id: '082fc48b-9cd7-4ae9-ba7a-18bf1ec83dd7',
     displayTitle: 'Orbit Study',
     aliases: ['orbitstudy', 'studyorbit', 'turbostudy'],
-    url: 'https://studyorbitv1.vercel.app/',
+    url: 'https://github.com/TurboTwitch0/StudyOrbit',
     label: 'DISCOVERY',
     tagline: 'Find your focus among the stars.',
-    description: 'Make space for your next discovery. A destination for curiosity, learning, and the next thing you want to understand.',
+    description: 'A focused space for learning, planning, and practice. Publishing is still pending; explore the StudyOrbit project on GitHub for now.',
     image: '/images/cinematic-horizon.webp',
   },
 ] as const;

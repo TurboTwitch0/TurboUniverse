@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { createVercelApp, MAX_UPLOAD_BYTES } from '../api/index.mjs';
 import { createBlobStore } from './blob-store.mjs';
+import catalog from './catalog.json' with { type: 'json' };
 
 function fakeBlobSDK() {
   const blobs = new Map();
@@ -47,7 +48,7 @@ test('Vercel publishes the real starter collection without credentials or writab
   assert.deepEqual(await (await fetch(`${base}/api/config`)).json(), { canManage: false, requiresLogin: false, maxUploadBytes: MAX_UPLOAD_BYTES, storage: 'catalog' });
   const listing = await fetch(`${base}/api/projects`);
   assert.equal(listing.headers.get('cache-control'), 'no-store');
-  assert.equal((await listing.json()).projects.length, 30);
+  assert.deepEqual((await listing.json()).projects, catalog);
   assert.equal((await fetch(`${base}/api/admin`)).status, 401);
   const create = await fetch(`${base}/api/projects`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(sample) });
   assert.equal(create.status, 503);

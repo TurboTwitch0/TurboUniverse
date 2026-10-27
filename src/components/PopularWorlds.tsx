@@ -1,7 +1,7 @@
 import { ArrowUpRight } from 'lucide-react';
 import { getWorldPresentation, POPULAR_WORLDS } from '../popularWorlds';
 
-type Project = { id: string; title: string; type: 'website' | 'app'; url: string; description: string; coverUrl?: string };
+type Project = { id: string; title: string; type: 'website' | 'app'; url: string; description: string; coverUrl?: string; status?: 'setup-pending' };
 
 export default function PopularWorlds<T extends Project>({ projects, onSelect, mode = 'space' }: { mode?: 'earth' | 'space'; projects: T[]; onSelect: (project: T) => void }) {
   const worlds = POPULAR_WORLDS.flatMap(world => {
@@ -22,7 +22,7 @@ export default function PopularWorlds<T extends Project>({ projects, onSelect, m
           <span className="popular-world-name"><strong>{world.displayTitle}</strong><span>{world.tagline}</span></span>
           <span className="popular-world-open" aria-hidden="true"><ArrowUpRight size={18} /></span>
         </button>
-        <div className="popular-world-copy"><span>{project.type === 'app' ? 'APP' : 'WEBSITE'} / {world.label}</span><p>{world.description}</p><div className="popular-world-actions"><a className="popular-world-launch" href={project.url} target="_blank" rel="noopener noreferrer" aria-label={`Open ${world.displayTitle}`} title={`Open ${world.displayTitle} in a new tab`}>Open {project.type === 'app' ? 'app' : 'website'} <ArrowUpRight size={14} /></a><button className="popular-world-details" onClick={() => onSelect({ ...project, title: world.displayTitle, description: world.description })} aria-label={`Details about ${world.displayTitle}`}>Details</button></div></div>
+        <div className="popular-world-copy"><span>{project.status === 'setup-pending' ? 'SETUP PENDING' : project.type === 'app' ? 'APP' : 'WEBSITE'} / {world.label}</span><p>{world.description}</p><div className="popular-world-actions"><a className="popular-world-launch" href={project.url} target="_blank" rel="noopener noreferrer" aria-label={`${project.status === 'setup-pending' ? 'View project' : 'Open'} ${world.displayTitle}`} title={`${project.status === 'setup-pending' ? 'View project' : 'Open'} ${world.displayTitle} in a new tab`}>{project.status === 'setup-pending' ? 'View on GitHub' : `Open ${project.type === 'app' ? 'app' : 'website'}`} <ArrowUpRight size={14} /></a><button className="popular-world-details" onClick={() => onSelect({ ...project, title: world.displayTitle, description: world.description })} aria-label={`Details about ${world.displayTitle}`}>Details</button></div></div>
       </article>)}
     </div>
   </section>;
