@@ -341,5 +341,16 @@
     "featured": false,
     "createdAt": "2026-10-27T00:00:00.000Z",
     "status": "setup-pending"
+  },
+  {
+    "title": "TurboStudy",
+    "type": "website",
+    "url": "https://studyorbitv1.vercel.app/",
+    "description": "Part of the Turbo universe, shared on TurboHome.",
+    "category": "Community",
+    "id": "4d14f53c-7186-518f-85c6-63f0752a1614",
+    "year": 2026,
+    "featured": false,
+    "createdAt": "2026-10-27T19:01:50.855120Z"
   }
 ]
