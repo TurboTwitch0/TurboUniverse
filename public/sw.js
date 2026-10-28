@@ -1,5 +1,5 @@
 /* TurboUniverse: retain the app shell and last successful project list offline. */
-const VERSION = 'v9-local-ai-launchpad';
+const VERSION = 'v10-connected-universe';
 const SHELL_CACHE = `turbo-universe-shell-${VERSION}`;
 const PROJECT_CACHE = `turbo-universe-projects-${VERSION}`;
 const SHELL_FILES = [

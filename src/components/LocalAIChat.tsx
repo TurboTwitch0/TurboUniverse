@@ -12,12 +12,12 @@ const activities = [
 ];
 type Message = LocalMessage & { id: number };
 
-export default function LocalAIChat() {
+export default function LocalAIChat({ initialPrompt = '' }: { initialPrompt?: string }) {
   const [activity, setActivity] = useState(activities[0]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready'>('idle');
   const [progress, setProgress] = useState(0);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState(initialPrompt);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const input = useRef<HTMLTextAreaElement>(null);

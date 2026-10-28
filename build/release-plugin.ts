@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'Your own little launchpad',
-        description: 'Try free on-device AI, revisit recent worlds, and launch your favorites in one tap.',
+        title: 'All your worlds. One place.',
+        description: 'Meet the refreshed TurboUniverse: a connected collection preview, quick category paths, and a spark for your next idea.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

@@ -43,6 +43,8 @@ The default is Space + Light with a professional white, black, and blue palette.
 
 ## Your launchpad
 
+The Space + Light identity uses a consistent cobalt, ink, mist, and cyan palette, the existing lightning mark, rounded components, and Space Grotesk typography. The home page’s live collection preview prioritizes the verified popular destinations; its star controls save real projects, its category paths open the filtered collection, and its AI starter opens an editable prompt without starting a model download. Empty, loading, and retry states use the same visual system. Motion follows the device preference and the appearance control.
+
 Opening project details or a card’s **Open world** link adds it to **Your launchpad**, a compact list of up to six recently explored worlds. Reopening moves it to the front; reload keeps the list when browser storage is available. **Clear recent** clears that history without changing saved worlds. Only project IDs stay in this browser, and browsing still works when storage is blocked. Unpublished projects have GitHub source links with **Setup pending** labels.
 
 ## Free on-device AI

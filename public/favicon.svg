@@ -1,5 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="15" fill="#fafbfd"/>
-  <path fill="#155bd7" d="m32 8 6 18 18 6-18 6-6 18-6-18-18-6 18-6z"/>
-  <path fill="#fafbfd" d="M26 28h14l-2 4h-4l-3 9h-5l3-9h-5z"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 512 512"><title>TurboUniverse</title><rect width="512" height="512" rx="116" fill="#f6f9ff"/><path d="M23 2 6 23h12l-2 15 18-23H22l1-13Z" fill="#155bd7" transform="translate(66 66) scale(9.5)"/></svg>
