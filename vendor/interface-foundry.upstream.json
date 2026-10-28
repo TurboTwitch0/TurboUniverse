@@ -1,0 +1,190 @@
+{
+  "name": "Interface Foundry",
+  "repository": "https://github.com/TurboTwitch0/INTERFACE-FOUNDRY",
+  "commit": "56ca9eec9a12136e78ab8b44aaf24947c0fe634a",
+  "visibilityAtReview": "public",
+  "license": "MIT",
+  "copyright": "2026 TurboTwitch0",
+  "mountPath": "/interface-foundry/",
+  "excludedHostingMetadata": [
+    ".openai/hosting.json"
+  ],
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "818ca2617bbc62cf3aafb04193c1417d9cc7ba14ba1c8a71d9599e05e078b804"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "98aa0dffcd1f339a07d1a0b453df57f5ffa0f1c2d0110e550f4ca35af538360d"
+    },
+    {
+      "path": ".nvmrc",
+      "sha256": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "461a1762d3ae2de88fdfd01055aae84e034e28c192515463e32e7ff8c610dc54"
+    },
+    {
+      "path": "DEPLOYMENT.md",
+      "sha256": "ee39fd200602e28c17714522693a8ece3acc32db85b25f653f2f072f100f7e3f"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "ac2c26a3d0cf81a7b0893d2ed1bf6952a0ba49710c31dd8525e34fdfc11e7db4"
+    },
+    {
+      "path": "README.md",
+      "sha256": "017a1a5b0b0d8bfaccd47a66367bff079cc703d57469f7c9242a4f2774a1cda0"
+    },
+    {
+      "path": "assets/app.js",
+      "sha256": "dd285443887818cc1bffd07365a0c94f0c415718651edd9c827f44e13725bf39"
+    },
+    {
+      "path": "assets/styles.css",
+      "sha256": "7f229fa73e686f160c5203829358fbeb387d049743fb0e9cd0798c40a6f76e52"
+    },
+    {
+      "path": "bin/foundry.mjs",
+      "sha256": "5822cbbab9f8d5b978e7d8c57ba9bdc5d2a06695bc095641b1eba7ae101abcc7"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "sha256": "e2af9d3a76029f1ad76f6b9aec306f986f5646b2df39e4b94f784b4f18cb2c22"
+    },
+    {
+      "path": "docs/WORKFLOWS.md",
+      "sha256": "2278efba7f61a976c844b1215c60a379040dedf1369f8683c7f8afd1445f06a9"
+    },
+    {
+      "path": "examples/README.md",
+      "sha256": "56df15472a6a5688f07fb9a69e38c712211a88e7eec36a519a8e5e5db3a897f4"
+    },
+    {
+      "path": "examples/design-briefs/editorial.md",
+      "sha256": "9f0d098ff478eb2eb3e9e34dd96ad688eac2dc39f04ef7d7ccb16ff0c971076c"
+    },
+    {
+      "path": "examples/design-briefs/studio.md",
+      "sha256": "4137749f3adc368856e40a9464804d780fa108a9ed7243aa5a1df47b873c169f"
+    },
+    {
+      "path": "examples/design-briefs/terminal.md",
+      "sha256": "2250f4a5856fe211011ff479b1467e085b18fc877d63e3dc3ace42956c567aad"
+    },
+    {
+      "path": "index.html",
+      "sha256": "5d278a10077956c402cf5b7ae4e5db2c2608559b51c0ba50a6bfe74099f7ef2b"
+    },
+    {
+      "path": "lib/audit.mjs",
+      "sha256": "a7550aa34ddf06685d0d58caabe2663d8f43ccb7b54e33995d2098decda28b11"
+    },
+    {
+      "path": "lib/brief.mjs",
+      "sha256": "d9c831a56e482a92e1bd3d6fb228323c4c5caca081609db93f8dfa71cafa6085"
+    },
+    {
+      "path": "lib/cli.mjs",
+      "sha256": "c59a0104a547ae8c4869fe549151c319540e05832467f0735cade463eca0cb3a"
+    },
+    {
+      "path": "netlify.toml",
+      "sha256": "d13e815537fb02b42905beed4a89cbaec7807a583cebfc5538d1b64775be6f99"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "5783c6e145d6830d1081691f626340fd911e9557d04409e178f00414ad5aca10"
+    },
+    {
+      "path": "package.json",
+      "sha256": "9bfef48ef072b19094dea3e9f69be40dc5f4284b64776aff7f9747dbbdcff3c1"
+    },
+    {
+      "path": "scripts/archive.mjs",
+      "sha256": "d70b6cba02ffb52faa26fc0023d6f6d5930c7f9e8f165049439618fe87076384"
+    },
+    {
+      "path": "scripts/build.mjs",
+      "sha256": "8a2490ffc9d05edcf3fabea43414ac59c4ed124e4a3c1110e0486634261e9940"
+    },
+    {
+      "path": "scripts/check.mjs",
+      "sha256": "f37a6047ced970dfa4f1f0c8070f1489619c85c2378ac991e91d07a9d8bda3c6"
+    },
+    {
+      "path": "scripts/serve.mjs",
+      "sha256": "b767d7ae6decead3c507af6ad4168b73fb36693b643ad0120fa55df3528cffaf"
+    },
+    {
+      "path": "skills/foundry-audit/SKILL.md",
+      "sha256": "8bbd55d37275d8e29d1dc0cb1b14aeb20a51300c5e7fe8e0158d306b78e7b49f"
+    },
+    {
+      "path": "skills/foundry-audit/templates/AUDIT.md",
+      "sha256": "7cced8b2db10dcd4146361436b970d7f2f12f999a5950f532f8ff3de634595e8"
+    },
+    {
+      "path": "skills/foundry-direction/SKILL.md",
+      "sha256": "3a46c98e42e32ee575933f7fe56831bacf2a2bd85e321f183598965d370584bf"
+    },
+    {
+      "path": "skills/foundry-direction/templates/DESIGN.md",
+      "sha256": "bd56313abe2690cf5686d308855590a182c3ef39b1621a3a9ed98e32fada0379"
+    },
+    {
+      "path": "skills/foundry-reconstruct/SKILL.md",
+      "sha256": "2291d765c3c1ad9e8aff31f185188ccd71e89898710fef124c7845277e755a63"
+    },
+    {
+      "path": "skills/foundry-reconstruct/templates/RECONSTRUCTION.md",
+      "sha256": "83850835b910b27157e3d2f8a08a0d132f9de981c4284616108db475c5f94999"
+    },
+    {
+      "path": "skills/foundry-reference/SKILL.md",
+      "sha256": "985f1cb098203c8bbd91de6daef418cda4a8595118f2fbeb566ee4d94c6e919f"
+    },
+    {
+      "path": "skills/foundry-reference/templates/REFERENCES.md",
+      "sha256": "3337fd8b7bfdf25eea9ea68852062d3343b9a58e352ed152655dbdaf100922c5"
+    },
+    {
+      "path": "skills/foundry-verify/SKILL.md",
+      "sha256": "f9997f84a8816b13880076380e8e5388a37c0e0dd2bc9c1d4bcf9a6707dd8236"
+    },
+    {
+      "path": "skills/foundry-verify/templates/verification-report.md",
+      "sha256": "31ab1254a973b514f2a843e4fc30750f7811cf9f2d45b81302a23124424a5fdd"
+    },
+    {
+      "path": "test/audit.test.mjs",
+      "sha256": "8f3da9cfc418cfda41af51539dd8817646e89184924236a569747a30a95c6de0"
+    },
+    {
+      "path": "test/build.test.mjs",
+      "sha256": "202732705f53c24fb29152f7186641ea6c1d5391bbe8e02d1f5e3220d3ec1ed5"
+    },
+    {
+      "path": "test/cli.test.mjs",
+      "sha256": "26a11e885c9ab68e270873b62e0ec3dff0b6d0e016a1aeb06cf274d262357516"
+    },
+    {
+      "path": "test/helpers.mjs",
+      "sha256": "1ba0f5e14562a1409862ce384fa332787434dae63c35c45afa307b68d2379f2c"
+    },
+    {
+      "path": "test/installer.test.mjs",
+      "sha256": "ca6152e45e874da8d23729afdac2b92b13202435d8f3a3de0a3eca0271d214d6"
+    },
+    {
+      "path": "test/server.test.mjs",
+      "sha256": "6e293244b46b83154527b0ea4e806bac457e9e4fcc2b2aae00d8fbad830beeed"
+    },
+    {
+      "path": "vercel.json",
+      "sha256": "80b246ecea8bfaaa3f8f74b5d87c28d6d686fd9ec145f5650d259ac37cb5d351"
+    }
+  ]
+}

@@ -8,6 +8,8 @@ body { line-height:1.5; }
 .main-nav > button { font-size:12px; font-weight:500; }
 .main-nav > button.active { color:var(--accent); }
 .main-nav > button.active::after { background:var(--accent); }
+.main-nav > .nav-foundry-link { display:inline-flex; align-items:center; gap:7px; min-height:44px; padding:9px 12px; border:1px solid var(--theme-line); border-radius:9px; background:var(--theme-panel); color:var(--accent); font-size:12px; font-weight:500; white-space:nowrap; }
+.main-nav > .nav-foundry-link:hover { border-color:var(--accent); }
 .primary-button,.secondary-button,.add-project-button { min-height:46px; border-radius:11px; font-size:12px; font-weight:500; }
 .primary-button { box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 13%,transparent); }
 .secondary-button { background:var(--theme-panel); }

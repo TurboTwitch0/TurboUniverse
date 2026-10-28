@@ -177,6 +177,7 @@ export function createApp({ dataDir = process.env.DATA_DIR || path.join(reposito
 
   app.use('/api', (_request, _response, next) => next(invalid('API endpoint not found.', 404)));
   app.use(express.static(distDir));
+  app.use('/interface-foundry', (_request, response) => response.status(404).type('text').send('Interface Foundry file not found.'));
   app.get('/{*path}', (_request, response, next) => {
     response.sendFile(path.join(distDir, 'index.html'), (error) => {
       if (error) next(invalid('Frontend is not built yet. Run npm run dev, or npm run build followed by npm start.', 404));

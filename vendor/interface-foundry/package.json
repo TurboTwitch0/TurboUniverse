@@ -1,0 +1,20 @@
+{
+  "name": "interface-foundry",
+  "version": "1.1.0",
+  "description": "Five original design workflows and a dependency-free CLI for better AI-built interfaces.",
+  "type": "module",
+  "license": "MIT",
+  "bin": { "interface-foundry": "bin/foundry.mjs" },
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node scripts/check.mjs",
+    "audit": "node bin/foundry.mjs audit dist",
+    "prestart": "npm run build",
+    "start": "node scripts/serve.mjs"
+  },
+  "files": ["bin", "lib", "skills", "README.md", "LICENSE"],
+  "repository": { "type": "git", "url": "https://github.com/TurboTwitch0/INTERFACE-FOUNDRY.git" },
+  "keywords": ["agent-skills", "claude-code", "codex", "design", "accessibility"]
+}

@@ -1,5 +1,5 @@
 /* TurboUniverse: retain the app shell and last successful project list offline. */
-const VERSION = 'v11-orbital-worlds';
+const VERSION = 'v12-interface-foundry';
 const SHELL_CACHE = `turbo-universe-shell-${VERSION}`;
 const PROJECT_CACHE = `turbo-universe-projects-${VERSION}`;
 const SHELL_FILES = [
@@ -43,6 +43,8 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+  // This independent app must never replace the hub's cached navigation shell.
+  if (url.pathname === '/interface-foundry' || url.pathname.startsWith('/interface-foundry/')) return;
 
   if (url.pathname === '/release.json') {
     event.respondWith((async () => {

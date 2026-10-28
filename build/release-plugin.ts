@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'A new perspective on your worlds',
-        description: 'Explore the orbital project stage, launch or save a world, and follow the latest verified destinations.',
+        title: 'Interface Foundry is in the universe',
+        description: 'Open the complete design-workflow app, explore its skills and lab, and download the full toolkit from TurboUniverse.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

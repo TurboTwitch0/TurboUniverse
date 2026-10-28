@@ -1,0 +1,13 @@
+node_modules/
+.DS_Store
+coverage/
+*.tgz
+.env
+.env.*
+!.env.example
+dist/
+.foundry-build-*/
+.vercel/
+.netlify/
+.openai/*
+!.openai/hosting.json

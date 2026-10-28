@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Five original workflows for building thoughtful interfaces with coding agents. Explore the skills and try the design lab.">
+  <meta name="theme-color" content="#f4f2ea">
+  <title>Interface Foundry — Give your next interface a point of view.</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="brand" href="#" aria-label="Interface Foundry home"><span class="brand-mark" aria-hidden="true">if.</span><span>INTERFACE<br>FOUNDRY</span></a>
+    <nav aria-label="Main navigation"><a href="#workflows">The workflows</a><a href="#lab">Design lab</a><a class="repo-link" href="https://github.com/TurboTwitch0/INTERFACE-FOUNDRY">GitHub <span aria-hidden="true">↗</span></a></nav>
+  </header>
+  <main id="main">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>A design workflow for coding agents</p>
+        <h1 id="hero-title">Give your next interface a <em>point of view.</em></h1>
+        <p class="hero-description">Good UI takes more than a better prompt. Build with a clear direction, useful references, and evidence that it actually works.</p>
+        <div class="hero-actions"><a class="button button-primary" href="#install">Get the toolkit <span aria-hidden="true">↗</span></a><a class="text-link" href="#workflows">Explore the five workflows <span aria-hidden="true">↓</span></a></div>
+        <p class="hero-footnote">Original skills. Local-first tools. No API keys.</p>
+      </div>
+      <div class="hero-graphic" aria-label="The five stages of the Interface Foundry workflow">
+        <div class="graphic-top"><span>BUILD WITH INTENTION</span><span>IF—01 / 05</span></div>
+        <div class="graphic-core"><div class="crosshair" aria-hidden="true"></div><span class="graphic-word">Form follows<br><em>thought.</em></span><span class="graphic-arrow" aria-hidden="true">↗</span></div>
+        <ol class="graphic-stages"><li><span>01</span>Direction</li><li><span>02</span>Audit</li><li><span>03</span>Reference</li><li><span>04</span>Reconstruct</li><li><span>05</span>Verify</li></ol>
+        <div class="graphic-bottom"><span>LESS GUESSWORK.</span><span>MORE INTENT.</span></div>
+      </div>
+    </section>
+    <div class="principle-strip"><div class="wrap"><p>Make choices before you make components.</p><span>THINK → BUILD → CHECK</span></div></div>
+
+    <section class="workflows section-space wrap" id="workflows" aria-labelledby="workflow-heading">
+      <div class="section-heading"><div><p class="eyebrow">01 / THE TOOLKIT</p><h2 id="workflow-heading">Five ways to<br>raise the bar.</h2></div><p>Use one skill to fix a specific problem,<br>or run all five as a complete workflow.</p></div>
+      <div class="workflow-layout">
+        <div class="workflow-tabs" role="tablist" aria-label="Design workflows" aria-orientation="vertical">
+          <button id="tab-direction" class="workflow-tab" type="button" role="tab" aria-selected="true" aria-controls="workflow-panel" data-workflow="direction"><span class="tab-number">01</span><span><strong>Direction</strong><small>Decide what it should feel like.</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+          <button id="tab-audit" class="workflow-tab" type="button" role="tab" aria-selected="false" aria-controls="workflow-panel" tabindex="-1" data-workflow="audit"><span class="tab-number">02</span><span><strong>Audit</strong><small>Find the friction. Prioritize the fix.</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+          <button id="tab-reference" class="workflow-tab" type="button" role="tab" aria-selected="false" aria-controls="workflow-panel" tabindex="-1" data-workflow="reference"><span class="tab-number">03</span><span><strong>Reference</strong><small>Learn from the right examples.</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+          <button id="tab-reconstruct" class="workflow-tab" type="button" role="tab" aria-selected="false" aria-controls="workflow-panel" tabindex="-1" data-workflow="reconstruct"><span class="tab-number">04</span><span><strong>Reconstruct</strong><small>Turn a visual into a working UI.</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+          <button id="tab-verify" class="workflow-tab" type="button" role="tab" aria-selected="false" aria-controls="workflow-panel" tabindex="-1" data-workflow="verify"><span class="tab-number">05</span><span><strong>Verify</strong><small>Follow the flow all the way through.</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+        </div>
+        <article id="workflow-panel" class="workflow-panel" role="tabpanel" aria-labelledby="tab-direction" tabindex="0">
+          <div class="panel-topline"><span class="mono" id="skill-name">foundry-direction</span><span class="pill">AGENT SKILL</span></div>
+          <h3 id="workflow-title">Set a direction.<br>Then commit to it.</h3>
+          <p id="workflow-description">Define the audience, the main task, and a visual point of view. Turn those decisions into a small set of design tokens that your agent can actually follow.</p>
+          <div class="output"><span class="eyebrow">YOU WALK AWAY WITH</span><p id="workflow-output">A DESIGN.md with typography, color, spacing, interaction rules, and the reasons behind them.</p></div>
+          <div class="prompt-heading"><span class="eyebrow">TRY THIS PROMPT</span><button class="copy-button" id="copy-prompt" type="button">Copy prompt <span aria-hidden="true">⧉</span></button></div>
+          <pre class="prompt-box" id="workflow-prompt">Use foundry-direction to define a calm, editorial interface for a research notes app. Prioritize scanning and retrieval. Create DESIGN.md before changing components.</pre>
+          <button type="button" class="skill-source" id="skill-source" data-skill="direction">Read the complete skill <span aria-hidden="true">↗</span></button>
+        </article>
+      </div>
+    </section>
+
+    <section class="lab-section section-space" id="lab" aria-labelledby="lab-heading">
+      <div class="wrap">
+        <div class="section-heading"><div><p class="eyebrow">02 / THE DESIGN LAB</p><h2 id="lab-heading">Same purpose.<br>Different point of view.</h2></div><p>Switch directions. Watch the same little<br>notes workspace take on a different character.</p></div>
+        <div class="lab-toolbar"><div class="direction-tabs" role="tablist" aria-label="Preview design direction"><button id="direction-editorial" type="button" role="tab" aria-selected="true" aria-controls="design-preview" data-direction="editorial">Editorial</button><button id="direction-studio" type="button" role="tab" aria-selected="false" aria-controls="design-preview" tabindex="-1" data-direction="studio">Studio</button><button id="direction-terminal" type="button" role="tab" aria-selected="false" aria-controls="design-preview" tabindex="-1" data-direction="terminal">Terminal</button></div><span class="demo-caption"><span aria-hidden="true">◉</span> INTERACTIVE LOCAL DEMO</span></div>
+        <div id="design-preview" class="design-preview" data-theme="editorial" role="tabpanel" aria-labelledby="direction-editorial" tabindex="0">
+          <aside class="preview-sidebar" aria-label="Demo workspace information"><div class="preview-logo"><span aria-hidden="true">◈</span> fieldnotes</div><div class="workspace-label">YOUR WORKSPACE</div><div class="sidebar-item active"><span aria-hidden="true">▦</span> All entries <span id="sidebar-count">3</span></div><div class="sidebar-note"><span aria-hidden="true">↗</span><p>A small home for<br>your next big idea.</p></div><div class="sidebar-profile"><span class="avatar" aria-hidden="true">Y</span><span>Your workspace<small>Local browser demo</small></span></div></aside>
+          <div class="preview-main">
+            <div class="preview-breadcrumb">WORKSPACE <span>/</span> COLLECTION</div>
+            <div class="preview-heading"><div><p class="preview-overline">A PLACE FOR YOUR THOUGHTS</p><h3>Good ideas.<br>Kept close.</h3></div><button type="button" class="new-note" id="new-note"><span aria-hidden="true">＋</span> New note</button></div>
+            <div class="preview-controls"><div role="group" aria-label="Filter demo entries"><button type="button" class="filter-button" aria-pressed="true" data-filter="all">All entries</button><button type="button" class="filter-button" aria-pressed="false" data-filter="note">Notes</button><button type="button" class="filter-button" aria-pressed="false" data-filter="decision">Decisions</button></div><span id="entry-count">3 entries</span></div>
+            <div class="note-grid" id="note-grid">
+              <article class="note-card" data-kind="note"><div class="note-meta"><span class="note-type">NOTE</span><span aria-hidden="true">↗</span></div><h4>Make room<br>for the useful.</h4><p>A quieter interface helps the important things come forward.</p><div class="note-footer">DESIGN PRINCIPLES <span>01</span></div></article>
+              <article class="note-card" data-kind="decision"><div class="note-meta"><span class="note-type">DECISION</span><span aria-hidden="true">↗</span></div><h4>Start with<br>the main task.</h4><p>Every screen should make the next useful action clear.</p><div class="note-footer">PRODUCT THINKING <span>02</span></div></article>
+              <article class="note-card" data-kind="note"><div class="note-meta"><span class="note-type">NOTE</span><span aria-hidden="true">↗</span></div><h4>Details are<br>the experience.</h4><p>Focus states, empty screens, and a button that does what it says.</p><div class="note-footer">CRAFT & CARE <span>03</span></div></article>
+            </div>
+            <p class="preview-help">Try filtering the collection or adding a note. Changes stay in this page and reset on reload.</p>
+          </div>
+        </div>
+        <div class="token-strip"><div><span class="eyebrow">THE DIRECTION</span><strong id="theme-summary">Warm. Literate. Considered.</strong></div><div class="token-samples"><span class="color-swatch" id="token-color" aria-hidden="true"></span><span id="token-caption">Paper + ink / Serif headlines / Fine rules</span></div></div>
+      </div>
+    </section>
+
+    <section class="install-section section-space wrap" id="install" aria-labelledby="install-heading">
+      <div><p class="eyebrow">03 / MAKE IT YOURS</p><h2 id="install-heading">A better workflow.<br>In your next project.</h2><p>Clone the full repository, then choose your coding agent and install the five skills into your app. You can also download the complete source ZIP. Node.js 20 or newer is required.</p><a class="button button-primary" id="download-toolkit" href="downloads/interface-foundry-toolkit.zip" download="interface-foundry-toolkit.zip">Download toolkit ZIP <span aria-hidden="true">↓</span></a><p class="download-detail">Includes all five skills, templates, CLI tools, tests, examples, and the MIT license. The workflows guide your coding agent; this page does not run an AI model. <a href="https://github.com/TurboTwitch0/INTERFACE-FOUNDRY#readme">Read the setup guide ↗</a></p></div>
+      <div class="install-terminal"><div class="terminal-bar"><div role="group" aria-label="Choose installation target"><button type="button" data-agent="claude" aria-pressed="true">Claude Code</button><button type="button" data-agent="codex" aria-pressed="false">Codex</button></div><button type="button" id="copy-install" class="copy-install">Copy <span aria-hidden="true">⧉</span></button></div><pre id="install-command">git clone https://github.com/TurboTwitch0/INTERFACE-FOUNDRY.git
+cd INTERFACE-FOUNDRY
+node bin/foundry.mjs init /path/to/app --agent claude</pre><p id="install-target">Installs into your app’s .claude/skills/ directory.</p></div>
+    </section>
+    <section class="deploy-section wrap" id="deploy" aria-labelledby="deploy-heading">
+      <p class="eyebrow">04 / YOUR OWN CORNER OF THE WEB</p>
+      <h2 id="deploy-heading">The full project. Ready to build.</h2>
+      <p>Import <a href="https://github.com/TurboTwitch0/INTERFACE-FOUNDRY">INTERFACE-FOUNDRY</a> into Vercel or Netlify. The repository includes the source, skill content, build script, and hosting configuration for both platforms.</p>
+      <ol><li>Connect your GitHub account and select this repository.</li><li>Keep the repository root as the project directory.</li><li>Deploy with <code>npm run build</code> and output directory <code>dist</code>. The included platform configurations set these values.</li></ol>
+      <p>The build creates the website, skill data, and downloadable source ZIP. No environment variables or backend services are required. The example notes reset on reload.</p>
+      <a class="text-link" href="https://github.com/TurboTwitch0/INTERFACE-FOUNDRY#deployment">Read deployment instructions <span aria-hidden="true">↗</span></a>
+    </section>
+  </main>
+  <footer class="site-footer wrap"><a class="brand footer-brand" href="#"><span class="brand-mark" aria-hidden="true">if.</span><span>THOUGHTFUL INPUT.<br>BETTER OUTPUT.</span></a><p>Original workflows. Built to be made your own.</p><a href="https://github.com/TurboTwitch0/INTERFACE-FOUNDRY">View the full repository <span aria-hidden="true">↗</span></a></footer>
+  <dialog class="skill-dialog" id="skill-dialog" aria-labelledby="skill-dialog-title">
+    <div class="dialog-header"><h2 id="skill-dialog-title">foundry-direction</h2><button type="button" class="dialog-close" id="close-skill">Close <span aria-hidden="true">×</span></button></div>
+    <p class="dialog-description">The complete original skill, shown as Markdown. Supporting templates are included in the toolkit ZIP.</p>
+    <div class="dialog-actions"><button type="button" id="copy-skill" disabled>Copy skill</button><button type="button" id="download-skill" disabled>Download SKILL.md</button><button type="button" id="retry-skill" hidden>Try again</button></div>
+    <a class="text-link" id="skill-github" href="https://github.com/TurboTwitch0/INTERFACE-FOUNDRY/blob/main/skills/foundry-direction/SKILL.md">Read the skill on GitHub <span aria-hidden="true">↗</span></a>
+    <p id="skill-feedback" class="dialog-description" role="status" aria-live="polite"></p>
+    <pre id="skill-content" tabindex="0"></pre>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+</body>
+</html>
