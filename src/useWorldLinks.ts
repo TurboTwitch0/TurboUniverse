@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { canonicalWorldId } from './catalogAliases';
 
 type World = { id: string };
 
 function requestedWorld() {
-  return new URL(window.location.href).searchParams.get('world');
+  const id = new URL(window.location.href).searchParams.get('world');
+  return id ? canonicalWorldId(id) : null;
 }
 
 function updateWorldUrl(id: string | null, method: 'pushState' | 'replaceState') {

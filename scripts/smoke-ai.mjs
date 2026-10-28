@@ -25,7 +25,7 @@ try {
   page.on('pageerror', error => errors.push(error.message));
   const listing = await (await context.request.get(`${origin}/api/projects`)).json();
   assert.equal(listing.projects.length, catalog.length);
-  for (const title of ['TurboWatch', 'Orbit Study']) {
+  for (const title of ['TurboWatch']) {
     const project = listing.projects.find(item => item.title === title);
     assert.equal(project.status, 'setup-pending');
     assert.ok(project.url.startsWith('https://github.com/TurboTwitch0/'));

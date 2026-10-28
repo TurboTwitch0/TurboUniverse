@@ -36,7 +36,7 @@
     "id": "fe5f7450-28d3-4134-9f9d-95fd491ddba4",
     "title": "TurboGames",
     "type": "website",
-    "url": "https://turbouniversegames.vercel.app/",
+    "url": "https://turbogames.vercel.app/",
     "description": "Leave the ordinary behind. A playful corner of the universe for new favorites, a little adventure, and your next great game.",
     "category": "Gaming",
     "year": 2026,
@@ -168,13 +168,12 @@
     "id": "082fc48b-9cd7-4ae9-ba7a-18bf1ec83dd7",
     "title": "Orbit Study",
     "type": "website",
-    "url": "https://github.com/TurboTwitch0/StudyOrbit",
-    "description": "A focused space for learning, planning, and practice. Publishing is still pending; explore the StudyOrbit project on GitHub for now.",
+    "url": "https://studyorbitv1.vercel.app/",
+    "description": "A focused space for learning, planning, and practice. Open StudyOrbit and give your next study session a place to begin.",
     "category": "Tools",
     "year": 2026,
     "featured": true,
-    "createdAt": "2026-10-22T03:57:36.715Z",
-    "status": "setup-pending"
+    "createdAt": "2026-10-22T03:57:36.715Z"
   },
   {
     "id": "bb707a02-edd1-43c7-9e6e-e65e38e53af4",
@@ -335,7 +334,7 @@
     "title": "TurboWatch",
     "type": "website",
     "url": "https://github.com/TurboTwitch0/TurboWatch",
-    "description": "Explore Turbo’s video project on GitHub. Hosted setup is pending, so a public app and live accounts are not available here yet.",
+    "description": "Explore the TurboWatch source on GitHub. The hosted preview requires access; public playback and accounts are not verified.",
     "category": "Entertainment",
     "year": 2026,
     "featured": false,
@@ -343,14 +342,14 @@
     "status": "setup-pending"
   },
   {
-    "title": "TurboStudy",
+    "id": "evovo",
+    "title": "EVOVO",
     "type": "website",
-    "url": "https://studyorbitv1.vercel.app/",
-    "description": "Part of the Turbo universe, shared on TurboHome.",
-    "category": "Community",
-    "id": "4d14f53c-7186-518f-85c6-63f0752a1614",
+    "url": "https://evovo.vercel.app/",
+    "description": "Another existing world in the Turbo ecosystem. Open EVOVO and explore its own corner of the collection.",
+    "category": "Creative",
     "year": 2026,
     "featured": false,
-    "createdAt": "2026-10-27T19:01:50.855120Z"
+    "createdAt": "2026-10-28T01:28:11.844Z"
   }
 ]

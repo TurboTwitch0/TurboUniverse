@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'All your worlds. One place.',
-        description: 'Meet the refreshed TurboUniverse: a connected collection preview, quick category paths, and a spark for your next idea.',
+        title: 'A new perspective on your worlds',
+        description: 'Explore the orbital project stage, launch or save a world, and follow the latest verified destinations.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

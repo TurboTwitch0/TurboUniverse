@@ -41,6 +41,12 @@ The cinematic story is a creative introduction to Turbo’s work, rather than a 
 
 The default is Space + Light with a professional white, black, and blue palette. Dark mode uses near-black surfaces and an icy blue accent. The centered TurboUniverse title sits over cinematic space artwork. Website and app names sit in the center of image covers, with matching natural landscapes in Earth mode; custom uploaded covers take precedence. A Neptune-inspired discovery planet sits below the hero, followed by four curated popular destinations: TurboChat, TurboGames, TurboStocks, and Orbit Study. Cinematic background images are compressed, hosted locally, and available offline.
 
+## Orbital discovery
+
+The home page’s project stage presents real curated worlds with original CSS perspective, orbital lighting, and a focused center card. Use Previous/Next, the named world selectors, Left/Right/Home/End while focused in the stage, or a horizontal touch swipe. There is no autoplay. Launch, save, details, and category actions use the real collection. Device reduced-motion preferences and the appearance motion switch disable transitions and pointer lighting; vertical scrolling and pinch zoom remain available on touch devices.
+
+The duplicate TurboStudy import was consolidated into Orbit Study. Its former shared ID and device-saved/recent IDs resolve to the original Orbit Study record so existing links and preferences keep working.
+
 ## Your launchpad
 
 The Space + Light identity uses a consistent cobalt, ink, mist, and cyan palette, the existing lightning mark, rounded components, and Space Grotesk typography. The home page’s live collection preview prioritizes the verified popular destinations; its star controls save real projects, its category paths open the filtered collection, and its AI starter opens an editable prompt without starting a model download. Empty, loading, and retry states use the same visual system. Motion follows the device preference and the appearance control.
@@ -59,7 +65,7 @@ The implementation follows [WebLLM’s worker and cache documentation](https://w
 
 ## Current project destinations
 
-TurboChat, TurboGames, and TurboStocks retain their verified existing app links. Orbit Study points to **TurboTwitch0/StudyOrbit** on GitHub, and TurboWatch points to its existing GitHub project. Both show **Setup pending** because their owners have not confirmed a published app. These entries do not claim hosted accounts or other live services are available. Existing project IDs remain stable for saved and shared links.
+TurboChat, TurboGames, TurboStocks, TurboBrowser, Orbit Study, and EVOVO use verified existing app links. Orbit Study is live at **studyorbitv1.vercel.app** and EVOVO at **evovo.vercel.app**. TurboWatch retains its GitHub source link and a **Setup pending** label: its hosted preview requires access, and public playback/accounts are not verified. The hub does not claim that protected preview is a fully public service. Existing project IDs remain stable, with the duplicate StudyOrbit ID retained as an alias for saved and shared links.
 
 ## Make it your atmosphere
 

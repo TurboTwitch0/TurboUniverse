@@ -17,12 +17,14 @@ import AIStudio from './components/AIStudio';
 import RecentWorlds from './components/RecentWorlds';
 import { useRecentWorlds } from './useRecentWorlds';
 import UniverseShowcase from './components/UniverseShowcase';
+import WorldStage from './components/WorldStage';
+import { canonicalWorldId } from './catalogAliases';
 
 const SAVED_WORLDS_KEY = 'turbo-universe-saved-worlds';
 function readSavedWorlds(): string[] {
   try {
     const value: unknown = JSON.parse(localStorage.getItem(SAVED_WORLDS_KEY) || '[]');
-    return Array.isArray(value) ? [...new Set(value.filter((id): id is string => typeof id === 'string' && id.length <= 128))].slice(0, 1000) : [];
+    return Array.isArray(value) ? [...new Set(value.filter((id): id is string => typeof id === 'string' && id.length <= 128).map(canonicalWorldId))].slice(0, 1000) : [];
   } catch { return []; }
 }
 
@@ -256,6 +258,7 @@ export default function App() {
           <div className="hero-copy"><div className="eyebrow hero-eyebrow"><span className="hero-coordinate">A WORLD OF IDEAS</span><span className="hero-eyebrow-line" /><span>BY TURBO</span></div><h1 id="hero-title" aria-label="TurboUniverse"><span className="hero-title-prefix">TURBO</span>UNIVERSE</h1><p className="hero-lead">All your worlds. One place.</p><p className="hero-description">Find your next favorite website. Keep your worlds close.<br />Bring your ideas to life with free, on-device AI.</p><div className="hero-actions"><button className="primary-button" onClick={explore}>Find your next world <ArrowUpRight size={18} /></button><button className="film-button" onClick={() => setFilm(true)}><CirclePlay size={19} strokeWidth={1.4} /> The life of Turbo</button></div></div>
           <div className="hero-bottom"><span>01 / A UNIVERSE IN THE MAKING</span><button onClick={explore}>BEGIN EXPLORING <ArrowDown size={13} /></button><span className="hero-live"><span className="status-dot" /> {projects.length} WORLDS & COUNTING</span></div>
         </section>
+        <WorldStage projects={projects} savedIds={savedIds} mode={preferences.mode} onSelect={openWorld} onSave={toggleSaved} onCategory={category => browseWorlds({ category })} onLaunch={recordRecent} />
         <UniverseShowcase projects={projects} savedIds={savedIds} loading={loading} error={error} onSelect={openWorld} onToggleSaved={toggleSaved} onBrowse={browseWorlds} onAI={openAI} onRetry={retryProjects} />
         <section className="neptune-section content-section" aria-labelledby="neptune-title"><div className="neptune-copy"><div className="section-kicker"><span className="short-line" /> THE TURBO SYSTEM</div><h2 id="neptune-title">A little gravity.<br /><span>A lot of possibility.</span></h2><p>Every idea needs a place to land. This is where Turbo’s experiments become worlds of their own—places to connect, play, learn, and see what’s next.</p><p className="neptune-invitation">Pick a world in orbit, or let curiosity choose for you.</p><div className="neptune-coordinate"><span>INSPIRED BY NEPTUNE</span><span>IMAGINATION HAS NO OUTER LIMIT.</span></div></div><OrbitScene projects={projects} onSelect={openWorld} /></section>
         <PopularWorlds mode={preferences.mode} projects={projects} onSelect={openWorld} />

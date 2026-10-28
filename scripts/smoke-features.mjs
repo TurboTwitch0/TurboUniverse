@@ -44,9 +44,9 @@ try {
   const popular = page.locator('.popular-worlds');
   const destinations = [
     { title: 'TurboChat', url: 'https://turbo-chat-five.vercel.app/' },
-    { title: 'TurboGames', url: 'https://turbouniversegames.vercel.app/' },
+    { title: 'TurboGames', url: 'https://turbogames.vercel.app/' },
     { title: 'TurboStocks', url: 'https://turbostocks.vercel.app/' },
-    { title: 'Orbit Study', url: 'https://github.com/TurboTwitch0/StudyOrbit' },
+    { title: 'Orbit Study', url: 'https://studyorbitv1.vercel.app/' },
   ];
   assert.deepEqual(await popular.locator('.popular-world-name strong').allTextContents(), destinations.map(item => item.title));
   assert.equal(await popular.getByRole('button', { name: /^Discover / }).count(), 4);
