@@ -10,7 +10,9 @@ export function parseRecentWorlds(raw: string | null): string[] {
 }
 
 export function rememberWorld(ids: string[], id: string): string[] {
-  if (!id || id.length > 128 || ids[0] === id) return ids;
+  if (!id || id.length > 128) return ids;
+  id = canonicalWorldId(id);
+  if (ids[0] === id) return ids;
   return [id, ...ids.filter(item => item !== id)].slice(0, RECENT_WORLDS_LIMIT);
 }
 import { canonicalWorldId } from './catalogAliases.ts';

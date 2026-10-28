@@ -23,5 +23,8 @@ test('the removed duplicate keeps old world links and recent history mapped to S
   const current = '082fc48b-9cd7-4ae9-ba7a-18bf1ec83dd7';
   assert.equal(canonicalWorldId(legacy), current);
   assert.deepEqual(parseRecentWorlds(JSON.stringify([legacy, current, 'another-world'])), [current, 'another-world']);
+  assert.deepEqual(rememberWorld(['another-world', current], legacy), [current, 'another-world']);
+  const latest = [current, 'another-world'];
+  assert.strictEqual(rememberWorld(latest, legacy), latest);
   for (const id of ['another-world', '__proto__', 'constructor']) assert.equal(canonicalWorldId(id), id);
 });
