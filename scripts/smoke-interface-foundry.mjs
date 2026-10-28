@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inflateRawSync } from 'node:zlib';
@@ -12,7 +13,7 @@ import catalog from '../server/catalog.json' with { type: 'json' };
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const dist = path.join(root, 'dist');
-const output = path.resolve(process.env.FOUNDRY_OUTPUT_DIR || path.join(root, '../../outputs/interface-foundry-integration'));
+const output = path.resolve(process.env.FOUNDRY_OUTPUT_DIR || path.join(tmpdir(), 'turbo-universe', 'interface-foundry-integration'));
 const sourceCommit = '56ca9eec9a12136e78ab8b44aaf24947c0fe634a';
 const workflowNames = ['direction', 'audit', 'reference', 'reconstruct', 'verify'];
 const report = { sourceCommit, startedAt: new Date().toISOString(), output, checks: [], browserErrors: [], networkErrors: [], screenshots: [] };
@@ -498,7 +499,10 @@ try {
   throw error;
 } finally {
   report.completedAt = new Date().toISOString();
-  await writeFile(path.join(output, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
-  await browser?.close();
-  await new Promise(resolve => server.close(resolve));
+  try {
+    if (existsSync(output)) await writeFile(path.join(output, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
+  } finally {
+    await browser?.close();
+    await new Promise(resolve => server.close(resolve));
+  }
 }
