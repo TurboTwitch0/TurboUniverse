@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'A spark for your next idea',
-        description: 'Explore the new AI demo, verified project destinations, and clearly marked projects awaiting publication.',
+        title: 'Your own little launchpad',
+        description: 'Try free on-device AI, revisit recent worlds, and launch your favorites in one tap.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

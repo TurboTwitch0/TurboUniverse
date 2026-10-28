@@ -7,8 +7,15 @@ export default function OwnerLogin({ onClose, onSuccess }: { onClose: () => void
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const dialog = useRef<HTMLDivElement>(null);
+  const request = useRef<AbortController | null>(null);
   const closeRef = useRef(onClose);
-  closeRef.current = onClose;
+  function cancelRequest() {
+    const pending = request.current;
+    request.current = null;
+    pending?.abort();
+  }
+  function closeDialog() { cancelRequest(); onClose(); }
+  closeRef.current = closeDialog;
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
@@ -25,6 +32,7 @@ export default function OwnerLogin({ onClose, onSuccess }: { onClose: () => void
     }
     document.addEventListener('keydown', keydown);
     return () => {
+      cancelRequest();
       document.body.style.overflow = previousOverflow;
       document.removeEventListener('keydown', keydown);
       previousFocus?.focus();
@@ -32,18 +40,29 @@ export default function OwnerLogin({ onClose, onSuccess }: { onClose: () => void
   }, []);
   async function login(event: FormEvent) {
     event.preventDefault();
-    if (busy || !key.trim()) return;
+    const ownerKey = key.trim();
+    if (busy || !ownerKey) return;
+    const controller = new AbortController();
+    request.current = controller;
+    let timedOut = false;
+    const timeout = window.setTimeout(() => { timedOut = true; controller.abort(); }, 15_000);
     setBusy(true); setError('');
     try {
-      const response = await fetch('/api/admin', { headers: { Authorization: `Bearer ${key.trim()}` }, cache: 'no-store' });
+      const response = await fetch('/api/admin', { headers: { Authorization: `Bearer ${ownerKey}` }, cache: 'no-store', signal: controller.signal });
+      if (request.current !== controller || controller.signal.aborted) return;
       if (!response.ok) throw new Error(response.status === 401 ? 'That owner key wasn’t recognized. Try again.' : 'Sign-in is unavailable right now. Please try again.');
-      setOwnerKey(key.trim()); setKey(''); onSuccess();
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not sign in. Please try again.'); }
-    finally { setBusy(false); }
+      setOwnerKey(ownerKey); setKey(''); onSuccess();
+    } catch (cause) {
+      if (request.current !== controller || (controller.signal.aborted && !timedOut)) return;
+      setError(timedOut ? 'Sign-in took too long. Please try again.' : cause instanceof Error ? cause.message : 'Could not sign in. Please try again.');
+    } finally {
+      window.clearTimeout(timeout);
+      if (request.current === controller) { request.current = null; setBusy(false); }
+    }
   }
-  return <div className="dialog-backdrop" onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
+  return <div className="dialog-backdrop" onClick={event => { if (event.target === event.currentTarget) closeDialog(); }}>
     <div className="project-dialog owner-login-dialog" ref={dialog} role="dialog" aria-modal="true" aria-labelledby="owner-login-title">
-      <div className="dialog-head"><div><span className="eyebrow">THE CREATOR’S CONTROL ROOM</span><h2 id="owner-login-title">Welcome back, Turbo.</h2></div><button className="icon-button" onClick={onClose} aria-label="Close owner sign-in"><X size={20} /></button></div>
+      <div className="dialog-head"><div><span className="eyebrow">THE CREATOR’S CONTROL ROOM</span><h2 id="owner-login-title">Welcome back, Turbo.</h2></div><button className="icon-button" onClick={closeDialog} aria-label="Close owner sign-in"><X size={20} /></button></div>
       <p className="dialog-description muted">Sign in to add projects and manage your universe.</p>
       <form onSubmit={login} className="owner-login-form"><label className="field">Owner key<input type="password" name="owner-key" value={key} onChange={event => setKey(event.target.value)} autoComplete="current-password" required disabled={busy} /></label>
         <p className="field-hint">Your sign-in stays in this browser tab. Close the tab or sign out when you’re done.</p>

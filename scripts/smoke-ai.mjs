@@ -31,7 +31,8 @@ try {
     assert.ok(project.url.startsWith('https://github.com/TurboTwitch0/'));
   }
   await page.goto(origin);
-  await page.getByRole('button', { name: 'Open AI demo', exact: true }).click();
+  await page.getByRole('button', { name: 'Open AI studio', exact: true }).click();
+  await page.getByRole('button', { name: 'Sample tour', exact: true }).click();
   await page.locator('.ai-notice').waitFor();
   assert.match(await page.locator('.ai-notice').innerText(), /does not generate AI answers/);
   await page.waitForLoadState('networkidle');
@@ -63,7 +64,8 @@ try {
     await page.getByRole('button', { name: 'Toggle navigation', exact: true }).click();
     await page.getByRole('button', { name: 'The universe', exact: true }).click();
     await page.getByRole('button', { name: 'Toggle navigation', exact: true }).click();
-    await page.getByRole('button', { name: 'AI demo', exact: true }).click();
+    await page.getByRole('button', { name: 'AI studio', exact: true }).click();
+    await page.getByRole('button', { name: 'Sample tour', exact: true }).click();
     await prompt.fill('A'.repeat(2000));
     await submit.click();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);

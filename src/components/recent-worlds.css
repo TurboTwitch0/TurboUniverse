@@ -1,0 +1,30 @@
+.recent-worlds { margin:28px 0 35px; padding:25px; border:1px solid var(--theme-line); border-radius:14px; background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 7%,var(--theme-panel)),var(--theme-panel)); }
+.recent-worlds-heading,.recent-worlds-heading > div { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.recent-worlds-icon { display:grid; place-items:center; width:46px; height:46px; border:1px solid color-mix(in srgb,var(--accent) 25%,var(--theme-line)); background:var(--theme-panel); border-radius:50%; color:var(--accent); flex-shrink:0; }
+.recent-worlds .eyebrow { font-size:8px; color:var(--accent); letter-spacing:1.5px; }
+.recent-worlds h3 { margin-top:5px; font-size:19px; font-weight:500; letter-spacing:-.5px; }
+.recent-worlds-heading > button { min-height:44px; font-size:10px; white-space:nowrap; }
+.recent-worlds-description { font-size:11px; color:var(--theme-muted); margin-top:12px; }
+.recent-worlds-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:20px; }
+.recent-world { min-width:0; display:flex; align-items:center; gap:7px; border:1px solid var(--theme-line); border-radius:9px; background:var(--theme-panel); transition:border-color .15s; }
+.recent-world:hover { border-color:var(--accent); }
+.recent-world-details { flex:1; min-width:0; padding:15px; text-align:left; }
+.recent-world-details > span { display:block; font-size:8px; letter-spacing:.8px; text-transform:uppercase; color:var(--theme-muted); }
+.recent-world-details > strong { display:block; margin-top:7px; font-size:13px; font-weight:500; overflow-wrap:anywhere; }
+.recent-world > a { display:grid; place-items:center; flex-shrink:0; width:42px; min-height:44px; margin-right:7px; border-radius:6px; color:var(--accent); }
+.recent-world > a:hover { background:var(--theme-panel-raised); }
+.card-launch { display:inline-flex; align-items:center; gap:7px; padding:10px 0; min-height:44px; color:var(--accent); font-size:11px; }
+.card-launch:hover { text-decoration:underline; text-underline-offset:4px; }
+@media(max-width:700px) {
+  .recent-worlds { padding:19px; }
+  .recent-worlds-heading { align-items:flex-start; }
+  .recent-worlds-heading > div { gap:11px; }
+  .recent-worlds-icon { display:none; }
+  .recent-worlds h3 { font-size:17px; line-height:1.3; }
+  .recent-worlds-heading > button { font-size:9px; gap:5px; }
+  .recent-worlds-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .recent-world-details { padding:13px 10px; }
+  .recent-world-details > strong { font-size:12px; }
+  .recent-world > a { width:32px; margin-right:3px; }
+}
+@media(max-width:380px) { .recent-worlds-grid { grid-template-columns:minmax(0,1fr); } }

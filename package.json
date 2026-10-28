@@ -18,11 +18,15 @@
     "test:vercel": "node scripts/smoke-vercel.mjs",
     "test:features": "node scripts/smoke-features.mjs",
     "test:discovery": "node scripts/smoke-discovery.mjs",
-    "test:ai": "node scripts/smoke-ai.mjs"
+    "test:ai": "node scripts/smoke-ai.mjs",
+    "test:launchpad": "node scripts/smoke-launchpad.mjs",
+    "test:owner-session": "node scripts/smoke-owner-session.mjs",
+    "test:local-ai": "node scripts/smoke-local-ai.mjs"
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "^5.3.0",
     "@fontsource/space-grotesk": "^5.2.10",
+    "@mlc-ai/web-llm": "0.2.86",
     "@vercel/blob": "^2.8.2",
     "express": "^5.1.0",
     "lucide-react": "^0.468.0",

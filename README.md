@@ -6,7 +6,7 @@ A cinematic home for Turbo’s websites and apps, with a responsive collection m
 
 Import **TurboTwitch0/TurboUniverse**, choose the **main** branch, and keep the project root at **./**. The checked-in `vercel.json` selects Vite, builds with `npm run build`, serves `dist/`, and routes API requests to a Node.js 24 serverless function. No custom start command is needed.
 
-The public site works immediately without environment variables: the project catalog, cinematic story, search, filters, AI demo, metadata export, and the installable app are available. Collection changes are hidden until owner storage is connected.
+The public site works immediately without environment variables: the project catalog, cinematic story, search, filters, AI studio, metadata export, and the installable app are available. Collection changes are hidden until owner storage is connected.
 
 To enable owner editing and persistent uploads:
 
@@ -41,9 +41,19 @@ The cinematic story is a creative introduction to Turbo’s work, rather than a 
 
 The default is Space + Light with a professional white, black, and blue palette. Dark mode uses near-black surfaces and an icy blue accent. The centered TurboUniverse title sits over cinematic space artwork. Website and app names sit in the center of image covers, with matching natural landscapes in Earth mode; custom uploaded covers take precedence. A Neptune-inspired discovery planet sits below the hero, followed by four curated popular destinations: TurboChat, TurboGames, TurboStocks, and Orbit Study. Cinematic background images are compressed, hosted locally, and available offline.
 
-## AI demo
+## Your launchpad
 
-Open **AI demo** in the navigation or the home page preview. Chat, Writing, Studying, Coding, and Brainstorming each offer a starter prompt with a prewritten sample reply. Custom prompts explicitly receive an example rather than a generated answer. The demo runs in the browser without an API key, model requests, or web search. Clear chat resets it; changing activities starts a fresh conversation. It does not store conversations.
+Opening project details or a card’s **Open world** link adds it to **Your launchpad**, a compact list of up to six recently explored worlds. Reopening moves it to the front; reload keeps the list when browser storage is available. **Clear recent** clears that history without changing saved worlds. Only project IDs stay in this browser, and browsing still works when storage is blocked. Unpublished projects have GitHub source links with **Setup pending** labels.
+
+## Free on-device AI
+
+Open **AI studio** in the navigation or home page preview. **Free local AI** runs the Apache-licensed Qwen2.5 0.5B model in a dedicated browser worker through WebLLM. It generates real streamed replies for Chat, Writing, Studying, Coding, and Brainstorming. There is no paid inference service, API key, subscription, billable credit, or server inference endpoint.
+
+The model downloads only after **Download free model** is clicked: approximately 300 MB including model files and runtime. WebGPU and roughly 1 GB of working memory are required. The browser’s actual adapter and shader features determine support; devices without half-precision support use the compatible float32 variant. An unsupported browser shows an error rather than fake AI output. Model files come from the public MLC/Hugging Face hosts and are cached when the browser allows it. Prompts remain on the device. Downloads can be cancelled and retried; leaving local AI or unloading terminates its worker and releases GPU resources.
+
+This is a small model for basic help, not a guarantee of accurate or advanced reasoning. It has no web browsing or account access. Context is limited to a few short recent messages, with long input shortened to fit; replies are capped at 192 tokens. One reply runs at a time, with a stop button and a 90-second timeout. Conversations are not saved. **Sample tour** remains a separate, clearly labeled preview with prewritten replies and no model download.
+
+The implementation follows [WebLLM’s worker and cache documentation](https://webllm.mlc.ai/docs/user/advanced_usage.html). The installed version and its model configuration are pinned in the package lock.
 
 ## Current project destinations
 
@@ -86,7 +96,11 @@ node scripts/smoke.mjs
 node scripts/smoke-vercel.mjs
 node scripts/smoke-features.mjs
 node scripts/smoke-ai.mjs
+node scripts/smoke-launchpad.mjs
+node scripts/smoke-owner-session.mjs
 ```
+
+`npm run test:local-ai` is the separate real-inference check. It downloads the model, requires a working WebGPU device, and uses a persistent isolated browser profile under the task’s work directory. It verifies real replies and another response with external network requests blocked. It is intentionally separate from the standard API tests and daily refresh.
 
 The browser checks use Playwright and installed Chromium (`CHROMIUM_PATH` can override its location), start isolated servers, and leave your collection unchanged. Build first. Feature checks cover all eight seasonal appearances, calendar rollover, hemisphere selection, saved-world persistence, orbit interactions, announcement expiry, and mobile layout. The API tests use temporary storage and exercise real HTTP requests, persistence, validation, and multipart uploads.
 

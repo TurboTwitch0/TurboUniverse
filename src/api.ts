@@ -26,7 +26,7 @@ export async function apiFetch(input: string, init: RequestInit = {}): Promise<R
   const key = protectedRequest ? getOwnerKey() : '';
   if (key) headers.set('Authorization', `Bearer ${key}`);
   const response = await fetch(input, { ...init, headers });
-  if (key && response.status === 401) {
+  if (key && response.status === 401 && getOwnerKey() === key) {
     setOwnerKey('');
     window.dispatchEvent(new Event(OWNER_SESSION_EXPIRED));
   }
