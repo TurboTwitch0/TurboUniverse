@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { ArrowLeft, ArrowRight, ArrowUpRight, Compass, MoveHorizontal, Star } from 'lucide-react';
 import { getWorldPresentation, POPULAR_WORLDS } from '../popularWorlds';
 import './world-stage.css';
@@ -14,6 +14,9 @@ export default function WorldStage<T extends World>({ projects, savedIds, mode, 
   const surface = useRef<HTMLDivElement>(null);
   const touch = useRef<{ x: number; y: number } | null>(null);
   const ignoreClickUntil = useRef(0);
+  const lightPosition = useRef<{ x: number; y: number } | null>(null);
+  const lightFrame = useRef<number | undefined>(undefined);
+  useEffect(() => () => { if (lightFrame.current !== undefined) cancelAnimationFrame(lightFrame.current); }, []);
   const featured = POPULAR_WORLDS.flatMap(item => {
     const world = projects.find(project => !project.status && getWorldPresentation(project)?.id === item.id);
     return world ? [world] : [];
@@ -49,15 +52,30 @@ export default function WorldStage<T extends World>({ projects, savedIds, mode, 
   }
   function light(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType !== 'mouse' || document.documentElement.dataset.motion === 'off' || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    surface.current?.style.setProperty('--stage-light-x', `${Math.max(0, Math.min(100, (event.clientX - rect.left) / rect.width * 100))}%`);
-    surface.current?.style.setProperty('--stage-light-y', `${Math.max(0, Math.min(100, (event.clientY - rect.top) / rect.height * 100))}%`);
+    lightPosition.current = { x: event.clientX, y: event.clientY };
+    if (lightFrame.current !== undefined) return;
+    lightFrame.current = requestAnimationFrame(() => {
+      lightFrame.current = undefined;
+      const node = surface.current, point = lightPosition.current;
+      if (!node || !point || document.documentElement.dataset.motion === 'off' || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const rect = node.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      node.style.setProperty('--stage-light-x', `${Math.max(0, Math.min(100, (point.x - rect.left) / rect.width * 100))}%`);
+      node.style.setProperty('--stage-light-y', `${Math.max(0, Math.min(100, (point.y - rect.top) / rect.height * 100))}%`);
+    });
+  }
+  function resetLight() {
+    if (lightFrame.current !== undefined) cancelAnimationFrame(lightFrame.current);
+    lightFrame.current = undefined;
+    lightPosition.current = null;
+    surface.current?.style.removeProperty('--stage-light-x');
+    surface.current?.style.removeProperty('--stage-light-y');
   }
 
   return <section className="world-stage content-section" aria-labelledby="world-stage-title" aria-roledescription="carousel" onKeyDown={keyboard}>
     <div className="world-stage-heading"><div><span className="eyebrow">A CURATED ORBIT / THE TURBO ECOSYSTEM</span><h2 id="world-stage-title">Pick a world.<br /><em>Make it yours.</em></h2></div><div className="world-stage-heading-note"><Compass size={21} strokeWidth={1.4} /><p>A different corner of your universe.<br />One good click away.</p></div></div>
     <div className="world-stage-frame">
-      <div ref={surface} className="world-stage-viewport" onPointerDown={pointerDown} onPointerUp={pointerUp} onPointerCancel={() => { touch.current = null; }} onPointerMove={light}>
+      <div ref={surface} className="world-stage-viewport" onPointerDown={pointerDown} onPointerUp={pointerUp} onPointerCancel={() => { touch.current = null; resetLight(); }} onPointerMove={light} onPointerLeave={resetLight}>
         <div className="world-stage-light" aria-hidden="true" /><div className="world-stage-floor" aria-hidden="true"><i /><i /><i /></div>
         <span className="world-stage-coordinate" aria-hidden="true">DISCOVERY SYSTEM / 01</span><span className="world-stage-corner" aria-hidden="true">+</span>
         <div className="world-stage-cards">

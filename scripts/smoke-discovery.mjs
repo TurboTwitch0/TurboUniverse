@@ -57,6 +57,14 @@ try {
 
   await page.getByRole('button', { name: 'The story', exact: true }).click();
   await page.locator('.story-heading').waitFor();
+  assert.equal(new URL(page.url()).hash, '#story');
+  await page.reload();
+  await page.locator('.story-heading').waitFor();
+  assert.match(await page.title(), /The story/);
+  await page.goBack();
+  await page.locator('.collection-page').waitFor();
+  await page.goForward();
+  await page.locator('.story-heading').waitFor();
   await page.keyboard.press('Control+k');
   await page.waitForFunction(() => document.activeElement?.getAttribute('aria-label') === 'Search projects');
   assert.equal(await page.locator('.story-heading').count(), 0, 'The search shortcut leaves the story and opens collection search');
@@ -119,8 +127,21 @@ try {
   await page.screenshot({ path: path.join(screenshots, 'mobile.png') });
   await page.getByLabel('Category', { exact: true }).scrollIntoViewIfNeeded();
   await page.screenshot({ path: path.join(screenshots, 'mobile-collection.png') });
+  await page.getByRole('button', { name: 'View TurboHome', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  const related = dialog.getByRole('region', { name: 'Related worlds' });
+  await related.waitFor();
+  const choices = related.getByRole('button');
+  assert.ok(await choices.count() > 0 && await choices.count() <= 3);
+  const nextTitle = (await choices.first().getAttribute('aria-label')).replace('Explore related ', '');
+  await choices.first().click();
+  await page.getByRole('dialog').locator('.detail-content > h2').filter({ hasText: nextTitle }).waitFor();
+  await page.goBack();
+  await page.getByRole('dialog').getByRole('heading', { name: 'TurboHome', exact: true }).waitFor();
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await page.getByRole('dialog').screenshot({ path: path.join(screenshots, 'mobile-related.png') });
   assert.deepEqual(errors, [], 'Discovery and sharing produce no browser errors');
-  console.log('Discovery smoke passed: category + multi-term search, clear/reset, alphabetical sort, keyboard search from story, shareable deep links, clipboard/manual copy, reload, browser Back/Forward, direct launch links, and mobile layout.');
+  console.log('Discovery smoke passed: category + multi-term search, clear/reset, alphabetical sort, keyboard search from story, shareable deep links, clipboard/manual copy, reload, browser Back/Forward, reloadable section navigation, related worlds, direct launch links, and mobile layout.');
 } finally {
   await browser?.close();
   await new Promise(resolve => server.close(resolve));

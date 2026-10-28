@@ -75,6 +75,10 @@ The build uses the reviewed public revision recorded in `vendor/interface-foundr
 
 To update Foundry, review a new public upstream revision, replace the vendored files and their hash manifest together, then run the production build, `npm test`, and `npm run test:foundry`. Keep upstream hosting metadata excluded. This integration does not change the private Sites wrapper or deploy or configure the separate Foundry Vercel project.
 
+Main sections have shareable addresses: `/#collection`, `/#story`, and `/#ai`. Reloading and browser Back/Forward retain the selected section. The search shortcut opens the collection directly. Project details include **Keep exploring**, with up to three related public destinations; setup-pending projects are excluded.
+
+AI replies have **Copy reply** controls, with a selectable text field if clipboard access is unavailable. Use **Ctrl/Command + Enter** to submit a prompt; plain Enter adds a new line. The sample tour remains explicitly prewritten, and local AI still requires an opt-in model download.
+
 ## Make it your atmosphere
 
 Choose **Earth** or **Space**, then **Light** or **Dark** in the appearance bar. Earth uses brighter landscape backgrounds. Signature blue is the default palette; select Seasonal colors for season-specific accents. Backgrounds and the T orbit follow the time of year. **Appearance options** also offers hemisphere selection, seasonal previews, and motion control. Preferences stay on your device, and reduced-motion settings are respected. Older saved settings migrate to the new Space + Light default while retaining their season, hemisphere, and motion choices.

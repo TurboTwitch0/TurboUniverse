@@ -34,7 +34,7 @@ try {
   await page.getByRole('button', { name: 'Add to the universe', exact: true }).click();
   await page.getByRole('heading', { name: 'Smoke Project', exact: true }).waitFor();
   await page.locator('.filters').getByRole('button', { name: /^Apps/ }).click();
-  assert.equal(await page.locator('.project-card').count(), 3, 'App filter includes the newly uploaded app');
+  assert.equal(await page.locator('.project-card').count(), catalog.filter(project => project.type === 'app').length + 1, 'App filter includes the newly uploaded app');
   await page.getByRole('searchbox', { name: 'Search projects' }).fill('Smoke Project');
   assert.equal(await page.locator('.project-card').count(), 1);
   await page.getByRole('button', { name: 'View Smoke Project', exact: true }).click();

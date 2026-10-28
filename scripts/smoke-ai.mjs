@@ -20,6 +20,7 @@ try {
   const executablePath = process.env.CHROMIUM_PATH || (existsSync(edge) ? edge : existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
   browser = await chromium.launch({ executablePath, headless: true });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block', reducedMotion: 'reduce' });
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -50,9 +51,23 @@ try {
     assert.match(await page.locator('.ai-message-sample').innerText(), /Demo · sample reply/);
   }
   await prompt.fill('<script>window.badDemo = true</script> Custom question');
-  await submit.click();
+  await prompt.press('Control+Enter');
   assert.equal(await page.evaluate(() => window.badDemo), undefined);
   assert.match(await page.locator('.ai-message-sample').last().innerText(), /cannot generate a custom answer/);
+  const reply = page.locator('.ai-message-sample').last();
+  await reply.getByRole('button', { name: /^Copy sample reply/ }).click();
+  await reply.getByText('Reply copied.', { exact: true }).waitFor();
+  assert.equal(await page.evaluate(() => navigator.clipboard.readText()), await reply.locator('p').innerText());
+  await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined }));
+  await reply.getByRole('button', { name: /^Copy sample reply/ }).click();
+  const manual = reply.getByRole('textbox', { name: /^Text of sample reply/ });
+  await manual.waitFor();
+  assert.equal(await manual.inputValue(), await reply.locator('p').innerText());
+  assert.equal(await manual.evaluate(node => node.readOnly && node === document.activeElement && node.selectionStart === 0 && node.selectionEnd === node.value.length), true);
+  await prompt.fill('First line');
+  await prompt.press('End');
+  await prompt.press('Enter');
+  assert.equal(await prompt.inputValue(), 'First line\n', 'Plain Enter adds a new line');
   await page.getByRole('button', { name: 'Clear chat', exact: true }).click();
   assert.equal(await page.locator('.ai-message').count(), 0);
   assert.deepEqual(requests, []);
@@ -73,7 +88,7 @@ try {
     await page.screenshot({ path: path.join(screenshots, `mobile-${width}.png`), fullPage: true });
   }
   assert.deepEqual(errors, []);
-  console.log('AI demo: five modes, honest samples, custom fallback, clear, no API requests, pending catalog links, desktop/390/320px passed.');
+  console.log('AI demo: five modes, honest samples, custom fallback, clear, reply copying/fallback, keyboard submit, no API requests, pending catalog links, desktop/390/320px passed.');
 } finally {
   await browser?.close();
   await new Promise(resolve => server.close(resolve));

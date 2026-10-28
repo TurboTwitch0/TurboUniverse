@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, Check, Download, RotateCcw, Send, ShieldCheck, Sparkles, Square, X } from 'lucide-react';
 import { generateLocalReply, loadLocalAI, stopLocalReply, unloadLocalAI, type LocalMessage } from '../lib/localAI';
+import AIReplyTools from './AIReplyTools';
 import './ai-demo.css';
 
 const activities = [
@@ -92,10 +93,10 @@ export default function LocalAIChat({ initialPrompt = '' }: { initialPrompt?: st
         <div className="ai-chat-top"><div><h2>{activity.title}</h2><p>{activity.hint}</p></div><button className="text-button" disabled={busy || (!messages.length && !prompt)} onClick={() => { setMessages([]); setPrompt(''); setError(''); input.current?.focus(); }}><RotateCcw size={14} />Clear chat</button></div>
         <div className="ai-messages" ref={conversation} role="log" aria-label="Local AI conversation" aria-live="polite" aria-relevant="additions text" aria-busy={busy}>
           {!messages.length && <div className="ai-welcome"><Sparkles size={27} /><h3>{status === 'ready' ? 'What are you curious about?' : 'Your next idea is waiting.'}</h3><p>{status === 'ready' ? 'Try a starter, or ask something in your own words.' : 'Download the free model above when you’re ready.'}</p></div>}
-          {messages.map(message => <article className={`ai-message ai-message-${message.role}`} key={message.id}><strong>{message.role === 'user' ? 'You' : 'On-device AI · Qwen2.5'}</strong><p>{message.content || (busy ? 'Thinking…' : 'Generation stopped.')}</p></article>)}
+          {messages.map(message => <article className={`ai-message ai-message-${message.role}`} key={message.id}><strong>{message.role === 'user' ? 'You' : 'On-device AI · Qwen2.5'}</strong><p>{message.content || (busy ? 'Thinking…' : 'Generation stopped.')}</p>{message.role === 'assistant' && message.content.trim() && <AIReplyTools text={message.content} label={`AI reply ${message.id + 1}`} disabled={busy} />}</article>)}
         </div>
         <div className="ai-starters" aria-label="AI starter prompts"><button disabled={busy || status !== 'ready'} onClick={() => void send(activity.prompt)}>{activity.prompt}<ArrowUpRight size={14} /></button></div>
-        <form className="ai-composer" aria-describedby="local-ai-notice" onSubmit={event => { event.preventDefault(); void send(prompt); }}><label htmlFor="local-ai-prompt">Your prompt</label><textarea id="local-ai-prompt" ref={input} value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={`Ask a ${activity.title.toLowerCase()} question…`} rows={3} maxLength={2000} disabled={busy} /><div><span>{prompt.length} / 2,000</span>{busy ? <button className="secondary-button" type="button" onClick={stopLocalReply}><Square size={13} />Stop reply</button> : <button className="primary-button" type="submit" disabled={!prompt.trim() || status !== 'ready'}><Send size={15} />Send prompt</button>}</div></form>
+        <form className="ai-composer" aria-describedby="local-ai-notice" onSubmit={event => { event.preventDefault(); void send(prompt); }}><label htmlFor="local-ai-prompt">Your prompt</label><textarea id="local-ai-prompt" ref={input} value={prompt} onChange={event => setPrompt(event.target.value)} onKeyDown={event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); void send(prompt); } }} aria-describedby="local-ai-shortcut" placeholder={`Ask a ${activity.title.toLowerCase()} question…`} rows={3} maxLength={2000} disabled={busy} /><span className="ai-keyboard-hint" id="local-ai-shortcut">Ctrl or ⌘ + Enter to send · Enter for a new line</span><div><span>{prompt.length} / 2,000</span>{busy ? <button className="secondary-button" type="button" onClick={stopLocalReply}><Square size={13} />Stop reply</button> : <button className="primary-button" type="submit" disabled={!prompt.trim() || status !== 'ready'}><Send size={15} />Send prompt</button>}</div></form>
       </div>
     </div>
   </section>;

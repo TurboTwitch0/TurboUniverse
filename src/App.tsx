@@ -19,6 +19,9 @@ import { useRecentWorlds } from './useRecentWorlds';
 import UniverseShowcase from './components/UniverseShowcase';
 import WorldStage from './components/WorldStage';
 import { canonicalWorldId } from './catalogAliases';
+import { useViewNavigation } from './useViewNavigation';
+import type { View } from './navigation';
+import RelatedWorlds from './components/RelatedWorlds';
 
 const SAVED_WORLDS_KEY = 'turbo-universe-saved-worlds';
 function readSavedWorlds(): string[] {
@@ -35,7 +38,6 @@ type Project = {
   status?: 'setup-pending';
 };
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
-type View = 'universe' | 'story' | 'collection' | 'ai';
 const scrollBehavior = (): ScrollBehavior => document.documentElement.dataset.motion === 'off' || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 type Capabilities = { canManage: boolean; requiresLogin: boolean; maxUploadBytes: number; storage: string };
 const PUBLIC_CAPABILITIES: Capabilities = { canManage: false, requiresLogin: false, maxUploadBytes: 4_000_000, storage: 'catalog' };
@@ -102,7 +104,7 @@ function StoryFilm({ onClose }: { onClose: () => void }) {
   </div>;
 }
 
-function ProjectDetails({ project, onClose, onDelete, editable, saved, onToggleSaved, mode }: { project: Project; onClose: () => void; onDelete: (id: string) => Promise<void>; editable: boolean; saved: boolean; onToggleSaved: () => void; mode: 'earth' | 'space' }) {
+function ProjectDetails({ project, onClose, onDelete, editable, saved, onToggleSaved, mode, projects, onSelect }: { projects: Project[]; onSelect: (project: Project) => void; project: Project; onClose: () => void; onDelete: (id: string) => Promise<void>; editable: boolean; saved: boolean; onToggleSaved: () => void; mode: 'earth' | 'space' }) {
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -114,6 +116,7 @@ function ProjectDetails({ project, onClose, onDelete, editable, saved, onToggleS
     <div className="detail-content"><div className="project-tags"><span className="project-tag">{project.type}</span><span>{project.category}</span></div><h2 id="project-detail-title">{project.title}</h2><p>{project.description || 'A new world in the Turbo universe. Open it and explore.'}</p>
       <div className="detail-actions">{project.url && <a className="primary-button" href={project.url} target="_blank" rel="noopener noreferrer">{project.status === 'setup-pending' ? 'View project on GitHub' : `Explore ${project.type === 'app' ? 'app' : 'website'}`}<ArrowUpRight size={18} /></a>}{project.fileUrl && <a className="secondary-button" href={project.fileUrl} download={project.fileName}><Download size={18} />Download project</a>}<button className="secondary-button" onClick={onToggleSaved} aria-pressed={saved}><Star size={16} fill={saved ? 'currentColor' : 'none'} />{saved ? 'World saved' : 'Save this world'}</button></div>
       <CopyWorldLink worldId={project.id} />
+      <RelatedWorlds currentId={project.id} projects={projects} onSelect={onSelect} />
       {editable && <div className="detail-bottom">{confirm ? <div className="delete-confirm"><span>Remove from your universe?</span><button className="danger-button" disabled={busy} onClick={async () => { setBusy(true); try { await onDelete(project.id); onClose(); } catch(e) { setError(e instanceof Error ? e.message : 'Could not remove project.'); setBusy(false); } }}>{busy ? 'Removing…' : 'Remove'}</button><button className="text-button" onClick={() => setConfirm(false)}>Cancel</button></div> : <><span>PART OF THE TURBO UNIVERSE</span><button className="text-button" onClick={() => setConfirm(true)}><Trash2 size={14} /> Remove project</button></>}{error && <p className="form-error" role="alert">{error}</p>}</div>}
     </div>
   </div></div>;
@@ -121,7 +124,7 @@ function ProjectDetails({ project, onClose, onDelete, editable, saved, onToggleS
 
 export default function App() {
   const { preferences, setPreferences, season } = useAppearance();
-  const [view, setView] = useState<View>('universe');
+  const [view, setView] = useViewNavigation();
   const [aiStarter, setAIStarter] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -164,7 +167,7 @@ export default function App() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { void loadProjects(); }, [loadProjects]);
+  useEffect(() => { void loadProjects(); }, [loadProjects, setView]);
   useEffect(() => {
     const sync = (event: StorageEvent) => { if (event.key === SAVED_WORLDS_KEY || event.key === null) setSavedIds(readSavedWorlds()); };
     window.addEventListener('storage', sync);
@@ -203,21 +206,21 @@ export default function App() {
     const disconnected = () => setOffline(true);
     const shortcut = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && !document.querySelector('[aria-modal="true"]')) {
-        event.preventDefault(); setView('universe'); setMobileNav(false);
+        event.preventDefault(); setView('collection'); setMobileNav(false);
         window.setTimeout(() => { document.getElementById('projects')?.scrollIntoView({ behavior: scrollBehavior() }); searchRef.current?.focus({ preventScroll: true }); }, 0);
       }
     };
     window.addEventListener('beforeinstallprompt', install); window.addEventListener('appinstalled', ready);
     window.addEventListener('online', online); window.addEventListener('offline', disconnected); window.addEventListener('keydown', shortcut);
     return () => { window.removeEventListener('beforeinstallprompt', install); window.removeEventListener('appinstalled', ready); window.removeEventListener('online', online); window.removeEventListener('offline', disconnected); window.removeEventListener('keydown', shortcut); };
-  }, [loadProjects]);
+  }, [loadProjects, setView]);
   useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(''), 4500); return () => window.clearTimeout(timer); }, [toast]);
 
-  const navigate = (next: View) => { setView(next); setMobileNav(false); setFilter('all'); setSearch(''); setCategory('all'); setSort('original'); window.scrollTo({ top: 0, behavior: scrollBehavior() }); };
+  const navigate = (next: View) => { closeDetails(); setView(next); setMobileNav(false); setFilter('all'); setSearch(''); setCategory('all'); setSort('original'); window.scrollTo({ top: 0, behavior: scrollBehavior() }); };
   const openAI = (prompt = '') => { setAIStarter(prompt); navigate('ai'); };
   const browseWorlds = ({ filter = 'all', category = 'all' }: { filter?: 'all' | 'website' | 'app' | 'saved'; category?: string }) => { navigate('collection'); setFilter(filter); setCategory(category); };
   const retryProjects = () => { setError(''); setLoading(true); void loadProjects(); };
-  const explore = () => { setView('universe'); window.setTimeout(() => document.getElementById('projects')?.scrollIntoView({ behavior: scrollBehavior() }), 0); };
+  const explore = () => { setView('collection'); window.setTimeout(() => document.getElementById('projects')?.scrollIntoView({ behavior: scrollBehavior() }), 0); };
   const exportProjects = () => {
     const blob = new Blob([JSON.stringify({ projects: projects.map(({ title, type, url, description, category, year, featured }) => ({ title, type, url, description, category, year, featured })) }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'turbo-universe-projects.json'; link.click(); URL.revokeObjectURL(url); setToast('Project list exported. Uploaded files are backed up separately.');
@@ -235,14 +238,14 @@ export default function App() {
   const categories = [...new Set(projects.map(project => project.category))].sort((a, b) => a.localeCompare(b));
   const filtered = discoverProjects(projects, { filter, category, search, sort, savedIds });
   const resetDiscovery = () => { setSearch(''); setFilter('all'); setCategory('all'); setSort('original'); };
-  const hasFilters = !!search.trim() || category !== 'all' || filter !== 'all';
+  const hasFilters = !!search.trim() || category !== 'all' || filter !== 'all' || sort !== 'original';
   const websites = projects.filter(p => p.type === 'website').length;
   const apps = projects.filter(p => p.type === 'app').length;
 
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="site-header"><a href="#" className="brand" onClick={e => { e.preventDefault(); navigate('universe'); }} aria-label="TurboUniverse home"><Mark /><span>TURBO<span className="brand-light">UNIVERSE</span><sup>®</sup></span></a>
-      <nav className={mobileNav ? 'main-nav open' : 'main-nav'} aria-label="Main navigation" id="main-navigation"><button className={view === 'universe' ? 'active' : ''} onClick={() => navigate('universe')}>The universe</button><button className={view === 'story' ? 'active' : ''} onClick={() => navigate('story')}>The story</button><button className={view === 'collection' ? 'active' : ''} onClick={() => navigate('collection')}>My collection <span className="nav-count">{projects.length}</span></button><button className={view === 'ai' ? 'active' : ''} onClick={() => openAI()}>AI studio</button><a className="nav-foundry-link" href="/interface-foundry/" target="_blank" rel="noopener noreferrer" aria-label="Open Interface Foundry">Interface Foundry<ArrowUpRight size={13} /></a></nav>
+      <nav className={mobileNav ? 'main-nav open' : 'main-nav'} aria-label="Main navigation" id="main-navigation"><button className={view === 'universe' ? 'active' : ''} aria-current={view === 'universe' ? 'page' : undefined} onClick={() => navigate('universe')}>The universe</button><button className={view === 'story' ? 'active' : ''} aria-current={view === 'story' ? 'page' : undefined} onClick={() => navigate('story')}>The story</button><button className={view === 'collection' ? 'active' : ''} aria-current={view === 'collection' ? 'page' : undefined} onClick={() => navigate('collection')}>My collection <span className="nav-count">{projects.length}</span></button><button className={view === 'ai' ? 'active' : ''} aria-current={view === 'ai' ? 'page' : undefined} onClick={() => openAI()}>AI studio</button><a className="nav-foundry-link" href="/interface-foundry/" target="_blank" rel="noopener noreferrer" aria-label="Open Interface Foundry">Interface Foundry<ArrowUpRight size={13} /></a></nav>
       <div className="header-actions">{editable ? <button className="add-project-button" onClick={() => setDialog(true)} disabled={offline}><Plus size={16} />Add project</button> : capabilities.canManage && <button className="add-project-button" onClick={() => setLogin(true)} disabled={offline}>Manage collection</button>}{editable && capabilities.requiresLogin && <button className="text-button owner-signout" onClick={() => { setOwnerKey(''); setOwner(false); setDialog(false); setToast('You’re signed out of collection management.'); }}>Sign out</button>}<button className="icon-button mobile-menu" onClick={() => setMobileNav(!mobileNav)} aria-label="Toggle navigation" aria-controls="main-navigation" aria-expanded={mobileNav}>{mobileNav ? <X /> : <Menu />}</button></div>
     </header>
 
@@ -273,7 +276,7 @@ export default function App() {
         {error ? <div className="empty-state"><WifiOff size={28} /><h3>We lost the signal.</h3><p role="alert">{error}</p><button className="secondary-button" onClick={retryProjects}>Try again</button></div> : loading ? <div className="project-grid" aria-busy="true" aria-label="Loading projects"><div className="skeleton-card" /><div className="skeleton-card" /><div className="skeleton-card" /></div> : <div className="project-grid">
           {filtered.map((project, index) => <article className="project-card" key={project.id}><button className="project-image-button" onClick={() => openWorld(project)} aria-label={`View ${project.title}`}><ProjectArt project={project} mode={preferences.mode} /><span className="card-index">{String(index + 1).padStart(2, '0')} / TURBO ORIGINAL</span>{project.featured && <span className="featured-badge"><Sparkles size={11} /> FEATURED</span>}<span className="card-open"><ArrowUpRight size={20} /></span></button><button className={`save-project-button ${savedIds.includes(project.id) ? 'saved' : ''}`} aria-label={`${savedIds.includes(project.id) ? 'Unsave' : 'Save'} ${project.title}`} aria-pressed={savedIds.includes(project.id)} onClick={() => toggleSaved(project)}><Star size={15} fill={savedIds.includes(project.id) ? 'currentColor' : 'none'} /></button><div className="project-card-body"><div className="project-tags"><span className="project-tag">{project.type === 'website' ? <Globe2 size={10} /> : <Smartphone size={10} />}{project.type}</span><span>{project.category}</span></div><button className="project-explore-link" onClick={() => openWorld(project)}><span>{project.status === 'setup-pending' ? 'View project details' : `Explore ${project.type === 'app' ? 'app' : 'website'}`}</span><ArrowUpRight size={17} /></button><p>{project.description || 'A new world in the Turbo universe. Open it and explore.'}</p>{project.url && <a className="card-launch" href={project.url} target="_blank" rel="noopener noreferrer" onClick={() => recordRecent(project.id)} aria-label={`${project.status === 'setup-pending' ? 'View source for' : 'Launch'} ${project.title}`}>{project.status === 'setup-pending' ? 'View on GitHub' : 'Open world'}<ArrowUpRight size={14} /></a>}<div className="card-foot"><span className="status-dot" /> {project.status === 'setup-pending' ? 'SETUP PENDING' : 'IN THE UNIVERSE'}<span>TURBO ORIGINAL</span></div></div></article>)}
           {!projects.length && <div className="empty-state catalog-empty"><Compass size={29} /><h3>Your universe is waiting.</h3><p>{editable ? 'Add your first website or app to give this collection a place to begin.' : 'New worlds will appear here as they are added. You can check again any time.'}</p><button className="secondary-button" onClick={editable ? () => setDialog(true) : retryProjects}>{editable ? 'Add your first world' : 'Check for worlds'}<ArrowRight size={16} /></button></div>}
-          {!filtered.length && projects.length > 0 && <div className="empty-state filter-empty"><Compass size={29} /><h3>{filter === 'saved' && !search ? 'Keep your favorite worlds close.' : filter === 'app' && !search ? 'Your next app belongs here.' : 'No worlds found.'}</h3><p>{filter === 'saved' && !search ? 'Tap the star on any project to save it on this device.' : filter === 'app' && !search ? (editable ? 'Add an app link or upload a project to expand your universe.' : 'There are more worlds on the way. Explore the rest of the collection.') : 'Try another search or explore a different category.'}</p><button className="secondary-button" onClick={resetDiscovery}>Show all worlds <ArrowRight size={16} /></button></div>}
+          {!filtered.length && projects.length > 0 && <div className="empty-state filter-empty"><Compass size={29} /><h3>{filter === 'saved' && !search.trim() && category === 'all' ? 'Keep your favorite worlds close.' : filter === 'app' && !search.trim() && category === 'all' ? 'Your next app belongs here.' : 'No worlds found.'}</h3><p>{filter === 'saved' && !search.trim() && category === 'all' ? 'Tap the star on any project to save it on this device.' : filter === 'app' && !search.trim() && category === 'all' ? (editable ? 'Add an app link or upload a project to expand your universe.' : 'There are more worlds on the way. Explore the rest of the collection.') : 'Try another search or explore a different category.'}</p><button className="secondary-button" onClick={resetDiscovery}>Show all worlds <ArrowRight size={16} /></button></div>}
           {editable && <button className="add-world-card" onClick={() => setDialog(true)} disabled={offline}><span className="add-world-orbit"><Plus size={28} strokeWidth={1.2} /></span><span className="eyebrow">THERE’S ALWAYS ROOM FOR MORE</span><strong>Your next world<br />starts here.</strong><span className="add-world-link">Add a project <ArrowUpRight size={16} /></span><span className="add-world-hint">A website, an app, a new possibility.</span></button>}
         </div>}
         <div className="collection-note"><span><span className="status-dot" /> THE UNIVERSE IS ALWAYS EXPANDING</span>{editable ? <button className="text-button" onClick={() => setDialog(true)} disabled={offline}>Bring your projects together <ArrowRight size={15} /></button> : <span className="collection-readonly">Explore the collection. New worlds are added by Turbo.</span>}</div>
@@ -289,7 +292,7 @@ export default function App() {
     {dialog && editable && <ProjectDialog maxUploadBytes={capabilities.maxUploadBytes} onClose={() => setDialog(false)} onCreated={() => { void loadProjects(); setToast('A new world has entered your universe.'); }} />}
     {login && capabilities.canManage && <OwnerLogin onClose={() => setLogin(false)} onSuccess={() => { setOwner(true); setLogin(false); setToast('Welcome back. Your universe is ready to manage.'); }} />}
     {film && <StoryFilm onClose={closeFilm} />}
-    {selected && <ProjectDetails mode={preferences.mode} editable={editable} project={selected} onClose={closeDetails} onDelete={removeProject} saved={savedIds.includes(selected.id)} onToggleSaved={() => toggleSaved(selected)} />}
+    {selected && <ProjectDetails key={selected.id} projects={projects} onSelect={openWorld} mode={preferences.mode} editable={editable} project={selected} onClose={closeDetails} onDelete={removeProject} saved={savedIds.includes(selected.id)} onToggleSaved={() => toggleSaved(selected)} />}
     {showInstall && <InstallDialog dialogRef={installRef} onClose={closeInstall} installed={installed} prompt={installPrompt} onInstall={async () => { if (!installPrompt) return; await installPrompt.prompt(); const choice = await installPrompt.userChoice; setInstallPrompt(null); if (choice.outcome === 'accepted') setShowInstall(false); }} />}
     {toast && <div className="toast" role="status"><Check size={17} />{toast}<button aria-label="Dismiss notification" onClick={() => setToast('')}><X size={15} /></button></div>}
   </div>;

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, RotateCcw, Send, Sparkles } from 'lucide-react';
+import AIReplyTools from './AIReplyTools';
 import './ai-demo.css';
 
 const modes = [
@@ -47,10 +48,10 @@ export default function AIDemo() {
         <div className="ai-chat-top"><div><h2>{mode.title}</h2><p>{mode.hint}</p></div><button className="text-button" disabled={!messages.length && !prompt} onClick={() => { setMessages([]); setPrompt(''); input.current?.focus(); }}><RotateCcw size={14} />Clear chat</button></div>
         <div className="ai-messages" ref={conversation} role="log" aria-label="Demo conversation" aria-live="polite" aria-relevant="additions">
           {!messages.length && <div className="ai-welcome"><Sparkles size={27} /><h3>What are you curious about?</h3><p>Try the starter below to see a sample response.</p></div>}
-          {messages.map(message => <article className={`ai-message ai-message-${message.role}`} key={message.id}><strong>{message.role === 'user' ? 'You' : 'Demo · sample reply'}</strong><p>{message.text}</p></article>)}
+          {messages.map(message => <article className={`ai-message ai-message-${message.role}`} key={message.id}><strong>{message.role === 'user' ? 'You' : 'Demo · sample reply'}</strong><p>{message.text}</p>{message.role === 'sample' && <AIReplyTools text={message.text} label={`sample reply ${message.id + 1}`} />}</article>)}
         </div>
         <div className="ai-starters" aria-label="Starter prompts"><button onClick={() => send(mode.prompt)}>{mode.prompt}<ArrowUpRight size={14} /></button></div>
-        <form className="ai-composer" aria-describedby="ai-demo-notice" onSubmit={event => { event.preventDefault(); send(prompt); }}><label htmlFor="ai-prompt">Your prompt</label><textarea id="ai-prompt" ref={input} value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={`Try a ${mode.title.toLowerCase()} prompt…`} rows={3} maxLength={2000} /><div><span>{prompt.length} / 2,000</span><button className="primary-button" type="submit" disabled={!prompt.trim()}>Try demo <Send size={15} /></button></div></form>
+        <form className="ai-composer" aria-describedby="ai-demo-notice" onSubmit={event => { event.preventDefault(); send(prompt); }}><label htmlFor="ai-prompt">Your prompt</label><textarea id="ai-prompt" ref={input} value={prompt} onChange={event => setPrompt(event.target.value)} onKeyDown={event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); send(prompt); } }} aria-describedby="ai-demo-shortcut" placeholder={`Try a ${mode.title.toLowerCase()} prompt…`} rows={3} maxLength={2000} /><span className="ai-keyboard-hint" id="ai-demo-shortcut">Ctrl or ⌘ + Enter to send · Enter for a new line</span><div><span>{prompt.length} / 2,000</span><button className="primary-button" type="submit" disabled={!prompt.trim()}>Try demo <Send size={15} /></button></div></form>
       </div>
     </div>
   </section>;

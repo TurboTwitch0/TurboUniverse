@@ -116,7 +116,7 @@ try {
   assert.equal(await page.locator('.project-card').count(), 1);
   await page.getByRole('link', { name: 'TurboUniverse home', exact: true }).click();
   await page.getByRole('button', { name: 'Discover a random world', exact: true }).click();
-  const randomTitle = await page.getByRole('dialog').getByRole('heading').textContent();
+  const randomTitle = await page.getByRole('dialog').locator('.detail-content > h2').textContent();
   assert.ok(catalog.some(project => project.title === randomTitle), 'The orbit discovers a real project');
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Open orbit world TurboHome', exact: true }).click();
