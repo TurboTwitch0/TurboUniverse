@@ -163,7 +163,7 @@ async function verifyStatic(context) {
     assert.doesNotMatch(await response.text(), /<title>TurboUniverse/);
   }
   const foundryFiles = await filesBelow(path.join(dist, 'interface-foundry'));
-  for (const filename of ['index.html', 'assets/app.js', 'assets/styles.css', 'data/skills.json', 'downloads/interface-foundry-toolkit.zip', 'LICENSE.txt', 'provenance.json']) assert.ok(foundryFiles.includes(filename), `Complete built app includes ${filename}`);
+  for (const filename of ['index.html', 'assets/app.js', 'assets/styles.css', 'assets/hub-reader.css', 'assets/hub-reader.js', 'data/skills.json', 'downloads/interface-foundry-toolkit.zip', 'LICENSE.txt', 'provenance.json']) assert.ok(foundryFiles.includes(filename), `Complete built app includes ${filename}`);
   for (const filename of foundryFiles) {
     const response = await context.request.get(`${origin}/interface-foundry/${filename}`);
     assert.equal(response.status(), 200, `Built asset is served: ${filename}`);

@@ -151,6 +151,8 @@ export default function App() {
   const editable = capabilities.canManage && (!capabilities.requiresLogin || owner);
   const installRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const navigationRef = useRef<HTMLElement>(null);
+  const navigationToggleRef = useRef<HTMLButtonElement>(null);
   const closeFilm = useCallback(() => setFilm(false), []);
   const closeInstall = useCallback(() => setShowInstall(false), []);
 
@@ -215,6 +217,19 @@ export default function App() {
     return () => { window.removeEventListener('beforeinstallprompt', install); window.removeEventListener('appinstalled', ready); window.removeEventListener('online', online); window.removeEventListener('offline', disconnected); window.removeEventListener('keydown', shortcut); };
   }, [loadProjects, setView]);
   useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(''), 4500); return () => window.clearTimeout(timer); }, [toast]);
+  useEffect(() => {
+    if (!mobileNav) return;
+    const destinations = navigationRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href]');
+    Array.from(destinations ?? []).find(element => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden')?.focus({ preventScroll: true });
+    const dismiss = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || document.querySelector('[aria-modal="true"]')) return;
+      event.preventDefault();
+      setMobileNav(false);
+      navigationToggleRef.current?.focus({ preventScroll: true });
+    };
+    document.addEventListener('keydown', dismiss);
+    return () => document.removeEventListener('keydown', dismiss);
+  }, [mobileNav]);
 
   const navigate = (next: View) => { closeDetails(); setView(next); setMobileNav(false); setFilter('all'); setSearch(''); setCategory('all'); setSort('original'); window.scrollTo({ top: 0, behavior: scrollBehavior() }); };
   const openAI = (prompt = '') => { setAIStarter(prompt); navigate('ai'); };
@@ -245,8 +260,8 @@ export default function App() {
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="site-header"><a href="#" className="brand" onClick={e => { e.preventDefault(); navigate('universe'); }} aria-label="TurboUniverse home"><Mark /><span>TURBO<span className="brand-light">UNIVERSE</span><sup>®</sup></span></a>
-      <nav className={mobileNav ? 'main-nav open' : 'main-nav'} aria-label="Main navigation" id="main-navigation"><button className={view === 'universe' ? 'active' : ''} aria-current={view === 'universe' ? 'page' : undefined} onClick={() => navigate('universe')}>The universe</button><button className={view === 'story' ? 'active' : ''} aria-current={view === 'story' ? 'page' : undefined} onClick={() => navigate('story')}>The story</button><button className={view === 'collection' ? 'active' : ''} aria-current={view === 'collection' ? 'page' : undefined} onClick={() => navigate('collection')}>My collection <span className="nav-count">{projects.length}</span></button><button className={view === 'ai' ? 'active' : ''} aria-current={view === 'ai' ? 'page' : undefined} onClick={() => openAI()}>AI studio</button><a className="nav-foundry-link" href="/interface-foundry/" target="_blank" rel="noopener noreferrer" aria-label="Open Interface Foundry">Interface Foundry<ArrowUpRight size={13} /></a></nav>
-      <div className="header-actions">{editable ? <button className="add-project-button" onClick={() => setDialog(true)} disabled={offline}><Plus size={16} />Add project</button> : capabilities.canManage && <button className="add-project-button" onClick={() => setLogin(true)} disabled={offline}>Manage collection</button>}{editable && capabilities.requiresLogin && <button className="text-button owner-signout" onClick={() => { setOwnerKey(''); setOwner(false); setDialog(false); setToast('You’re signed out of collection management.'); }}>Sign out</button>}<button className="icon-button mobile-menu" onClick={() => setMobileNav(!mobileNav)} aria-label="Toggle navigation" aria-controls="main-navigation" aria-expanded={mobileNav}>{mobileNav ? <X /> : <Menu />}</button></div>
+      <nav ref={navigationRef} className={mobileNav ? 'main-nav open' : 'main-nav'} aria-label="Main navigation" id="main-navigation"><button className={view === 'universe' ? 'active' : ''} aria-current={view === 'universe' ? 'page' : undefined} onClick={() => navigate('universe')}>The universe</button><button className={view === 'story' ? 'active' : ''} aria-current={view === 'story' ? 'page' : undefined} onClick={() => navigate('story')}>The story</button><button className={view === 'collection' ? 'active' : ''} aria-current={view === 'collection' ? 'page' : undefined} onClick={() => navigate('collection')}>My collection <span className="nav-count">{projects.length}</span></button><button className={view === 'ai' ? 'active' : ''} aria-current={view === 'ai' ? 'page' : undefined} onClick={() => openAI()}>AI studio</button><a className="nav-foundry-link" href="/interface-foundry/" target="_blank" rel="noopener noreferrer" aria-label="Open Interface Foundry">Interface Foundry<ArrowUpRight size={13} /></a></nav>
+      <div className="header-actions">{editable ? <button className="add-project-button" onClick={() => setDialog(true)} disabled={offline}><Plus size={16} />Add project</button> : capabilities.canManage && <button className="add-project-button" onClick={() => setLogin(true)} disabled={offline}>Manage collection</button>}{editable && capabilities.requiresLogin && <button className="text-button owner-signout" onClick={() => { setOwnerKey(''); setOwner(false); setDialog(false); setToast('You’re signed out of collection management.'); }}>Sign out</button>}<button ref={navigationToggleRef} className="icon-button mobile-menu" onClick={() => setMobileNav(!mobileNav)} aria-label="Toggle navigation" aria-controls="main-navigation" aria-expanded={mobileNav}>{mobileNav ? <X /> : <Menu />}</button></div>
     </header>
 
     <UpdateAnnouncement />

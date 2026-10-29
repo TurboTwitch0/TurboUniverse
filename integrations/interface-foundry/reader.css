@@ -1,0 +1,38 @@
+/* Hub reader improvements; the pinned upstream app and toolkit stay intact. */
+.skill-dialog[open] {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  height:min(780px,calc(100vh - 32px));
+  height:min(780px,calc(100dvh - 32px));
+  max-height:calc(100vh - 32px);
+  max-height:calc(100dvh - 32px);
+  overflow:hidden;
+}
+.skill-dialog > :not(pre) { flex-shrink:0; }
+.skill-dialog .dialog-header h2 { min-width:0; overflow-wrap:anywhere; }
+.skill-dialog .dialog-close { flex-shrink:0; }
+.skill-dialog .dialog-description,.skill-dialog .dialog-actions { margin:0; }
+.skill-dialog .dialog-actions { gap:8px; }
+.skill-dialog .dialog-actions button { padding:10px 12px; }
+.skill-dialog pre {
+  flex:1 1 auto;
+  min-height:0;
+  margin:0;
+  padding:14px 6px 14px 0;
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  font-size:14px;
+  line-height:1.7;
+}
+.skill-dialog pre:focus-visible { outline-offset:-3px; }
+@media(max-width:600px) {
+  .skill-dialog[open] { padding:16px; }
+}
+@media(max-height:500px) {
+  .skill-dialog[open] { gap:6px; padding:12px; }
+  .skill-dialog .dialog-header h2 { font-size:18px; }
+  .skill-dialog .dialog-header + .dialog-description { display:none; }
+  .skill-dialog #skill-feedback { font-size:12px; line-height:1.4; }
+}

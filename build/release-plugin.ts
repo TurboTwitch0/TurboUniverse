@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'More ways to find your next world',
-        description: 'Share section links, discover related worlds, and copy AI replies with a smoother browsing experience.',
+        title: 'Easier reading and keyboard navigation',
+        description: 'Read complete Foundry skills with copy and download controls always in reach, and move through the mobile menu with your keyboard.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

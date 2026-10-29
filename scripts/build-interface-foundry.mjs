@@ -27,18 +27,20 @@ await cp(result.directory, output, { recursive: true });
 const filename = path.join(output, 'index.html');
 let html = await readFile(filename, 'utf8');
 html = html.replace('<head>', '<head>\n  <base href="/interface-foundry/">');
+html = html.replace('</head>', '  <link rel="stylesheet" href="assets/hub-reader.css">\n  <script src="assets/hub-reader.js" defer></script>\n</head>');
 html = html.replace('</body>', '<div class="wrap" style="padding-top:8px;padding-bottom:24px;font-size:12px"><a href="/">Back to TurboUniverse</a> · <a href="LICENSE.txt">MIT license</a> · <a href="provenance.json">Source version</a></div>\n</body>');
 await writeFile(filename, html);
+for (const extension of ['css', 'js']) await cp(path.join(root, 'integrations', 'interface-foundry', `reader.${extension}`), path.join(output, 'assets', `hub-reader.${extension}`));
 await writeFile(path.join(output, 'LICENSE.txt'), await readFile(path.join(source, 'LICENSE')));
 const files = [];
-for (const name of ['index.html', 'assets/app.js', 'assets/styles.css', 'data/skills.json', 'downloads/interface-foundry-toolkit.zip', 'LICENSE.txt']) {
+for (const name of ['index.html', 'assets/app.js', 'assets/styles.css', 'assets/hub-reader.css', 'assets/hub-reader.js', 'data/skills.json', 'downloads/interface-foundry-toolkit.zip', 'LICENSE.txt']) {
   const bytes = await readFile(path.join(output, name));
   files.push({ path: name, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
 }
 await writeFile(path.join(output, 'provenance.json'), JSON.stringify({
   name: pinned.name, repository: pinned.repository, commit: pinned.commit, license: pinned.license,
   copyright: pinned.copyright, mountPath: pinned.mountPath,
-  adaptations: ['Added the hub subpath base URL and footer links to the hub, license, and source provenance.'],
+  adaptations: ['Added the hub subpath base URL and footer links to the hub, license, and source provenance.', 'Added hub-owned reader styles and a dialog padding guard. Pinned upstream assets, skill text, and the complete source toolkit remain unchanged.'],
   files,
 }, null, 2) + '\n');
 console.log(`Interface Foundry: ${result.skills} full skills, complete toolkit ZIP, and static assets built at ${pinned.mountPath} from ${pinned.commit}.`);
