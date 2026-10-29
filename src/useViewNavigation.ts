@@ -34,7 +34,7 @@ export function useViewNavigation() {
   }, []);
 
   useEffect(() => {
-    const labels = { universe: 'One mind. Many worlds.', story: 'The story', collection: 'My collection', ai: 'AI studio' };
+    const labels = { universe: 'One mind. Many worlds.', story: 'The story', collection: 'My collection', ai: 'AI studio', chromebooks: 'AI (Chromebooks)' };
     document.title = `TurboUniverse — ${labels[view]}`;
   }, [view]);
 

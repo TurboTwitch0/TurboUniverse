@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'Easier reading and keyboard navigation',
-        description: 'Read complete Foundry skills with copy and download controls always in reach, and move through the mobile menu with your keyboard.',
+        title: 'A fresh space for your Chromebook',
+        description: 'Explore AI (Chromebooks), find worlds with shareable filters, and enjoy smoother navigation and Foundry reading.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

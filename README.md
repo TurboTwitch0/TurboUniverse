@@ -63,6 +63,12 @@ This is a small model for basic help, not a guarantee of accurate or advanced re
 
 The implementation follows [WebLLM’s worker and cache documentation](https://webllm.mlc.ai/docs/user/advanced_usage.html). The installed version and its model configuration are pinned in the package lock.
 
+## AI (Chromebooks)
+
+Open **AI (Chromebooks)** in the navigation or visit **/#chromebooks**. Its visible label, hover title, keyboard focus, and browser document title identify the dedicated section. It uses the same real Qwen2.5 on-device engine as AI Studio, with an optional browser compatibility check and a clearly labeled prewritten example. Opening the section or checking the browser does not download the model. The original AI Studio and Sample tour remain available.
+
+The section runs as a normal website with keyboard, trackpad, and touch controls; no extension or app installation is required. Real local generation requires HTTPS, an accessible WebGPU adapter, the explicit model download, and sufficient memory. Current ChromeOS devices differ in graphics support, and managed devices may restrict the features or downloads. Actual school-managed Chromebook access has not been tested. No proxy, hidden launcher, filtering workaround, paid inference service, or new account is added.
+
 ## Current project destinations
 
 TurboChat, TurboGames, TurboStocks, TurboBrowser, Orbit Study, and EVOVO use verified existing app links. Orbit Study is live at **studyorbitv1.vercel.app** and EVOVO at **evovo.vercel.app**. TurboWatch retains its GitHub source link and a **Setup pending** label: its hosted preview requires access, and public playback/accounts are not verified. The hub does not claim that protected preview is a fully public service. Existing project IDs remain stable, with the duplicate StudyOrbit ID retained as an alias for saved and shared links.

@@ -390,7 +390,7 @@ async function verifyHubHeader(page) {
     });
     report.headerLayouts.push({ width, mobile, ...layout });
     await noOverflow(page, `${width}px hub header`);
-    assert.equal(layout.items.length, 5, `${width}px header includes all five navigation items`);
+    assert.equal(layout.items.length, 6, `${width}px header includes all six navigation items`);
     assert.ok(layout.nav.left >= -1 && layout.nav.right <= width + 1, `${width}px navigation stays within viewport`);
     if (mobile) assert.ok(Math.min(...layout.items.map(item => item.top)) >= Math.max(layout.brand.bottom, layout.actions.bottom) + 3, `${width}px menu controls do not overlap the brand or menu toggle`);
     else {
@@ -411,7 +411,7 @@ async function verifyHubHeader(page) {
       await toggle.click();
     }
   }
-  passed('Hub header and all five navigation controls fit without clipping/collision at 320, 390, 768, 801, 820, 900, 1024, and 1280px; mobile Foundry navigation opens');
+  passed('Hub header and all six navigation controls fit without clipping/collision at 320, 390, 768, 801, 820, 900, 1024, and 1280px; mobile Foundry navigation opens');
 }
 
 async function verifyServiceWorker() {

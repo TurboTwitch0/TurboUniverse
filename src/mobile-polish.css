@@ -9,7 +9,10 @@
 .active-discovery-filters > button:hover { border-color:var(--accent); color:var(--accent); }
 .active-discovery-filters > button > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .active-discovery-filters > button > svg { flex-shrink:0; width:13px; height:13px; }
-@media(max-width:1040px) {
+.main-nav > .nav-chromebook-link { display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:9px 11px; border:1px solid var(--theme-line); border-radius:9px; color:var(--accent); background:color-mix(in srgb,var(--accent) 6%,var(--theme-panel)); white-space:nowrap; }
+.main-nav > .nav-chromebook-link:hover,.main-nav > .nav-chromebook-link.active { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 11%,var(--theme-panel)); }
+.main-nav > .nav-chromebook-link.active::after { display:none; }
+@media(max-width:1200px) {
   .main-nav { position:absolute; left:0; right:0; top:100%; display:none; flex-wrap:wrap; justify-content:center; gap:8px 20px; padding:16px 5%; border-bottom:1px solid var(--theme-line); background:var(--theme-panel); }
   .main-nav.open { top:100%; display:flex; }
   .main-nav > button { padding:8px 0; }

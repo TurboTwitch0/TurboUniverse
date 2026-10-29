@@ -12,8 +12,9 @@ const activities = [
   { title: 'Brainstorming', hint: 'Give your next idea somewhere to start.', prompt: 'Suggest five fun names for a space club.' },
 ];
 type Message = LocalMessage & { id: number };
+type Props = { initialPrompt?: string; embedded?: boolean; errorHelp?: string };
 
-export default function LocalAIChat({ initialPrompt = '' }: { initialPrompt?: string }) {
+export default function LocalAIChat({ initialPrompt = '', embedded = false, errorHelp = 'You can retry, or choose Sample tour to explore prewritten examples.' }: Props) {
   const [activity, setActivity] = useState(activities[0]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready'>('idle');
   const [progress, setProgress] = useState(0);
@@ -69,6 +70,7 @@ export default function LocalAIChat({ initialPrompt = '' }: { initialPrompt?: st
       if (attempt.current === current && !reply.trim()) setMessages(items => items.filter(item => item.id !== answerId));
     } catch (cause) {
       if (attempt.current !== current) return;
+      setPrompt(question);
       setMessages(items => items.filter(item => item.id !== answerId || item.content.trim()));
       unloadLocalAI(); setStatus('idle');
       setError(cause instanceof Error ? cause.message : 'The model could not finish. Try a shorter prompt.');
@@ -77,16 +79,16 @@ export default function LocalAIChat({ initialPrompt = '' }: { initialPrompt?: st
     }
   }
 
-  return <section className="ai-section ai-local-section content-section" aria-labelledby="local-ai-title">
-    <div className="section-kicker"><span className="short-line" /> YOUR IDEAS. YOUR DEVICE.</div>
-    <div className="ai-heading"><div><h1 id="local-ai-title">A little intelligence.<br /><span>Zero API bills.</span></h1><p>Real replies for everyday questions, drafts, studying, and ideas.</p></div><span className="ai-demo-badge"><ShieldCheck size={16} /> ON-DEVICE AI</span></div>
+  return <section className={`ai-section ai-local-section content-section${embedded ? ' ai-local-embedded' : ''}`} aria-labelledby="local-ai-title">
+    {!embedded && <div className="section-kicker"><span className="short-line" /> YOUR IDEAS. YOUR DEVICE.</div>}
+    <div className="ai-heading"><div>{embedded ? <h2 id="local-ai-title">Your on-device workspace.</h2> : <h1 id="local-ai-title">A little intelligence.<br /><span>Zero API bills.</span></h1>}<p>Real replies for everyday questions, drafts, studying, and ideas.</p></div><span className="ai-demo-badge"><ShieldCheck size={16} /> ON-DEVICE AI</span></div>
     <div className="ai-notice ai-local-notice" id="local-ai-notice"><strong>Free local model · no key or paid credits</strong><p>Qwen2.5 runs in your browser. Your prompts stay on your device. This small model can make mistakes and cannot browse the web or access your accounts.</p></div>
     <div className="ai-model-panel">
       <div><span className="ai-model-icon">{status === 'ready' ? <Check size={23} /> : <Download size={23} />}</span><div><strong>{status === 'ready' ? 'Ready on this device' : status === 'loading' ? 'Getting your model ready…' : 'A small model. A fresh start.'}</strong><p>{status === 'ready' ? 'Qwen2.5 0.5B · replies are generated locally' : 'About 300 MB to download, plus roughly 1 GB of working memory. A compatible WebGPU browser is required. Model files are cached when your browser allows it.'}</p></div></div>
       {status === 'loading' ? <button className="secondary-button" onClick={unload}><X size={15} />Cancel download</button> : status === 'ready' ? <button className="text-button" disabled={busy} onClick={unload}>Unload model</button> : <button className="primary-button" onClick={() => void download()}><Download size={16} />Download free model</button>}
       {status === 'loading' && <div className="ai-download-progress" role="status"><label htmlFor="ai-download">Loading model · {Math.round(progress * 100)}%</label><progress id="ai-download" value={progress} max={1} /></div>}
     </div>
-    {error && <div className="ai-local-error" role="alert"><strong>We couldn’t finish that.</strong><p>{error}</p><p>You can retry, or choose Sample tour to explore prewritten examples.</p></div>}
+    {error && <div className="ai-local-error" role="alert"><strong>We couldn’t finish that.</strong><p>{error}</p><p>{errorHelp}</p></div>}
     <div className="ai-workspace">
       <aside className="ai-sidebar" aria-label="Choose an AI activity"><span className="eyebrow">MAKE SPACE FOR</span><div className="ai-modes">{activities.map(item => <button key={item.title} aria-pressed={activity.title === item.title} disabled={busy} onClick={() => { setActivity(item); setMessages([]); setPrompt(''); setError(''); }}>{item.title}<ArrowUpRight size={15} /></button>)}</div><p>No sign-in, subscription, or hosted AI service. Generation uses your device’s graphics hardware.</p></aside>
       <div className="ai-chat">

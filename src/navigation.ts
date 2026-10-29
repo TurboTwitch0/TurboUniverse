@@ -1,4 +1,4 @@
-export const VIEWS = ['universe', 'story', 'collection', 'ai'] as const;
+export const VIEWS = ['universe', 'story', 'collection', 'ai', 'chromebooks'] as const;
 export type View = typeof VIEWS[number];
 
 export function viewFromHash(hash: string): View | undefined {
