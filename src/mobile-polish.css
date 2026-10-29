@@ -1,0 +1,43 @@
+/* Keep discovery controls comfortable across every atmosphere and screen. */
+.header-search-button { flex:0 0 40px; width:40px; min-width:40px; height:40px; padding:9px; border-radius:10px; background:var(--theme-panel); color:var(--theme-text); }
+.header-search-button:hover { border-color:var(--accent); }
+.header-search-button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+.header-search-button svg { width:18px; height:18px; }
+.header-actions { flex-shrink:0; }
+.active-discovery-filters { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:16px 0 0; min-width:0; }
+.active-discovery-filters > button { display:inline-flex; align-items:center; gap:8px; min-width:0; max-width:100%; min-height:36px; padding:8px 11px; border:1px solid var(--theme-line); border-radius:7px; background:color-mix(in srgb,var(--accent) 7%,var(--theme-panel)); color:var(--theme-text); font-size:11px; line-height:1.4; }
+.active-discovery-filters > button:hover { border-color:var(--accent); color:var(--accent); }
+.active-discovery-filters > button > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.active-discovery-filters > button > svg { flex-shrink:0; width:13px; height:13px; }
+@media(max-width:1040px) {
+  .main-nav { position:absolute; left:0; right:0; top:100%; display:none; flex-wrap:wrap; justify-content:center; gap:8px 20px; padding:16px 5%; border-bottom:1px solid var(--theme-line); background:var(--theme-panel); }
+  .main-nav.open { top:100%; display:flex; }
+  .main-nav > button { padding:8px 0; }
+  .main-nav > button.active::after { bottom:0; }
+  .mobile-menu { display:inline-flex!important; min-width:40px; width:40px; height:40px; border-radius:10px; }
+  .header-actions { gap:8px; }
+}
+@media(max-width:540px) {
+  .site-header { gap:8px; }
+  .brand { font-size:15px; gap:6px; }
+  .brand-mark { width:25px; height:30px; }
+  .header-actions { gap:5px; }
+  .header-actions .add-project-button { min-height:40px; padding:8px; font-size:10px; gap:5px; white-space:nowrap; }
+  .filters { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; width:100%; }
+  .filters > button { min-width:0; min-height:44px; padding:10px; font-size:11px; gap:7px; justify-content:center; }
+  .filters > button.saved-filter { min-width:0; }
+  .filters > button > span { font-size:9px; margin-left:2px; }
+  .active-discovery-filters { gap:7px; margin-top:14px; }
+}
+@media(max-width:440px) {
+  .site-header:has(.owner-signout) { flex-wrap:wrap; height:auto; min-height:104px; padding-top:10px; padding-bottom:10px; }
+  .site-header:has(.owner-signout) .brand { font-size:15px; }
+  .site-header:has(.owner-signout) .brand-mark { width:25px; height:30px; }
+  .header-actions:has(.owner-signout) { width:100%; justify-content:flex-end; gap:8px; }
+  .header-actions:has(.owner-signout) .add-project-button { min-height:40px; padding:8px 10px; font-size:10px; }
+  .owner-signout { min-height:40px; padding:8px; font-size:10px; }
+}
+@media(max-width:370px) {
+  .site-header:has(.add-project-button) { flex-wrap:wrap; height:auto; min-height:104px; padding-top:10px; padding-bottom:10px; }
+  .header-actions:has(.add-project-button) { width:100%; justify-content:flex-end; }
+}

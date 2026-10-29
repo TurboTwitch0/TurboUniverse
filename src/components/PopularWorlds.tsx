@@ -1,5 +1,6 @@
 import { ArrowUpRight } from 'lucide-react';
 import { getWorldPresentation, POPULAR_WORLDS } from '../popularWorlds';
+import WorldImage from './WorldImage';
 
 type Project = { id: string; title: string; type: 'website' | 'app'; url: string; description: string; coverUrl?: string; status?: 'setup-pending' };
 
@@ -16,7 +17,7 @@ export default function PopularWorlds<T extends Project>({ projects, onSelect, m
     <div className="popular-worlds-grid">
       {worlds.map(({ world, project }, index) => <article className="popular-world" key={world.id}>
         <button className="popular-world-image" onClick={() => onSelect({ ...project, title: world.displayTitle, description: world.description })} aria-label={`Discover ${world.displayTitle}`}>
-          <img src={project.coverUrl || (mode === 'earth' ? `/images/${['earth-spring', 'earth-hero', 'earth-detail', 'earth-winter'][index]}.webp` : world.image)} alt="" loading="lazy" decoding="async" width="1200" height="800" />
+          <WorldImage src={project.coverUrl || (mode === 'earth' ? `/images/${['earth-spring', 'earth-hero', 'earth-detail', 'earth-winter'][index]}.webp` : world.image)} fallbackSrc={mode === 'earth' ? '/images/earth-spring.webp' : '/images/cinematic-horizon.webp'} alt="" loading="lazy" decoding="async" width="1200" height="800" />
           <span className="popular-world-shade" aria-hidden="true" />
           <span className="popular-world-number">0{index + 1} / {world.label}</span>
           <span className="popular-world-name"><strong>{world.displayTitle}</strong><span>{world.tagline}</span></span>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { ArrowLeft, ArrowRight, ArrowUpRight, Compass, MoveHorizontal, Star } from 'lucide-react';
 import { getWorldPresentation, POPULAR_WORLDS } from '../popularWorlds';
+import WorldImage from './WorldImage';
 import './world-stage.css';
 
 type World = { id: string; title: string; url: string; category: string; description: string; coverUrl?: string; status?: 'setup-pending' };
@@ -84,7 +85,7 @@ export default function WorldStage<T extends World>({ projects, savedIds, mode, 
             const world = worlds[position];
             const image = world.coverUrl || (mode === 'earth' ? `/images/${['earth-spring', 'earth-hero', 'earth-detail', 'earth-winter'][position % 4]}.webp` : getWorldPresentation(world)?.image || `/images/${scenes[position % scenes.length]}.webp`);
             return <button key={world.id} className="world-stage-card" data-offset={offset} data-active={offset === 0} aria-current={offset === 0 ? 'true' : undefined} aria-label={offset === 0 ? `View ${world.title} in orbital stage` : `Focus ${world.title} in orbital stage`} onClick={() => { if (performance.now() < ignoreClickUntil.current) return; if (offset === 0) onSelect(world); else setIndex(position); }}>
-              <img src={image} alt="" width="600" height="800" draggable={false} loading="lazy" />
+              <WorldImage src={image} fallbackSrc={mode === 'earth' ? '/images/earth-spring.webp' : '/images/cinematic-horizon.webp'} alt="" width="600" height="800" draggable={false} loading="lazy" />
               <span className="world-stage-card-glass" aria-hidden="true" /><span className="world-stage-card-category">{world.category}</span><span className="world-stage-card-name"><span>A TURBO WORLD</span><strong>{world.title}</strong><small>{getWorldPresentation(world)?.tagline || 'Another possibility, waiting to be explored.'}</small></span><span className="world-stage-card-bottom">EXPLORE THIS WORLD<ArrowUpRight size={17} /></span>
             </button>;
           })}
