@@ -45,7 +45,9 @@ export function createSavedWorldStore(getStorage: () => StorageAdapter, exclusiv
         ids = [...next];
         pending.set(key, saving);
         let persisted = false;
-        if (readable) {
+        // Pending visit-only edits can outgrow the limit when another tab fills
+        // device storage. Keep them pending until removals make the whole set fit.
+        if (readable && ids.length <= MAX_SAVED_WORLDS) {
           try {
             getStorage().setItem(SAVED_WORLDS_KEY, JSON.stringify(ids));
             pending.clear();

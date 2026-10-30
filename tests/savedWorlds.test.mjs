@@ -92,3 +92,29 @@ test('at capacity, a new favorite cannot silently displace a saved world on relo
   snapshot.length = 0;
   assert.equal(store.snapshot().length, MAX_SAVED_WORLDS);
 });
+
+test('pending favorites survive another tab filling device capacity and never persist an over-limit set', async () => {
+  const initial = Array.from({ length: MAX_SAVED_WORLDS - 2 }, (_, i) => `world-${i}`);
+  const fixtureData = fixture(initial);
+  const store = createSavedWorldStore(() => fixtureData.storage);
+  fixtureData.denyWrite(true);
+  await store.toggle('visit-one');
+  await store.toggle('visit-two');
+  const otherTab = [...initial, 'other-one', 'other-two'];
+  fixtureData.replace(otherTab);
+  assert.equal(store.sync().length, MAX_SAVED_WORLDS + 2);
+  fixtureData.denyWrite(false);
+  const firstRemoval = await store.toggle('world-0');
+  assert.equal(firstRemoval.persisted, false);
+  assert.equal(firstRemoval.ids.length, MAX_SAVED_WORLDS + 1);
+  assert.deepEqual(fixtureData.saved(), otherTab, 'No oversized write replaces the device collection');
+  assert.ok(store.sync().includes('visit-two'), 'Visit-only edits remain pending');
+  assert.ok(!store.snapshot().includes('world-0'), 'The visit-only removal also remains pending');
+  const secondRemoval = await store.toggle('world-1');
+  assert.equal(secondRemoval.persisted, true);
+  assert.equal(fixtureData.saved().length, MAX_SAVED_WORLDS);
+  const reopened = createSavedWorldStore(() => fixtureData.storage);
+  assert.deepEqual(reopened.snapshot(), store.snapshot());
+  for (const id of ['visit-one', 'visit-two', 'other-one', 'other-two']) assert.ok(reopened.snapshot().includes(id));
+  for (const id of ['world-0', 'world-1']) assert.ok(!reopened.snapshot().includes(id));
+});
