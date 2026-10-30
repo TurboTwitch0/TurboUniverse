@@ -71,7 +71,9 @@ The section runs as a normal website with keyboard, trackpad, and touch controls
 
 ## Current project destinations
 
-TurboChat, TurboGames, TurboStocks, TurboBrowser, Orbit Study, and EVOVO use verified existing app links. Orbit Study is live at **studyorbitv1.vercel.app** and EVOVO at **evovo.vercel.app**. TurboWatch retains its GitHub source link and a **Setup pending** label: its hosted preview requires access, and public playback/accounts are not verified. The hub does not claim that protected preview is a fully public service. Existing project IDs remain stable, with the duplicate StudyOrbit ID retained as an alias for saved and shared links.
+TurboChat, TurboGames, TurboStocks, TurboBrowser, Orbit Study, and EVOVO use verified existing app links. Orbit Study is live at **studyorbitv1.vercel.app** and EVOVO at **evovo.vercel.app**. The separate **Turbo Browser Desktop** app entry opens the verified public v0.2.0 release, including the Windows x64 executable, SHA-256 checksums, and source. The original browser-inspired website remains available. TurboWatch retains its GitHub source link and a **Setup pending** label: its hosted preview requires access, and public playback/accounts are not verified. The hub does not claim that protected preview is a fully public service. Existing project IDs remain stable, with the duplicate StudyOrbit ID retained as an alias for saved and shared links.
+
+TurboGames now offers eight genre filters alongside its library filters: Action, Adventure & RPG, Arcade, Puzzle & Strategy, Racing, Sports, Horror, and Rhythm. Searches, sorting, saved favorites, and shared genre URLs remain available; for example, `https://turbogames.vercel.app/?view=all&genre=racing` opens Racing.
 
 ## Interface Foundry
 
