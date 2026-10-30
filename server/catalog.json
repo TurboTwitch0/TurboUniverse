@@ -37,7 +37,7 @@
     "title": "TurboGames",
     "type": "website",
     "url": "https://turbogames.vercel.app/",
-    "description": "Leave the ordinary behind. A playful corner of the universe for new favorites, a little adventure, and your next great game.",
+    "description": "Find your next game by genre: Action, Adventure & RPG, Arcade, Puzzle & Strategy, Racing, Sports, Horror, and Rhythm. Combine categories with library filters, search, sorting, and saved favorites.",
     "category": "Gaming",
     "year": 2026,
     "featured": true,
@@ -53,6 +53,17 @@
     "year": 2026,
     "featured": true,
     "createdAt": "2026-10-22T03:57:36.709Z"
+  },
+  {
+    "id": "turbo-browser-desktop",
+    "title": "Turbo Browser Desktop",
+    "type": "app",
+    "url": "https://github.com/TurboTwitch0/turbo-browser-native/releases/tag/v0.2.0",
+    "description": "Download the Windows x64 desktop browser with Chromium-powered tabs, bookmarks, history, downloads, and private browsing. The unsigned public release includes source and SHA-256 checksums; updates are installed manually.",
+    "category": "Tools",
+    "year": 2026,
+    "featured": false,
+    "createdAt": "2026-10-29T03:23:12.000Z"
   },
   {
     "id": "d25931cb-2ef4-4198-9e96-168b7d45d1aa",
