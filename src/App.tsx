@@ -19,20 +19,12 @@ import RecentWorlds from './components/RecentWorlds';
 import { useRecentWorlds } from './useRecentWorlds';
 import UniverseShowcase from './components/UniverseShowcase';
 import WorldStage from './components/WorldStage';
-import { canonicalWorldId } from './catalogAliases';
+import { useSavedWorlds } from './useSavedWorlds';
 import { useViewNavigation } from './useViewNavigation';
 import type { View } from './navigation';
 import RelatedWorlds from './components/RelatedWorlds';
 import WorldImage from './components/WorldImage';
 import { useDiscoveryState } from './useDiscoveryState';
-
-const SAVED_WORLDS_KEY = 'turbo-universe-saved-worlds';
-function readSavedWorlds(): string[] {
-  try {
-    const value: unknown = JSON.parse(localStorage.getItem(SAVED_WORLDS_KEY) || '[]');
-    return Array.isArray(value) ? [...new Set(value.filter((id): id is string => typeof id === 'string' && id.length <= 128).map(canonicalWorldId))].slice(0, 1000) : [];
-  } catch { return []; }
-}
 
 type Project = {
   id: string; title: string; type: 'website' | 'app'; url: string;
@@ -147,7 +139,7 @@ export default function App() {
   const [capabilities, setCapabilities] = useState<Capabilities>(PUBLIC_CAPABILITIES);
   const [owner, setOwner] = useState(false);
   const [login, setLogin] = useState(false);
-  const [savedIds, setSavedIds] = useState(readSavedWorlds);
+  const { savedIds, toggleSavedWorld } = useSavedWorlds();
   const editable = capabilities.canManage && (!capabilities.requiresLogin || owner);
   const installRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -177,11 +169,6 @@ export default function App() {
   }, []);
 
   useEffect(() => { void loadProjects(); }, [loadProjects, setView]);
-  useEffect(() => {
-    const sync = (event: StorageEvent) => { if (event.key === SAVED_WORLDS_KEY || event.key === null) setSavedIds(readSavedWorlds()); };
-    window.addEventListener('storage', sync);
-    return () => window.removeEventListener('storage', sync);
-  }, []);
   useEffect(() => {
     let active = true;
     async function loadCapabilities() {
@@ -248,12 +235,11 @@ export default function App() {
   };
   const removeProject = async (id: string) => { const response = await apiFetch(`/api/projects/${id}`, { method: 'DELETE' }); if (!response.ok) throw new Error('Could not remove project. Please try again.'); await loadProjects(); setToast('Project removed from your universe.'); };
   const toggleSaved = (project: Project) => {
-    const saving = !savedIds.includes(project.id);
-    const next = saving ? [...savedIds, project.id] : savedIds.filter(id => id !== project.id);
-    setSavedIds(next);
-    let persisted = true;
-    try { localStorage.setItem(SAVED_WORLDS_KEY, JSON.stringify(next)); } catch { persisted = false; }
-    setToast(saving ? (persisted ? `${project.title} saved on this device.` : `${project.title} saved for this visit.`) : `${project.title} removed from saved worlds.`);
+    void toggleSavedWorld(project.id).then(({ saved, persisted, full }) => {
+      if (full) { setToast('You’ve saved 1,000 worlds. Remove one before saving another.'); return; }
+      setToast(saved ? (persisted ? `${project.title} saved on this device.` : `${project.title} saved for this visit.`)
+        : persisted ? `${project.title} removed from saved worlds.` : `${project.title} removed for this visit. Your browser couldn’t update saved worlds on this device.`);
+    }).catch(() => setToast('Saved worlds couldn’t be updated. Please try again.'));
   };
   const savedCount = projects.filter(project => savedIds.includes(project.id)).length;
   const categories = [...new Set(projects.map(project => project.category))].sort((a, b) => a.localeCompare(b));
