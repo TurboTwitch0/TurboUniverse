@@ -11,6 +11,14 @@ export function useAppearance() {
   const [preferences, setPreferences] = useState<AppearancePreferences>(readPreferences);
   const [now, setNow] = useState(() => new Date());
   const season = resolveSeason(preferences, now);
+  const isHalloween = now.getMonth() === 9 && now.getDate() === 31;
+
+  useEffect(() => {
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0);
+    const timer = window.setTimeout(() => setNow(new Date()), Math.max(1, midnight.getTime() - now.getTime()));
+    return () => window.clearTimeout(timer);
+  }, [now]);
 
   useLayoutEffect(() => {
     const root = document.documentElement;
@@ -47,5 +55,5 @@ export function useAppearance() {
     };
   }, []);
 
-  return { preferences, setPreferences, season, seasonLabel: SEASON_LABELS[season] };
+  return { preferences, setPreferences, season, seasonLabel: SEASON_LABELS[season], isHalloween };
 }

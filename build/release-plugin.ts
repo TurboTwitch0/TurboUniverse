@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'A fresh space for your Chromebook',
-        description: 'Explore AI (Chromebooks), find worlds with shareable filters, and enjoy smoother navigation and Foundry reading.',
+        title: 'A Halloween visit to the universe',
+        description: 'Pumpkins, bats, and warm orange accents appear on October 31 and disappear at midnight. Keep exploring in your favorite Earth or Space atmosphere.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

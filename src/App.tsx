@@ -8,6 +8,7 @@ import OrbitScene from './components/OrbitScene';
 import PopularWorlds from './components/PopularWorlds';
 import UpdateAnnouncement from './components/UpdateAnnouncement';
 import { useAppearance } from './useAppearance';
+import { HalloweenBanner, HalloweenScene } from './components/HalloweenDecor';
 import { getWorldPresentation } from './popularWorlds';
 import { getCatalogDescription } from './catalogCopy';
 import { discoverProjects, type DiscoverySort } from './discovery';
@@ -118,7 +119,9 @@ function ProjectDetails({ project, onClose, onDelete, editable, saved, onToggleS
 }
 
 export default function App() {
-  const { preferences, setPreferences, season } = useAppearance();
+  const { preferences, setPreferences, season, isHalloween } = useAppearance();
+  const [halloweenHidden, setHalloweenHidden] = useState(false);
+  const halloween = isHalloween && !halloweenHidden;
   const [view, setView] = useViewNavigation();
   const [aiStarter, setAIStarter] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
@@ -249,7 +252,7 @@ export default function App() {
   const websites = projects.filter(p => p.type === 'website').length;
   const apps = projects.filter(p => p.type === 'app').length;
 
-  return <div className="app-shell">
+  return <div className="app-shell" data-halloween={halloween ? 'true' : undefined}>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="site-header"><a href="#" className="brand" onClick={e => { e.preventDefault(); navigate('universe'); }} aria-label="TurboUniverse home"><Mark /><span>TURBO<span className="brand-light">UNIVERSE</span><sup>®</sup></span></a>
       <nav ref={navigationRef} className={mobileNav ? 'main-nav open' : 'main-nav'} aria-label="Main navigation" id="main-navigation"><button className={view === 'universe' ? 'active' : ''} aria-current={view === 'universe' ? 'page' : undefined} onClick={() => navigate('universe')}>The universe</button><button className={view === 'story' ? 'active' : ''} aria-current={view === 'story' ? 'page' : undefined} onClick={() => navigate('story')}>The story</button><button className={view === 'collection' ? 'active' : ''} aria-current={view === 'collection' ? 'page' : undefined} onClick={() => navigate('collection')}>My collection <span className="nav-count">{projects.length}</span></button><button className={view === 'ai' ? 'active' : ''} aria-current={view === 'ai' ? 'page' : undefined} onClick={() => openAI()}>AI studio</button><button className={`nav-chromebook-link ${view === 'chromebooks' ? 'active' : ''}`} aria-current={view === 'chromebooks' ? 'page' : undefined} title="AI (Chromebooks)" onClick={() => navigate('chromebooks')}><Sparkles size={13} />AI (Chromebooks)</button><a className="nav-foundry-link" href="/interface-foundry/" target="_blank" rel="noopener noreferrer" aria-label="Open Interface Foundry">Interface Foundry<ArrowUpRight size={13} /></a></nav>
@@ -258,6 +261,7 @@ export default function App() {
 
     <UpdateAnnouncement />
     <div className="appearance-layout"><AppearanceControls preferences={preferences} onChange={setPreferences} season={season} /></div>
+    {halloween && <HalloweenBanner onDismiss={() => setHalloweenHidden(true)} />}
 
     {offline && <div className="offline-banner" role="status"><WifiOff size={15} /> You’re offline. Explore your saved universe; reconnect to add projects.</div>}
 
@@ -265,6 +269,7 @@ export default function App() {
       {view === 'universe' && <>
         <section className="hero cinematic-hero" aria-labelledby="hero-title">
           <div className="hero-cinema-grain" aria-hidden="true" />
+          {halloween && <HalloweenScene />}
           <div className="hero-copy"><div className="eyebrow hero-eyebrow"><span className="hero-coordinate">A WORLD OF IDEAS</span><span className="hero-eyebrow-line" /><span>BY TURBO</span></div><h1 id="hero-title" aria-label="TurboUniverse"><span className="hero-title-prefix">TURBO</span>UNIVERSE</h1><p className="hero-lead">All your worlds. One place.</p><p className="hero-description">Find your next favorite website. Keep your worlds close.<br />Bring your ideas to life with free, on-device AI.</p><div className="hero-actions"><button className="primary-button" onClick={explore}>Find your next world <ArrowUpRight size={18} /></button><button className="film-button" onClick={() => setFilm(true)}><CirclePlay size={19} strokeWidth={1.4} /> The life of Turbo</button></div></div>
           <div className="hero-bottom"><span>01 / A UNIVERSE IN THE MAKING</span><button onClick={explore}>BEGIN EXPLORING <ArrowDown size={13} /></button><span className="hero-live"><span className="status-dot" /> {projects.length} WORLDS & COUNTING</span></div>
         </section>
