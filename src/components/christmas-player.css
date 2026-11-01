@@ -9,6 +9,13 @@
 .christmas-player-chevron { flex-shrink: 0; transition: transform .2s; }
 .christmas-player.is-open .christmas-player-chevron { transform: rotate(180deg); }
 .christmas-player-panel { padding: 4px 18px 18px; border-top: 1px solid #d5dfc522; }
+.christmas-player [hidden] { display: none; }
+.app-shell[data-winter] .christmas-player.is-docked, .christmas-player.is-docked { position: fixed; z-index: 50; right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); width: min(350px, calc(100% - 24px)); max-height: calc(100dvh - 24px); overflow-y: auto; box-shadow: 0 12px 45px #001b2380; }
+.christmas-player.is-mini .christmas-player-toggle { min-height: 59px; padding-block: 9px; }
+.christmas-player.is-mini .christmas-player-icon { width: 33px; height: 33px; }
+.christmas-player.is-mini .christmas-player-toggle strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
+.christmas-player.is-mini .christmas-player-panel { padding-top: 12px; padding-bottom: 12px; }
+.christmas-player.is-mini .christmas-player-status { font-size: 10px; }
 .christmas-track-label { display: block; margin: 12px 0 7px; font-size: 11px; color: var(--radio-muted); }
 .christmas-player select { width: 100%; max-width: 100%; min-height: 44px; border-radius: 9px; background: #0a221e; color: var(--radio-ink); border: 1px solid #8aaa9166; padding: 10px; font-size: 12px; text-overflow: ellipsis; }
 .christmas-now-playing { display: flex; align-items: center; gap: 12px; margin: 18px 0 16px; }

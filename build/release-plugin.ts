@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'Christmas, turned up',
-        description: 'A Christmas-night universe, frosted worlds, and holiday radio. Play original Jingle Bells or choose a favorite official holiday video.',
+        title: 'Your Christmas soundtrack stays with you',
+        description: 'Minimize Christmas radio and keep your track playing. Reopen it anytime, or pause, mute, and stop from the compact player.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

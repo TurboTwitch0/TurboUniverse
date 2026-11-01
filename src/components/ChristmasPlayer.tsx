@@ -40,9 +40,11 @@ function loadYouTube() {
   return youtubePromise;
 }
 
-export default function ChristmasPlayer() {
+export default function ChristmasPlayer({ seasonalVisible = true }: { seasonalVisible?: boolean }) {
   const panelId = useId();
   const [open, setOpen] = useState(false);
+  const [engaged, setEngaged] = useState(false);
+  const [docked, setDocked] = useState(false);
   const [trackId, setTrackId] = useState('bells');
   const [status, setStatus] = useState<'idle' | 'loading' | 'playing' | 'paused' | 'ended' | 'error'>('idle');
   const [message, setMessage] = useState('Press play for a little Christmas.');
@@ -58,6 +60,7 @@ export default function ChristmasPlayer() {
   const track = tracks.find(item => item.id === trackId)!;
   const isBells = trackId === 'bells';
 
+  useEffect(() => { if (!seasonalVisible) { setOpen(false); setDocked(true); } }, [seasonalVisible]);
   useEffect(() => () => { attempt.current++; window.clearTimeout(playerTimer.current); bells.current?.dispose(); video.current?.destroy(); }, []);
   useEffect(() => {
     currentVolume.current = muted ? 0 : volume;
@@ -83,8 +86,8 @@ export default function ChristmasPlayer() {
     setPosition(0); setStatus('idle'); setMessage('Ready when you are.');
   }
   function choose(id: string) { stop(); setTrackId(id); }
-  function toggleOpen() { if (open) stop(); setOpen(!open); }
-  function pause() { bells.current?.pause(); video.current?.pauseVideo(); if (isBells) { setStatus('paused'); setMessage('Paused. Your place is saved.'); } }
+  function toggleOpen() { setEngaged(true); if (open) setDocked(true); setOpen(current => !current); }
+  function pause() { bells.current?.pause(); video.current?.pauseVideo(); if (isBells) { setPosition(bells.current?.position ?? 0); setStatus('paused'); setMessage('Paused. Your place is saved.'); } }
   function watchVideo(request: number) {
     window.clearTimeout(playerTimer.current);
     playerTimer.current = window.setTimeout(() => {
@@ -94,6 +97,7 @@ export default function ChristmasPlayer() {
   }
 
   async function play() {
+    setEngaged(true);
     if (!isBells && video.current && status !== 'error') {
       setStatus('loading'); setMessage('Starting the official video…');
       watchVideo(attempt.current);
@@ -157,18 +161,22 @@ export default function ChristmasPlayer() {
     }
   }
 
-  return <aside className={`christmas-player${open ? ' is-open' : ''}`} aria-label="Christmas music">
-    <button className="christmas-player-toggle" onClick={toggleOpen} aria-expanded={open} aria-controls={panelId}>
+  if (!seasonalVisible && !engaged) return null;
+
+  return <aside className={`christmas-player${open ? ' is-open' : engaged ? ' is-mini' : ''}${engaged && (docked || !open || !seasonalVisible) ? ' is-docked' : ''}`} aria-label="Christmas music">
+    <button className="christmas-player-toggle" onClick={toggleOpen} aria-label={open ? 'Minimize Christmas radio' : 'Open Christmas radio'} title={open ? 'Minimize · music keeps playing' : 'Open Christmas radio'} aria-expanded={open} aria-controls={panelId}>
       <span className="christmas-player-icon"><Music2 size={19} aria-hidden="true" /></span>
-      <span><strong>Christmas radio</strong><small>{open ? 'A soundtrack for your universe' : 'Jingle Bells + holiday favorites'}</small></span>
+      <span><strong>{!open && engaged ? track.title : 'Christmas radio'}</strong><small>{open ? 'Minimize · music keeps playing' : engaged ? `${status === 'playing' ? 'Playing' : status === 'paused' ? 'Paused' : status === 'loading' ? 'Loading' : 'Christmas radio'} · Open radio` : 'Jingle Bells + holiday favorites'}</small></span>
       <ChevronDown size={18} className="christmas-player-chevron" aria-hidden="true" />
     </button>
-    {open && <div id={panelId} className="christmas-player-panel">
+    <div className="christmas-player-panel" hidden={!open && !engaged}>
+      <div id={panelId} hidden={!open}>
       <label className="christmas-track-label" htmlFor={`${panelId}-track`}>Pick your holiday track</label>
       <select id={`${panelId}-track`} value={trackId} onChange={event => choose(event.target.value)}>
         {tracks.map(item => <option key={item.id} value={item.id}>{item.title} — {item.id === 'bells' ? 'Original bells' : item.artist}</option>)}
       </select>
       <div className="christmas-now-playing"><span className="christmas-disc" aria-hidden="true"><Music2 size={28} /></span><div><small>{isBells ? 'MADE FOR THIS UNIVERSE' : 'OFFICIAL YOUTUBE VIDEO'}</small><strong>{track.title}</strong><span>{track.artist}</span></div></div>
+      </div>
       {!isBells && <div className="christmas-video-shell"><div className="christmas-video-host" ref={videoHost} /><p className="christmas-video-placeholder">Press play to load the official video.</p></div>}
       {isBells && <progress className="christmas-progress" value={position} max={JINGLE_DURATION} aria-label="Jingle Bells playback progress" />}
       <div className="christmas-controls">
@@ -178,7 +186,7 @@ export default function ChristmasPlayer() {
         <label className="christmas-volume"><span className="christmas-sr-only">Music volume</span><input type="range" min="0" max="100" value={Math.round(volume * 100)} onChange={event => setVolume(Number(event.target.value) / 100)} /></label>
       </div>
       <p className={`christmas-player-status${status === 'error' ? ' has-error' : ''}`} role="status">{message}</p>
-      {isBells ? <p className="christmas-music-note">A fresh bell performance of the classic melody. No streaming account needed.</p> : <a className="christmas-official-link" href={`https://www.youtube.com/watch?v=${trackId}`} target="_blank" rel="noopener noreferrer">Open official video on YouTube <ExternalLink size={14} aria-hidden="true" /></a>}
-    </div>}
+      {isBells ? open && <p className="christmas-music-note">A fresh bell performance of the classic melody. No streaming account needed.</p> : <a className="christmas-official-link" href={`https://www.youtube.com/watch?v=${trackId}`} target="_blank" rel="noopener noreferrer">Open official video on YouTube <ExternalLink size={14} aria-hidden="true" /></a>}
+    </div>
   </aside>;
 }

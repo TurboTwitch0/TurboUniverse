@@ -272,7 +272,7 @@ export default function App() {
     <UpdateAnnouncement />
     <div className="appearance-layout"><AppearanceControls preferences={preferences} onChange={setPreferences} season={season} winterPreferences={winter.preferences} onWinterChange={winter.setPreferences} winterActive={winterActive} /></div>
     {halloween && <HalloweenBanner onDismiss={() => setHalloweenHidden(true)} />}
-    {winterActive && <div className="christmas-lounge"><WinterBanner snowEnabled={winter.preferences.snow} motionAllowed={winter.motionAllowed} onToggleSnow={() => winter.setPreferences(current => ({ ...current, snow: !current.snow }))} onDismiss={() => { winter.setPreferences(current => ({ ...current, display: 'off' })); document.querySelector<HTMLButtonElement>('.season-trigger')?.focus(); }} /><ChristmasPlayer /></div>}
+    <div className={winterActive ? 'christmas-lounge' : 'christmas-radio-host'}>{winterActive && <WinterBanner snowEnabled={winter.preferences.snow} motionAllowed={winter.motionAllowed} onToggleSnow={() => winter.setPreferences(current => ({ ...current, snow: !current.snow }))} onDismiss={() => { winter.setPreferences(current => ({ ...current, display: 'off' })); document.querySelector<HTMLButtonElement>('.season-trigger')?.focus(); }} />}<ChristmasPlayer key="christmas-radio" seasonalVisible={winterActive} /></div>
 
     {offline && <div className="offline-banner" role="status"><WifiOff size={15} /> You’re offline. Explore your saved universe; reconnect to add projects.</div>}
 
