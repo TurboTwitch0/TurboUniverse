@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'A new view of winter',
-        description: 'Explore beneath a blue planet and turquoise auroras, with a new cinematic winter backdrop made for desktop and mobile.',
+        title: 'Christmas, across the universe',
+        description: 'Snow now falls across every page, with frosted backgrounds, evergreen details, and festive lights. Pause the snow or hide decorations in Appearance.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

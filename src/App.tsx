@@ -9,7 +9,7 @@ import PopularWorlds from './components/PopularWorlds';
 import UpdateAnnouncement from './components/UpdateAnnouncement';
 import { useAppearance } from './useAppearance';
 import { HalloweenBanner, HalloweenScene } from './components/HalloweenDecor';
-import { WinterBanner, WinterScene } from './components/WinterAtmosphere';
+import { ChristmasLights, WinterBanner, WinterPageBackdrop, WinterScene } from './components/WinterAtmosphere';
 import { useWinterAtmosphere } from './useWinterAtmosphere';
 import { getWorldPresentation } from './popularWorlds';
 import { getCatalogDescription } from './catalogCopy';
@@ -257,8 +257,9 @@ export default function App() {
   const apps = projects.filter(p => p.type === 'app').length;
 
   return <div className="app-shell" data-halloween={halloween ? 'true' : undefined} data-winter={winterActive ? 'true' : undefined} data-winter-snow={winter.snowRunning ? 'on' : 'off'}>
+    {winterActive && <WinterPageBackdrop />}
     <a className="skip-link" href="#main-content">Skip to content</a>
-    <header className="site-header"><a href="#" className="brand" onClick={e => { e.preventDefault(); navigate('universe'); }} aria-label="TurboUniverse home"><Mark /><span>TURBO<span className="brand-light">UNIVERSE</span><sup>®</sup></span></a>
+    <header className="site-header">{winterActive && <ChristmasLights />}<a href="#" className="brand" onClick={e => { e.preventDefault(); navigate('universe'); }} aria-label="TurboUniverse home"><Mark /><span>TURBO<span className="brand-light">UNIVERSE</span><sup>®</sup></span></a>
       <nav ref={navigationRef} className={mobileNav ? 'main-nav open' : 'main-nav'} aria-label="Main navigation" id="main-navigation"><button className={view === 'universe' ? 'active' : ''} aria-current={view === 'universe' ? 'page' : undefined} onClick={() => navigate('universe')}>The universe</button><button className={view === 'story' ? 'active' : ''} aria-current={view === 'story' ? 'page' : undefined} onClick={() => navigate('story')}>The story</button><button className={view === 'collection' ? 'active' : ''} aria-current={view === 'collection' ? 'page' : undefined} onClick={() => navigate('collection')}>My collection <span className="nav-count">{projects.length}</span></button><button className={view === 'ai' ? 'active' : ''} aria-current={view === 'ai' ? 'page' : undefined} onClick={() => openAI()}>AI studio</button><button className={`nav-chromebook-link ${view === 'chromebooks' ? 'active' : ''}`} aria-current={view === 'chromebooks' ? 'page' : undefined} title="AI (Chromebooks)" onClick={() => navigate('chromebooks')}><Sparkles size={13} />AI (Chromebooks)</button><a className="nav-foundry-link" href="/interface-foundry/" target="_blank" rel="noopener noreferrer" aria-label="Open Interface Foundry">Interface Foundry<ArrowUpRight size={13} /></a></nav>
       <div className="header-actions"><button className="icon-button header-search-button" onClick={focusCollectionSearch} aria-label="Search all worlds" title="Search all worlds"><Search size={18} /></button>{editable ? <button className="add-project-button" onClick={() => setDialog(true)} disabled={offline}><Plus size={16} />Add project</button> : capabilities.canManage && <button className="add-project-button" onClick={() => setLogin(true)} disabled={offline}>Manage collection</button>}{editable && capabilities.requiresLogin && <button className="text-button owner-signout" onClick={() => { setOwnerKey(''); setOwner(false); setDialog(false); setToast('You’re signed out of collection management.'); }}>Sign out</button>}<button ref={navigationToggleRef} className="icon-button mobile-menu" onClick={() => setMobileNav(!mobileNav)} aria-label="Toggle navigation" aria-controls="main-navigation" aria-expanded={mobileNav}>{mobileNav ? <X /> : <Menu />}</button></div>
     </header>
