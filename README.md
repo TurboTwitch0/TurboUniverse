@@ -95,6 +95,8 @@ Choose **Earth** or **Space**, then **Light** or **Dark** in the appearance bar.
 
 The restored T orbit has clickable project satellites. Tap the T or **Spin the universe** to discover a random real project. Star projects to save them on this device, then use the **Saved** filter to find them again. Saved worlds work for visitors too and do not change the public collection.
 
+The **winter edition** adds an icy aurora in Space, a snowy alpine scene in Earth, frosted accents, and 24 lightweight snowflakes. Pause or resume the snowfall from the winter banner. Hide decorations there and restore them under **Appearance options → Winter decorations**; both choices persist on your device. Automatic winter runs November–February in the north and May–August in the south, with manual season previews taking priority. “Always on” keeps winter available all year. Snow pauses in background tabs and follows device and site motion preferences.
+
 ## Update announcements
 
 Each build automatically emits `dist/release.json` with a release ID and a fixed publication timestamp. The site announces that update for exactly 48 hours from that timestamp. Reloading or visiting late never extends the window. Dismissing an announcement hides that release on your device while allowing the next release to appear. The banner also expires while a page stays open and can read cached release metadata offline.

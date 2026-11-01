@@ -18,6 +18,7 @@ import './refinements.css';
 import './brand.css';
 import './mobile-polish.css';
 import './halloween.css';
+import './winter.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><App /></React.StrictMode>,

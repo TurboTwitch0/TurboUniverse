@@ -1,0 +1,71 @@
+/* A light touch of winter. All decoration stays inside the existing atmosphere. */
+.app-shell[data-winter] {
+  --accent: #176cb1;
+  --accent-secondary: #286c89;
+  --hero-image: url('/images/space-06.webp');
+  --winter-ink: #234a68;
+  --winter-line: #cfe4f0;
+}
+:root[data-theme='earth'] .app-shell[data-winter] { --hero-image: url('/images/earth-winter.webp'); }
+:root[data-scheme='dark'] .app-shell[data-winter] { --accent: #a4ddf2; --accent-secondary: #b1d9e8; --winter-ink: #c5e5f5; --winter-line: #a4ddf22e; }
+.winter-banner { display: flex; align-items: center; gap: 16px; padding: 16px 6.2%; border-block: 1px solid var(--winter-line); background: linear-gradient(105deg, #effaff, #f5f9ff 64%, #edf6ff); color: var(--winter-ink); }
+.winter-banner-symbol { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 14px; border: 1px solid #c8e2f0; color: #397eaa; background: #ffffffa6; box-shadow: inset 0 1px #fff; }
+.winter-banner-copy { min-width: 0; }
+.winter-edition-label { display: block; font-size: 9px; font-weight: 600; letter-spacing: 2px; line-height: 1.5; }
+.winter-banner-copy p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; font-weight: 500; }
+.winter-banner-copy p > span { color: #526d83; font-weight: 400; }
+.winter-banner-controls { display: flex; align-items: center; gap: 10px; margin-left: auto; flex: none; }
+.winter-snow-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 14px; border: 1px solid #c8deec; border-radius: 10px; color: var(--winter-ink); background: #ffffffa6; font-size: 10px; white-space: nowrap; }
+.winter-snow-toggle:hover { border-color: var(--accent); background: #fff; }
+.winter-dismiss { display: grid; place-items: center; width: 44px; height: 44px; min-width: 44px; color: var(--winter-ink); border-radius: 10px; }
+.winter-dismiss:hover { background: #dcecf6; }
+.winter-still-status { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding-inline: 7px; font-size: 10px; }
+.winter-banner button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+:root[data-scheme='dark'] .winter-banner { background: linear-gradient(105deg, #112632, #172333 65%, #132732); }
+:root[data-scheme='dark'] .winter-banner-symbol, :root[data-scheme='dark'] .winter-snow-toggle { border-color: #a4ddf233; background: #c5e5f509; color: var(--winter-ink); box-shadow: none; }
+:root[data-scheme='dark'] .winter-banner-copy p > span { color: #a9c7da; }
+:root[data-scheme='dark'] .winter-snow-toggle:hover, :root[data-scheme='dark'] .winter-dismiss:hover { background: #c5e5f517; }
+:root[data-theme][data-scheme] .app-shell[data-winter] .hero.cinematic-hero { background-image: linear-gradient(180deg, #071a3240 0%, #071a3230 48%, #071b38e0 100%), var(--hero-image); }
+:root[data-theme='space'][data-scheme] .app-shell[data-winter] .hero.cinematic-hero { background-color: #143b5a; background-blend-mode: normal, luminosity; }
+.winter-scene { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; user-select: none; }
+.winter-aurora { position: absolute; inset: 0; background: radial-gradient(ellipse at 4% 0%, #a9eaff55, transparent 45%), radial-gradient(ellipse at 98% 13%, #bbc5fa44, transparent 44%), linear-gradient(110deg, #7de4ee0d, transparent 65%); mix-blend-mode: screen; }
+.winter-aurora::after { content: ''; position: absolute; top: -26%; left: -15%; width: 130%; height: 57%; border-radius: 50%; transform: rotate(-12deg); background: linear-gradient(180deg, transparent 48%, #99f0e414 67%, #c5faff44 84%, #b5cdfb12 92%, transparent); filter: blur(15px); }
+.winter-frost { position: absolute; inset: 0; border-top: 1px solid #e9faff63; background: radial-gradient(ellipse at 0% 100%, #d8f5ff21, transparent 37%), radial-gradient(ellipse at 100% 100%, #badfff1f, transparent 37%); box-shadow: inset 0 1px 34px #e6f6ff0a; }
+.winter-crystal { position: absolute; width: clamp(110px, 14vw, 185px); top: 18px; right: 4%; color: #cfecff; opacity: .35; transform: rotate(12deg); }
+.winter-snowfall { position: absolute; inset: 0; overflow: hidden; }
+.winter-flake { position: absolute; top: -12px; left: var(--snow-x); width: var(--snow-size); height: var(--snow-size); border-radius: 50%; background: #f0fbff; opacity: var(--snow-opacity); animation: winter-snowfall var(--snow-duration) var(--snow-delay) linear infinite; }
+.app-shell:not([data-winter-snow='on']) .winter-flake { animation-play-state: paused; }
+.winter-appearance-field { margin-top: 21px; }
+.winter-hero-signature { position: absolute; bottom: 99px; left: 6%; display: flex; align-items: center; gap: 10px; color: #d7eefb; }
+.winter-hero-signature > span { font-size: 7px; font-weight: 500; letter-spacing: 2px; line-height: 1.6; }
+.winter-hero-signature small { display: block; font-size: 5px; letter-spacing: 1.6px; font-weight: 400; opacity: .8; margin-top: 3px; }
+.app-shell[data-winter] .cinematic-hero .hero-title-prefix { color: #d1f2ff; }
+.app-shell[data-winter] .cinematic-hero .hero-live .status-dot { background: #b2eeff; box-shadow: 0 0 11px #b2eeff66; }
+.app-shell[data-winter] .section-kicker > .short-line { background: linear-gradient(90deg, var(--accent), #a1d7e7); }
+.app-shell[data-winter] .project-card:hover { box-shadow: 0 12px 36px #2d729714; }
+@keyframes winter-snowfall { from { transform: translate3d(0, -12px, 0); } to { transform: translate3d(var(--snow-drift), calc(100vh + 40px), 0); } }
+:root[data-motion='off'] .winter-flake { animation: none; top: var(--snow-rest-y); opacity: calc(var(--snow-opacity) * .55); }
+@media (prefers-reduced-motion: reduce) { .winter-flake { animation: none; top: var(--snow-rest-y); opacity: calc(var(--snow-opacity) * .55); } }
+@media (max-width: 700px) {
+  .winter-banner { gap: 11px; padding: 13px 5%; }
+  .winter-banner-copy p { font-size: 12px; }
+  .winter-banner-copy p > span { display: none; }
+  .winter-edition-label { font-size: 8px; letter-spacing: 1.5px; }
+  .winter-banner-controls { gap: 4px; }
+  .winter-snow-toggle { padding: 10px; }
+  .winter-crystal { right: -10px; top: 10px; opacity: .27; }
+  .winter-hero-signature { bottom: 81px; left: 5%; }
+}
+@media (max-width: 440px) {
+  .winter-banner { gap: 9px; }
+  .winter-banner-symbol { width: 38px; height: 38px; border-radius: 12px; }
+  .winter-banner-copy { flex: 1; }
+  .winter-banner-copy p { font-size: 11px; }
+  .winter-banner-controls { margin-left: 0; }
+  .winter-snow-toggle { width: 44px; min-width: 44px; padding: 10px; }
+  .winter-snow-toggle > span, .winter-still-status > span { display: none; }
+  .winter-still-status { justify-content: center; width: 44px; padding: 0; }
+  .winter-hero-signature > svg { width: 16px; }
+  .winter-hero-signature > span { font-size: 6px; letter-spacing: 1.4px; }
+  .winter-hero-signature small { font-size: 5px; letter-spacing: 1px; }
+}

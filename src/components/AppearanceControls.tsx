@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, Globe2, Leaf, Moon, Orbit, SlidersHorizontal, Snowflake, Sprout, Sun, X } from 'lucide-react';
 import { SEASONS, SEASON_LABELS, type AppearancePreferences, type Season } from '../theme';
+import type { WinterPreferences } from '../winter';
 
-type Props = { preferences: AppearancePreferences; onChange: (preferences: AppearancePreferences) => void; season: Season };
+type Props = { preferences: AppearancePreferences; onChange: (preferences: AppearancePreferences) => void; season: Season; winterPreferences: WinterPreferences; onWinterChange: (preferences: WinterPreferences) => void };
 const seasonIcons = { spring: Sprout, summer: Sun, autumn: Leaf, winter: Snowflake };
 
-export default function AppearanceControls({ preferences, onChange, season }: Props) {
+export default function AppearanceControls({ preferences, onChange, season, winterPreferences, onWinterChange }: Props) {
   const [open, setOpen] = useState(false);
   const dialog = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -56,6 +57,8 @@ export default function AppearanceControls({ preferences, onChange, season }: Pr
         <label className="field appearance-season-field">Season<select aria-label="Season" value={preferences.season} onChange={event => onChange({ ...preferences, season: event.target.value as AppearancePreferences['season'] })}><option value="auto">Follow the time of year</option>{SEASONS.map(item => <option key={item} value={item}>{SEASON_LABELS[item]} preview</option>)}</select></label>
         <p className="field-hint">Automatic colors and backgrounds change with your local calendar. Preview any season whenever you like.</p>
         <label className="field appearance-hemisphere-field">Your hemisphere<select aria-label="Your hemisphere" value={preferences.hemisphere} onChange={event => onChange({ ...preferences, hemisphere: event.target.value as AppearancePreferences['hemisphere'] })}><option value="north">Northern hemisphere</option><option value="south">Southern hemisphere</option></select></label>
+        <label className="field winter-appearance-field">Winter decorations<select aria-label="Winter decorations" value={winterPreferences.display} onChange={event => onWinterChange({ ...winterPreferences, display: event.target.value as WinterPreferences['display'] })}><option value="auto">Follow the winter season</option><option value="on">Always on</option><option value="off">Hidden</option></select></label>
+        <p className="field-hint">Winter arrives November–February in the north and May–August in the south. Season previews follow your selection.</p>
         <label className="appearance-motion"><span><strong>Let the universe move</strong><small>Gentle orbits, subtle light, a little wonder.</small></span><input type="checkbox" checked={preferences.motion} onChange={event => onChange({ ...preferences, motion: event.target.checked })} /></label>
         <button className="primary-button appearance-done" onClick={() => setOpen(false)}>That’s my atmosphere <SeasonIcon size={16} /></button>
       </div>

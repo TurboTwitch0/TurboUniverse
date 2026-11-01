@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'A Halloween visit to the universe',
-        description: 'Pumpkins, bats, and warm orange accents appear on October 31 and disappear at midnight. Keep exploring in your favorite Earth or Space atmosphere.',
+        title: 'Welcome to the winter edition',
+        description: 'An icy aurora, snowy Earth landscapes, and gentle snowfall. Pause the snow or make winter your own in Appearance, with all your worlds still a click away.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

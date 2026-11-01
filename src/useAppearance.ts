@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { APPEARANCE_STORAGE_KEY, parseAppearancePreferences, resolveSeason, SEASON_LABELS, type AppearancePreferences } from './theme';
+import { isWinterSeason } from './winter';
 
 function readPreferences(): AppearancePreferences {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -55,5 +56,5 @@ export function useAppearance() {
     };
   }, []);
 
-  return { preferences, setPreferences, season, seasonLabel: SEASON_LABELS[season], isHalloween };
+  return { preferences, setPreferences, season, seasonLabel: SEASON_LABELS[season], isHalloween, winterSeason: isWinterSeason(preferences, now) };
 }
