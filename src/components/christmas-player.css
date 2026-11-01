@@ -1,6 +1,12 @@
 .christmas-player { --radio-ink: #f6f0df; --radio-muted: #c6d6ce; color: var(--radio-ink); background: linear-gradient(135deg, #123c33, #08261f 72%); border: 1px solid #a2bc8270; border-radius: 18px; box-shadow: 0 14px 45px #001c233d, inset 0 1px #ffffff12; width: min(100%, 430px); position: relative; isolation: isolate; }
 .christmas-player button, .christmas-player select, .christmas-player input { font: inherit; }
 .christmas-player button { cursor: pointer; }
+.christmas-player[hidden] { display: none !important; }
+.christmas-player-top { display: flex; align-items: center; }
+.christmas-player-top > .christmas-player-toggle { flex: 1; width: auto; min-width: 0; }
+.christmas-player-hide { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 44px; min-height: 44px; margin-right: 8px; color: var(--radio-muted); background: #ffffff0b; border: 1px solid #bacbac50; border-radius: 9px; font-size: 9px !important; }
+.header-actions .header-radio-button { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 44px; width: 44px; height: 44px; color: var(--accent); }
+@media (max-width: 360px) { .site-header:has(.header-radio-button) { padding-inline: 12px; gap: 6px; } .site-header:has(.header-radio-button) .brand { font-size: 13px; gap: 4px; } .site-header:has(.header-radio-button) .brand-mark { width: 22px; } }
 .christmas-player-toggle { width: 100%; display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 13px 18px; color: inherit; background: none; border: 0; border-radius: 18px; text-align: left; }
 .christmas-player-toggle > span:nth-child(2) { min-width: 0; flex: 1; }
 .christmas-player-toggle strong { display: block; font-size: 15px; letter-spacing: -.02em; }

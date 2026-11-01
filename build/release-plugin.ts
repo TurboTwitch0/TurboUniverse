@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'Your Christmas soundtrack stays with you',
-        description: 'Minimize Christmas radio and keep your track playing. Reopen it anytime, or pause, mute, and stop from the compact player.',
+        title: 'Hide the player. Keep the bells.',
+        description: 'Hide Christmas radio completely while local bells keep playing. Restore it from the music button in the header. Hidden videos pause.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

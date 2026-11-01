@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import { ChevronDown, ExternalLink, Music2, Pause, Play, Square, Volume2, VolumeX } from 'lucide-react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { ChevronDown, ExternalLink, Music2, Pause, Play, Square, Volume2, VolumeX, X } from 'lucide-react';
 import { ChristmasBells, JINGLE_DURATION } from '../lib/christmas-music';
 import './christmas-player.css';
 
@@ -40,11 +40,12 @@ function loadYouTube() {
   return youtubePromise;
 }
 
-export default function ChristmasPlayer({ seasonalVisible = true }: { seasonalVisible?: boolean }) {
+export default function ChristmasPlayer({ seasonalVisible = true, restoreRequest = 0, onHide }: { seasonalVisible?: boolean; restoreRequest?: number; onHide?: () => void }) {
   const panelId = useId();
   const [open, setOpen] = useState(false);
   const [engaged, setEngaged] = useState(false);
   const [docked, setDocked] = useState(false);
+  const [uiHidden, setUIHidden] = useState(false);
   const [trackId, setTrackId] = useState('bells');
   const [status, setStatus] = useState<'idle' | 'loading' | 'playing' | 'paused' | 'ended' | 'error'>('idle');
   const [message, setMessage] = useState('Press play for a little Christmas.');
@@ -57,15 +58,26 @@ export default function ChristmasPlayer({ seasonalVisible = true }: { seasonalVi
   const playerTimer = useRef<number | undefined>(undefined);
   const attempt = useRef(0);
   const currentVolume = useRef(.55);
+  const hiddenRef = useRef(false);
+  const videoPlayRequested = useRef(false);
+  const playerElement = useRef<HTMLElement>(null);
   const track = tracks.find(item => item.id === trackId)!;
   const isBells = trackId === 'bells';
 
   useEffect(() => { if (!seasonalVisible) { setOpen(false); setDocked(true); } }, [seasonalVisible]);
+  useEffect(() => {
+    if (!restoreRequest) return;
+    hiddenRef.current = false;
+    setUIHidden(false); setEngaged(true); setDocked(true); setOpen(true);
+  }, [restoreRequest]);
+  useLayoutEffect(() => {
+    if (restoreRequest && open && !uiHidden) playerElement.current?.querySelector<HTMLButtonElement>('.christmas-play')?.focus({ preventScroll: true });
+  }, [restoreRequest, open, uiHidden]);
   useEffect(() => () => { attempt.current++; window.clearTimeout(playerTimer.current); bells.current?.dispose(); video.current?.destroy(); }, []);
   useEffect(() => {
     currentVolume.current = muted ? 0 : volume;
     bells.current?.setVolume(currentVolume.current);
-    if (video.current) { video.current.setVolume(Math.round(volume * 100)); if (muted) video.current.mute(); else video.current.unMute(); }
+    if (video.current) { video.current.setVolume?.(Math.round(volume * 100)); if (muted) video.current.mute?.(); else video.current.unMute?.(); }
   }, [muted, volume]);
   useEffect(() => {
     if (status !== 'playing' || !isBells) return;
@@ -78,6 +90,7 @@ export default function ChristmasPlayer({ seasonalVisible = true }: { seasonalVi
   }, [status, isBells]);
 
   function stop() {
+    videoPlayRequested.current = false;
     attempt.current++;
     window.clearTimeout(playerTimer.current);
     bells.current?.stop();
@@ -87,7 +100,18 @@ export default function ChristmasPlayer({ seasonalVisible = true }: { seasonalVi
   }
   function choose(id: string) { stop(); setTrackId(id); }
   function toggleOpen() { setEngaged(true); if (open) setDocked(true); setOpen(current => !current); }
-  function pause() { bells.current?.pause(); video.current?.pauseVideo(); if (isBells) { setPosition(bells.current?.position ?? 0); setStatus('paused'); setMessage('Paused. Your place is saved.'); } }
+  function pause() { videoPlayRequested.current = false; bells.current?.pause(); video.current?.pauseVideo?.(); if (isBells) { setPosition(bells.current?.position ?? 0); setStatus('paused'); setMessage('Paused. Your place is saved.'); } }
+  function hide() {
+    hiddenRef.current = true;
+    setUIHidden(true); setEngaged(true); setDocked(true); setOpen(false);
+    if (!isBells) {
+      videoPlayRequested.current = false;
+      window.clearTimeout(playerTimer.current);
+      video.current?.pauseVideo?.();
+      setStatus('paused'); setMessage('Video paused while hidden. Press Play to resume.');
+    }
+    onHide?.();
+  }
   function watchVideo(request: number) {
     window.clearTimeout(playerTimer.current);
     playerTimer.current = window.setTimeout(() => {
@@ -98,10 +122,11 @@ export default function ChristmasPlayer({ seasonalVisible = true }: { seasonalVi
 
   async function play() {
     setEngaged(true);
+    if (!isBells) videoPlayRequested.current = true;
     if (!isBells && video.current && status !== 'error') {
       setStatus('loading'); setMessage('Starting the official video…');
       watchVideo(attempt.current);
-      video.current.playVideo();
+      video.current.playVideo?.();
       return;
     }
     const request = ++attempt.current;
@@ -119,7 +144,7 @@ export default function ChristmasPlayer({ seasonalVisible = true }: { seasonalVi
         setStatus('playing'); setMessage('Playing Jingle Bells · original bell arrangement');
       } else {
         const api = await loadYouTube();
-        if (request !== attempt.current || !videoHost.current) return;
+        if (request !== attempt.current || !videoHost.current || hiddenRef.current || !videoPlayRequested.current) return;
         const element = document.createElement('div');
         videoHost.current.replaceChildren(element);
         video.current = new api.Player(element, {
@@ -129,18 +154,20 @@ export default function ChristmasPlayer({ seasonalVisible = true }: { seasonalVi
             onReady: () => {
               if (request !== attempt.current) return;
               window.clearTimeout(playerTimer.current);
+              if (hiddenRef.current || !videoPlayRequested.current) { video.current?.pauseVideo?.(); return; }
               const iframe = videoHost.current?.querySelector('iframe');
               if (iframe) { iframe.title = `${track.artist} — ${track.title}, official YouTube video`; iframe.referrerPolicy = 'strict-origin-when-cross-origin'; }
               video.current?.setVolume(Math.round(currentVolume.current * 100));
               watchVideo(request);
-              video.current?.playVideo();
+              video.current?.playVideo?.();
             },
             onStateChange: (event: { data: number }) => {
               if (request !== attempt.current) return;
-              if (event.data === 1) { window.clearTimeout(playerTimer.current); setStatus('playing'); setMessage(`Playing ${track.title}`); }
-              else if (event.data === 2) { window.clearTimeout(playerTimer.current); setStatus('paused'); setMessage('Video paused.'); }
+              if (hiddenRef.current && (event.data === 1 || event.data === 3)) { video.current?.pauseVideo?.(); return; }
+              if (event.data === 1) { videoPlayRequested.current = true; window.clearTimeout(playerTimer.current); setStatus('playing'); setMessage(`Playing ${track.title}`); }
+              else if (event.data === 2) { window.clearTimeout(playerTimer.current); setStatus('paused'); setMessage(hiddenRef.current ? 'Video paused while hidden. Press Play to resume.' : 'Video paused.'); }
               else if (event.data === 0) { window.clearTimeout(playerTimer.current); setStatus('ended'); setMessage('Track finished. Pick another or play it again.'); }
-              else if (event.data === 3) { watchVideo(request); setStatus('loading'); setMessage('Video buffering…'); }
+              else if (event.data === 3 && videoPlayRequested.current) { watchVideo(request); setStatus('loading'); setMessage('Video buffering…'); }
             },
             onAutoplayBlocked: () => { if (request === attempt.current) { window.clearTimeout(playerTimer.current); setStatus('paused'); setMessage('Select Play in the video to start the music.'); } },
             onError: (event: { data: number }) => {
@@ -156,19 +183,22 @@ export default function ChristmasPlayer({ seasonalVisible = true }: { seasonalVi
         watchVideo(request);
       }
     } catch (error) {
-      if (request !== attempt.current) return;
+      if (request !== attempt.current || (!isBells && !videoPlayRequested.current)) return;
       setStatus('error'); setMessage(error instanceof Error ? error.message : 'Music could not start. Please try again.');
     }
   }
 
   if (!seasonalVisible && !engaged) return null;
 
-  return <aside className={`christmas-player${open ? ' is-open' : engaged ? ' is-mini' : ''}${engaged && (docked || !open || !seasonalVisible) ? ' is-docked' : ''}`} aria-label="Christmas music">
+  return <aside ref={playerElement} hidden={uiHidden} className={`christmas-player${open ? ' is-open' : engaged ? ' is-mini' : ''}${engaged && (docked || !open || !seasonalVisible) ? ' is-docked' : ''}`} aria-label="Christmas music">
+    <div className="christmas-player-top">
     <button className="christmas-player-toggle" onClick={toggleOpen} aria-label={open ? 'Minimize Christmas radio' : 'Open Christmas radio'} title={open ? 'Minimize · music keeps playing' : 'Open Christmas radio'} aria-expanded={open} aria-controls={panelId}>
       <span className="christmas-player-icon"><Music2 size={19} aria-hidden="true" /></span>
       <span><strong>{!open && engaged ? track.title : 'Christmas radio'}</strong><small>{open ? 'Minimize · music keeps playing' : engaged ? `${status === 'playing' ? 'Playing' : status === 'paused' ? 'Paused' : status === 'loading' ? 'Loading' : 'Christmas radio'} · Open radio` : 'Jingle Bells + holiday favorites'}</small></span>
       <ChevronDown size={18} className="christmas-player-chevron" aria-hidden="true" />
     </button>
+    <button className="christmas-player-hide" onClick={hide} aria-label="Hide Christmas radio" title={isBells ? 'Hide · music keeps playing' : 'Hide · pauses video'}><X size={16} aria-hidden="true" /><span>Hide</span></button>
+    </div>
     <div className="christmas-player-panel" hidden={!open && !engaged}>
       <div id={panelId} hidden={!open}>
       <label className="christmas-track-label" htmlFor={`${panelId}-track`}>Pick your holiday track</label>
