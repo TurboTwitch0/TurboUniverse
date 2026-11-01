@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'Christmas, across the universe',
-        description: 'Snow now falls across every page, with frosted backgrounds, evergreen details, and festive lights. Pause the snow or hide decorations in Appearance.',
+        title: 'Christmas, turned up',
+        description: 'A Christmas-night universe, frosted worlds, and holiday radio. Play original Jingle Bells or choose a favorite official holiday video.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

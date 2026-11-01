@@ -1,87 +1,90 @@
-/* Snow and Christmas color travel through the whole hub, behind its content. */
-.app-shell[data-winter] {
-  position: relative;
-  isolation: isolate;
-  --theme-background: #deedf2;
-  --theme-panel: #f5fcf8e8;
-  --theme-panel-raised: #e5f2edeb;
-  --theme-text: #163e45;
-  --theme-muted: #48676b;
-  --theme-line: #b9d4d2;
-  --accent: #196d73;
-  --accent-secondary: #39785f;
-  --accent-ink: #fff;
-  --winter-ink: #265958;
-  --winter-line: #b8d7d2;
-  --christmas-red: #a34154;
-  --christmas-gold: #a17935;
-  --christmas-tree: #67978c;
-  background: linear-gradient(150deg, #d9eaf6, #dfefec 48%, #e9f0df);
-  color: var(--theme-text);
+/* A Christmas night that continues behind every route and every scroll. */
+:root[data-theme][data-scheme] .app-shell[data-winter] {
+  position: relative; isolation: isolate;
+  --theme-background: #061d20; --theme-panel: #102f2ef2; --theme-panel-raised: #1a4039;
+  --theme-text: #f4f5e8; --theme-muted: #b7c9c2; --theme-line: #3b5c50;
+  --accent: #eed08e; --accent-secondary: #a7d7bc; --accent-ink: #18372c;
+  --hero-rgb: 6, 29, 32; --winter-ink: #f4f5e8; --winter-line: #3b5c50;
+  --christmas-red: #ed9b9e; --christmas-gold: #e8c77f; --christmas-tree: #2a6a54;
+  background: #061d20; color: var(--theme-text);
 }
-body:has(.app-shell[data-winter]) { background: #deedf2; }
+body:has(.app-shell[data-winter]) { background: #061d20; }
 .app-shell[data-winter] .winter-page-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-  user-select: none;
-  background-image: radial-gradient(circle at 19px 28px, #ffffffa3 0 1px, transparent 1.6px), radial-gradient(circle at 83px 91px, #ffffffa6 0 1.5px, transparent 2px), radial-gradient(ellipse at 12% 15%, #d6e9fa, transparent 60%), linear-gradient(135deg, #dbebf4, #e0f0ea 58%, #e8eedc);
-  background-size: 127px 139px, 233px 251px, 100% 100%, 100% 100%;
+  position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; user-select: none;
+  background-image: radial-gradient(circle at 19px 28px, #fff2c461 0 1px, transparent 1.6px), radial-gradient(circle at 83px 91px, #daf7ed4f 0 1px, transparent 2px), radial-gradient(ellipse at 0 18%, #165b4d88, transparent 55%), radial-gradient(ellipse at 100% 40%, #722f3a5e, transparent 55%), linear-gradient(145deg, #061e24, #0c2a26 55%, #12271f);
+  background-size: 127px 139px, 233px 251px, 100% 100%, 100% 100%, 100% 100%;
 }
-.app-shell[data-winter] .winter-page-landscape { position: absolute; bottom: -1px; left: 0; width: 100%; height: clamp(160px, 28vh, 340px); opacity: .43; }
-.app-shell[data-winter] .winter-snow-drift { fill: #f6fffb; }
+.christmas-ornaments { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .85; }
+.christmas-hero-baubles { position: absolute; top: 0; right: 2%; width: clamp(100px, 18vw, 260px); opacity: .85; }
+.app-shell[data-winter] .winter-page-landscape { position: absolute; bottom: -1px; left: 0; width: 100%; height: clamp(160px, 29vh, 340px); opacity: .4; }
+.app-shell[data-winter] .winter-snow-drift { fill: #4d8a762d; }
 .app-shell[data-winter] .winter-tree-silhouette { fill: var(--christmas-tree); }
-.app-shell[data-winter] .winter-tree-snow { fill: #f8ffff; }
-.app-shell[data-winter] .winter-page-backdrop .winter-flake { width: calc(var(--snow-size) * 1.8); height: calc(var(--snow-size) * 1.8); background: #fff; box-shadow: 0 0 5px #ffffff8c; }
+.app-shell[data-winter] .winter-tree-snow { fill: #c4dfce; }
+.app-shell[data-winter] .winter-page-backdrop .winter-flake { width: calc(var(--snow-size) * 1.4); height: calc(var(--snow-size) * 1.4); background: #f3fff9; }
 .app-shell[data-winter] :is(main, .world-stage, .universe-showcase, .neptune-section, .popular-worlds, .projects-section, .ai-section, .story-page) { background-color: transparent; }
-.app-shell[data-winter] .site-header { background: #edf8f2eb; border-bottom-color: #b2cec7; box-shadow: 0 3px 18px #335d5a09; }
-.app-shell[data-winter] .appearance-bar { background: #edf7f0c7; }
-.app-shell[data-winter] .update-announcement { background: #f6fbf3d9; }
-.app-shell[data-winter] .winter-banner { background: linear-gradient(105deg, #e2f2e9e8, #f1f7eae8 65%, #e4f1eee8); border-color: #bad7cc; }
-.app-shell[data-winter] .winter-banner-symbol { color: #397860; border-color: #b8d4c6; background: #f8fff9bd; }
-.app-shell[data-winter] .winter-edition-label { color: var(--christmas-red); }
-.app-shell[data-winter] .winter-banner-copy p > span { color: var(--theme-muted); }
-.app-shell[data-winter] .site-footer { background: linear-gradient(180deg, #edf7edc9, #dcebe1ee); border-top: 1px solid #b5cec2; }
-.app-shell[data-winter] :is(.project-card, .showcase-catalog, .showcase-ai, .world-stage-frame, .collection-stats, .ai-preview, .ai-workspace, .empty-state) { background-color: var(--theme-panel); border-color: var(--theme-line); box-shadow: inset 0 1px #ffffffc4, 0 10px 34px #285a5c0c; }
-.app-shell[data-winter] :is(.showcase-world-row, .search-field, .showcase-prompt, .neptune-orbit-scene .orbit-world) { background: var(--theme-panel); }
-.app-shell[data-winter] .main-nav.open { background: #f0faf5f7; }
-.app-shell[data-winter] .section-kicker > .short-line { background: linear-gradient(90deg, #31745e, #ab914d); }
-.app-shell[data-winter] :is(.heading-period, .showcase-label) { color: var(--christmas-red); }
-.app-shell[data-winter] .christmas-lights { position: absolute; top: 0; inset-inline: 0; height: 12px; display: flex; align-items: flex-start; justify-content: space-around; gap: 8px; overflow: hidden; pointer-events: none; user-select: none; }
-.app-shell[data-winter] .christmas-lights::before { content: ''; position: absolute; top: 0; inset-inline: 0; height: 1px; background: #35645255; }
-.app-shell[data-winter] .christmas-lights > span { position: relative; flex: none; width: 5px; height: 7px; margin-top: 2px; border-radius: 2px 2px 50% 50%; background: var(--bulb-color); box-shadow: 0 1px 7px color-mix(in srgb, var(--bulb-color) 50%, transparent); }
-.app-shell[data-winter] .christmas-lights > span::before { content: ''; position: absolute; top: -2px; left: 1px; width: 3px; height: 2px; border-radius: 1px; background: #62816d; }
-:root[data-scheme='dark'] .app-shell[data-winter] {
-  --theme-background: #10292f;
-  --theme-panel: #17353be8;
-  --theme-panel-raised: #23464bea;
-  --theme-text: #e1f2ec;
-  --theme-muted: #abcac6;
-  --theme-line: #3d6062;
-  --accent: #a5ddcf;
-  --accent-secondary: #b9d9c0;
-  --accent-ink: #11312f;
-  --winter-ink: #c4e6db;
-  --winter-line: #3e625a;
-  --christmas-red: #f0aab1;
-  --christmas-gold: #dcc38a;
-  --christmas-tree: #6b9c8d;
-  background: #10292f;
+.app-shell[data-winter] .site-header { background: #092924f5; border-color: #bb975b66; box-shadow: 0 4px 24px #00131140; }
+.app-shell[data-winter] .brand { color: #f8e6bd; }
+.app-shell[data-winter] .appearance-bar { background: #0b2a26ed; border-color: #d4bd7a30; }
+.app-shell[data-winter] .update-announcement { background: #12332df0; border-color: #d4bd7a30; }
+.app-shell[data-winter] .main-nav.open { background: #0b2a26fa; }
+.app-shell[data-winter] .christmas-lights { position: absolute; top: 0; inset-inline: 0; height: 15px; display: flex; align-items: flex-start; justify-content: space-around; gap: 8px; overflow: hidden; pointer-events: none; user-select: none; }
+.app-shell[data-winter] .christmas-lights::before { content: ''; position: absolute; top: 0; inset-inline: 0; height: 2px; background: #43745b; }
+.app-shell[data-winter] .christmas-lights > span { position: relative; flex: none; width: 6px; height: 9px; margin-top: 3px; border-radius: 2px 2px 50% 50%; background: var(--bulb-color); box-shadow: 0 1px 11px var(--bulb-color); }
+.app-shell[data-winter] .christmas-lights > span::before { content: ''; position: absolute; top: -3px; left: 1px; width: 4px; height: 3px; border-radius: 1px; background: #8f9564; }
+.christmas-lounge { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(285px, 365px); align-items: start; gap: 25px; padding: 22px 6.2%; background: linear-gradient(110deg, #173e31e8, #102b28dd 57%, #4c2933c4); border-bottom: 1px solid #d4bd7a55; }
+.christmas-lounge .winter-banner { align-self: center; padding: 0; gap: 16px; border: 0; background: none; }
+.christmas-lounge:has(.is-open) .winter-banner { align-self: start; padding-top: 18px; }
+.christmas-lounge .winter-banner-symbol { background: #e3bd6512; color: #f1d99f; border-color: #f1d99f55; box-shadow: none; border-radius: 50%; }
+.christmas-lounge .winter-banner-copy p { font-size: 16px; color: #f5f1df; }
+.christmas-lounge .winter-banner-copy p > span { display: block; font-size: 11px; margin-top: 4px; color: #c5d6ca; font-weight: 400; }
+.christmas-lounge .winter-edition-label { color: #f0cc8b; font-size: 8px; letter-spacing: 2px; }
+.christmas-lounge .winter-banner-controls { gap: 3px; }
+.christmas-lounge .winter-snow-toggle { color: #f7edd1; background: #12342c; border-color: #b6cb9e55; }
+.christmas-lounge .winter-dismiss { color: #c6d7c9; }
+.christmas-lounge .winter-dismiss:hover, .christmas-lounge .winter-snow-toggle:hover { background: #2e5140; }
+.app-shell[data-winter] .site-footer { background: #07221de6; border-top: 1px solid #b89e5d55; padding-bottom: 30px; }
+.app-shell[data-winter] :is(.project-card, .showcase-catalog, .showcase-ai, .world-stage-frame, .collection-stats, .ai-preview, .ai-workspace, .empty-state, .cbai-browser-check, .ai-model-panel, .ai-chat-panel, .ai-start-panel) { background-color: var(--theme-panel); border-color: var(--theme-line); box-shadow: inset 0 1px #fff3cb0d, 0 14px 35px #00141130; }
+.app-shell[data-winter] :is(.showcase-world-row, .showcase-prompt, .neptune-orbit-scene .orbit-world) { background: var(--theme-panel); }
+.app-shell[data-winter] :is(.project-dialog, .detail-dialog, .install-dialog, .appearance-dialog) { border-top: 3px solid #c7a66a; }
+.app-shell[data-winter] .section-kicker > .short-line { background: linear-gradient(90deg, #d6b66f, #c74d5a); }
+.app-shell[data-winter] .section-kicker, .app-shell[data-winter] .hero-eyebrow { color: #ebd5a3; }
+.app-shell[data-winter] :is(.heading-period, .showcase-label) { color: var(--accent); }
+.app-shell[data-winter] .project-card:hover { border-color: #cead6b; box-shadow: 0 14px 38px #00120e50; }
+.app-shell[data-winter] .cbai-engine-card { border-color: #a8b87b66; background-image: linear-gradient(160deg, #082c20b5, #07251eec), url('/images/winter-orbit.webp'); }
+.app-shell[data-winter] .cbai-status-dot { background: #e8c77f; box-shadow: 0 0 12px #e8c77f66; }
+.app-shell[data-winter] .cbai-engine-visual > span { border-color: #d4b574; color: #f1d69e; background: #174934a8; }
+.app-shell[data-winter] .cbai-engine-name small { color: #f1d69e; }
+.app-shell[data-winter] .dialog-backdrop { background: #001713d9; }
+.app-shell[data-winter] :is(.search-field, .appearance-mode, .appearance-mode > button.active) { background: #17392e; color: #f1ecd9; }
+.app-shell[data-winter] :is(.search-field input, .search-field kbd) { color: #f1ecd9; }
+.app-shell[data-winter] .search-field input::placeholder { color: #c1ccbd; }
+.app-shell[data-winter] .appearance-mode { border-color: #7a895e88; }
+.app-shell[data-winter] .appearance-mode > button.active { background: #d9c58d; color: #18372c; }
+/* The saved Light choice becomes frosted paper, while the sky stays Christmas night. */
+:root[data-scheme='light'] .app-shell[data-winter] :is(.project-card, .showcase-catalog, .showcase-ai, .collection-stats, .ai-preview, .ai-workspace, .empty-state, .cbai-browser-check, .ai-model-panel, .ai-chat-panel, .ai-start-panel, .project-dialog, .detail-dialog, .install-dialog, .appearance-dialog) {
+  --theme-background: #edf3e9; --theme-panel: #f7f8eef5; --theme-panel-raised: #e8efdf;
+  --theme-text: #193c31; --theme-muted: #476356; --theme-line: #becfba;
+  --accent: #92324c; --accent-secondary: #37674e; --accent-ink: #fff;
+  color: var(--theme-text); background-color: var(--theme-panel); border-color: var(--theme-line);
 }
-:root[data-scheme='dark'] body:has(.app-shell[data-winter]) { background: #10292f; }
-:root[data-scheme='dark'] .app-shell[data-winter] .winter-page-backdrop { background-image: radial-gradient(circle at 19px 28px, #d6eee51f 0 1px, transparent 1.6px), radial-gradient(circle at 83px 91px, #d6eee526 0 1.5px, transparent 2px), radial-gradient(ellipse at 12% 15%, #193f4e, transparent 60%), linear-gradient(135deg, #112b37, #132f30 58%, #1c3229); }
-:root[data-scheme='dark'] .app-shell[data-winter] .winter-page-landscape { opacity: .22; }
-:root[data-scheme='dark'] .app-shell[data-winter] .winter-snow-drift { fill: #abcfc6; }
-:root[data-scheme='dark'] .app-shell[data-winter] :is(.site-header, .appearance-bar, .update-announcement, .main-nav.open) { background: #153338ed; }
-:root[data-scheme='dark'] .app-shell[data-winter] .winter-banner { background: linear-gradient(105deg, #173d34e8, #203b31e8 65%, #173a39e8); border-color: var(--winter-line); }
-:root[data-scheme='dark'] .app-shell[data-winter] .winter-banner-symbol { color: #b7daca; border-color: #719b8866; background: #a6d6ba0a; }
-:root[data-scheme='dark'] .app-shell[data-winter] .site-footer { background: linear-gradient(180deg, #183a34dc, #17332ded); border-color: #3d6252; }
-:root[data-scheme='dark'] .app-shell[data-winter] :is(.project-card, .showcase-catalog, .showcase-ai, .world-stage-frame, .collection-stats, .ai-preview, .ai-workspace, .empty-state) { box-shadow: inset 0 1px #d8f8ed0d, 0 10px 34px #001b231a; }
+:root[data-scheme='light'] .app-shell[data-winter] .appearance-dialog .appearance-mode { background: var(--theme-background); }
+:root[data-scheme='light'] .app-shell[data-winter] .appearance-dialog .appearance-mode > button { color: var(--theme-text); }
+.app-shell[data-winter] .christmas-player { width: 100%; }
+@media (max-width: 1100px) {
+  .christmas-lounge { grid-template-columns: minmax(0, 1fr) minmax(270px, 330px); gap: 18px; }
+  .christmas-lounge .winter-banner-symbol { display: none; }
+  .christmas-lounge .winter-banner-copy p { font-size: 14px; }
+  .christmas-lounge .winter-snow-toggle { padding-inline: 10px; }
+  .christmas-lounge .winter-snow-toggle > span { display: none; }
+}
 @media (max-width: 700px) {
-  .app-shell[data-winter] .winter-page-landscape { height: 210px; opacity: .4; }
-  .app-shell[data-winter] .christmas-lights { gap: 5px; }
-  .app-shell[data-winter] .christmas-lights > span { width: 4px; height: 6px; }
+  .christmas-lounge { grid-template-columns: minmax(0, 1fr); padding: 18px 5%; gap: 16px; }
+  .christmas-lounge .winter-banner { gap: 8px; }
+  .christmas-lounge .winter-banner-copy { flex: 1; }
+  .christmas-lounge .winter-banner-copy p { font-size: 14px; }
+  .christmas-lounge .winter-banner-copy p > span { font-size: 10px; max-width: 250px; }
+  .christmas-lounge .winter-banner-controls { margin-left: auto; }
+  .app-shell[data-winter] .winter-page-landscape { height: 190px; opacity: .35; }
+  .christmas-ornaments { width: 190%; left: -45%; opacity: .45; }
   .app-shell[data-winter] .christmas-lights > span:nth-child(even) { display: none; }
 }

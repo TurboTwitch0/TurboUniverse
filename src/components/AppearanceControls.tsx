@@ -3,14 +3,14 @@ import { ChevronDown, Globe2, Leaf, Moon, Orbit, SlidersHorizontal, Snowflake, S
 import { SEASONS, SEASON_LABELS, type AppearancePreferences, type Season } from '../theme';
 import type { WinterPreferences } from '../winter';
 
-type Props = { preferences: AppearancePreferences; onChange: (preferences: AppearancePreferences) => void; season: Season; winterPreferences: WinterPreferences; onWinterChange: (preferences: WinterPreferences) => void };
+type Props = { preferences: AppearancePreferences; onChange: (preferences: AppearancePreferences) => void; season: Season; winterPreferences: WinterPreferences; onWinterChange: (preferences: WinterPreferences) => void; winterActive?: boolean };
 const seasonIcons = { spring: Sprout, summer: Sun, autumn: Leaf, winter: Snowflake };
 
-export default function AppearanceControls({ preferences, onChange, season, winterPreferences, onWinterChange }: Props) {
+export default function AppearanceControls({ preferences, onChange, season, winterPreferences, onWinterChange, winterActive = false }: Props) {
   const [open, setOpen] = useState(false);
   const dialog = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
-  const SeasonIcon = seasonIcons[season];
+  const SeasonIcon = winterActive ? Snowflake : seasonIcons[season];
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
@@ -44,7 +44,7 @@ export default function AppearanceControls({ preferences, onChange, season, wint
         <button className={preferences.scheme === 'dark' ? 'active' : ''} aria-pressed={preferences.scheme === 'dark'} onClick={() => onChange({ ...preferences, scheme: 'dark' })}><Moon size={14} /> Dark</button>
       </div>
       <span className="appearance-tagline">Your world. Your perspective.</span>
-      <button className="season-trigger" ref={trigger} aria-label="Appearance options" aria-haspopup="dialog" onClick={() => setOpen(true)}><SeasonIcon size={14} /><span>{SEASON_LABELS[season]}<span className="season-auto"> / {preferences.season === 'auto' ? 'AUTO' : 'PREVIEW'}</span></span><ChevronDown size={12} /></button>
+      <button className="season-trigger" ref={trigger} aria-label="Appearance options" aria-haspopup="dialog" onClick={() => setOpen(true)}><SeasonIcon size={14} /><span>{winterActive ? 'Christmas' : SEASON_LABELS[season]}<span className="season-auto"> / {winterActive && winterPreferences.display === 'on' ? 'ON' : preferences.season === 'auto' ? 'AUTO' : 'PREVIEW'}</span></span><ChevronDown size={12} /></button>
     </section>
     {open && <div className="dialog-backdrop appearance-backdrop" onClick={event => { if (event.currentTarget === event.target) setOpen(false); }}>
       <div className="appearance-dialog" ref={dialog} role="dialog" aria-modal="true" aria-labelledby="appearance-title">

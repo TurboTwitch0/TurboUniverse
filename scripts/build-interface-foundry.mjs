@@ -40,7 +40,7 @@ for (const name of ['index.html', 'assets/app.js', 'assets/styles.css', 'assets/
 await writeFile(path.join(output, 'provenance.json'), JSON.stringify({
   name: pinned.name, repository: pinned.repository, commit: pinned.commit, license: pinned.license,
   copyright: pinned.copyright, mountPath: pinned.mountPath,
-  adaptations: ['Added the hub subpath base URL and footer links to the hub, license, and source provenance.', 'Added hub-owned reader styles and a dialog padding guard. Pinned upstream assets, skill text, and the complete source toolkit remain unchanged.'],
+  adaptations: ['Added the hub subpath base URL and footer links to the hub, license, and source provenance.', 'Added hub-owned reader styles, a dialog padding guard, and seasonal Christmas styling that follows hub appearance preferences. Pinned upstream assets, skill text, and the complete source toolkit remain unchanged.'],
   files,
 }, null, 2) + '\n');
 console.log(`Interface Foundry: ${result.skills} full skills, complete toolkit ZIP, and static assets built at ${pinned.mountPath} from ${pinned.commit}.`);

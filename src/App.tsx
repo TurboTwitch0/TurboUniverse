@@ -11,6 +11,7 @@ import { useAppearance } from './useAppearance';
 import { HalloweenBanner, HalloweenScene } from './components/HalloweenDecor';
 import { ChristmasLights, WinterBanner, WinterPageBackdrop, WinterScene } from './components/WinterAtmosphere';
 import { useWinterAtmosphere } from './useWinterAtmosphere';
+import ChristmasPlayer from './components/ChristmasPlayer';
 import { getWorldPresentation } from './popularWorlds';
 import { getCatalogDescription } from './catalogCopy';
 import { discoverProjects, type DiscoverySort } from './discovery';
@@ -126,6 +127,10 @@ export default function App() {
   const [halloweenHidden, setHalloweenHidden] = useState(false);
   const halloween = isHalloween && !halloweenHidden;
   const winterActive = winter.active && !halloween;
+  useEffect(() => {
+    const color = winterActive ? '#061d20' : getComputedStyle(document.documentElement).getPropertyValue('--theme-background').trim();
+    if (color) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color);
+  }, [winterActive, preferences.mode, preferences.scheme, preferences.palette, season]);
   const [view, setView] = useViewNavigation();
   const [aiStarter, setAIStarter] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
@@ -265,9 +270,9 @@ export default function App() {
     </header>
 
     <UpdateAnnouncement />
-    <div className="appearance-layout"><AppearanceControls preferences={preferences} onChange={setPreferences} season={season} winterPreferences={winter.preferences} onWinterChange={winter.setPreferences} /></div>
+    <div className="appearance-layout"><AppearanceControls preferences={preferences} onChange={setPreferences} season={season} winterPreferences={winter.preferences} onWinterChange={winter.setPreferences} winterActive={winterActive} /></div>
     {halloween && <HalloweenBanner onDismiss={() => setHalloweenHidden(true)} />}
-    {winterActive && <WinterBanner snowEnabled={winter.preferences.snow} motionAllowed={winter.motionAllowed} onToggleSnow={() => winter.setPreferences(current => ({ ...current, snow: !current.snow }))} onDismiss={() => { winter.setPreferences(current => ({ ...current, display: 'off' })); document.querySelector<HTMLButtonElement>('.season-trigger')?.focus(); }} />}
+    {winterActive && <div className="christmas-lounge"><WinterBanner snowEnabled={winter.preferences.snow} motionAllowed={winter.motionAllowed} onToggleSnow={() => winter.setPreferences(current => ({ ...current, snow: !current.snow }))} onDismiss={() => { winter.setPreferences(current => ({ ...current, display: 'off' })); document.querySelector<HTMLButtonElement>('.season-trigger')?.focus(); }} /><ChristmasPlayer /></div>}
 
     {offline && <div className="offline-banner" role="status"><WifiOff size={15} /> You’re offline. Explore your saved universe; reconnect to add projects.</div>}
 
@@ -277,7 +282,7 @@ export default function App() {
           <div className="hero-cinema-grain" aria-hidden="true" />
           {halloween && <HalloweenScene />}
           {winterActive && <WinterScene />}
-          <div className="hero-copy"><div className="eyebrow hero-eyebrow"><span className="hero-coordinate">{winterActive ? 'THE WINTER EDITION' : 'A WORLD OF IDEAS'}</span><span className="hero-eyebrow-line" /><span>BY TURBO</span></div><h1 id="hero-title" aria-label="TurboUniverse"><span className="hero-title-prefix">TURBO</span>UNIVERSE</h1><p className="hero-lead">{winterActive ? 'A quieter sky. A universe of possibility.' : 'All your worlds. One place.'}</p><p className="hero-description">Find your next favorite website. Keep your worlds close.<br />Bring your ideas to life with free, on-device AI.</p><div className="hero-actions"><button className="primary-button" onClick={explore}>Find your next world <ArrowUpRight size={18} /></button><button className="film-button" onClick={() => setFilm(true)}><CirclePlay size={19} strokeWidth={1.4} /> The life of Turbo</button></div></div>
+          <div className="hero-copy"><div className="eyebrow hero-eyebrow"><span className="hero-coordinate">{winterActive ? 'THE CHRISTMAS EDITION' : 'A WORLD OF IDEAS'}</span><span className="hero-eyebrow-line" /><span>BY TURBO</span></div><h1 id="hero-title" aria-label="TurboUniverse"><span className="hero-title-prefix">TURBO</span>UNIVERSE</h1><p className="hero-lead">{winterActive ? 'All your worlds. Wrapped in wonder.' : 'All your worlds. One place.'}</p><p className="hero-description">Find your next favorite website. Keep your worlds close.<br />Bring your ideas to life with free, on-device AI.</p><div className="hero-actions"><button className="primary-button" onClick={explore}>Find your next world <ArrowUpRight size={18} /></button><button className="film-button" onClick={() => setFilm(true)}><CirclePlay size={19} strokeWidth={1.4} /> The life of Turbo</button></div></div>
           <div className="hero-bottom"><span>01 / A UNIVERSE IN THE MAKING</span><button onClick={explore}>BEGIN EXPLORING <ArrowDown size={13} /></button><span className="hero-live"><span className="status-dot" /> {projects.length} WORLDS & COUNTING</span></div>
         </section>
         <WorldStage projects={projects} savedIds={savedIds} mode={preferences.mode} onSelect={openWorld} onSave={toggleSaved} onCategory={category => browseWorlds({ category })} onLaunch={recordRecent} />

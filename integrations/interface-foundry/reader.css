@@ -36,3 +36,90 @@
   .skill-dialog .dialog-header + .dialog-description { display:none; }
   .skill-dialog #skill-feedback { font-size:12px; line-height:1.4; }
 }
+
+/* The hub's Christmas sky continues through this owned integration layer. */
+:root[data-hub-winter] {
+  --paper:#061d20;
+  --paper-deep:#102b29;
+  --ink:#eff8ed;
+  --muted:#b7c9c2;
+  --line:#3c5b50;
+  --acid:#e8c77f;
+  --hub-panel:#12312e;
+  color-scheme:dark;
+}
+:root[data-hub-winter] body { position:relative; isolation:isolate; background:#061d20; }
+:root[data-hub-winter] body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 18px 29px,#f8f2d96b 0 1px,transparent 1.5px) 0 0/153px 171px,
+    radial-gradient(circle at 81px 91px,#e4f6ef40 0 1px,transparent 1.8px) 0 0/233px 227px,
+    radial-gradient(ellipse at 6% 1%,#25615460,transparent 56%),
+    radial-gradient(ellipse at 95% 65%,#77343c26,transparent 44%),
+    linear-gradient(160deg,#061d20,#082622 58%,#061b21);
+}
+:root[data-hub-winter] body::after {
+  content:'';
+  position:absolute;
+  top:0;
+  inset-inline:0;
+  height:12px;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 12px 3px,#e8c77f 0 3px,transparent 4px) 0 0/96px 12px,
+    radial-gradient(ellipse at 44px 3px,#cf5964 0 3px,transparent 4px) 0 0/96px 12px,
+    radial-gradient(ellipse at 76px 3px,#82b49d 0 3px,transparent 4px) 0 0/96px 12px;
+  filter:drop-shadow(0 1px 4px #e8c77f70);
+}
+:root[data-hub-winter] :is(.site-header,.site-footer) { border-color:#426252; }
+:root[data-hub-winter] .brand-mark { color:var(--acid); }
+:root[data-hub-winter] .hero-description { color:var(--muted); }
+:root[data-hub-winter] .hero h1 em { color:var(--acid); }
+:root[data-hub-winter] .status-dot { background:#c54e56; box-shadow:0 0 12px #c54e5666; }
+:root[data-hub-winter] .hero-graphic { background:linear-gradient(145deg,#24483a,#12312e); border-color:#759176; color:#f1f5de; box-shadow:0 20px 60px #00130f55; }
+:root[data-hub-winter] :is(.graphic-top,.graphic-bottom,.graphic-stages li) { border-color:#77937766; }
+:root[data-hub-winter] .graphic-word em { color:#e8c77f; }
+:root[data-hub-winter] .graphic-arrow { color:#d66d76; }
+:root[data-hub-winter] .crosshair { border-color:#b9cd9670; }
+:root[data-hub-winter] .crosshair::before,:root[data-hub-winter] .crosshair::after { background:#b9cd9670; }
+:root[data-hub-winter] .button-primary { background:#e8c77f; color:#15332b; border-color:#e8c77f; }
+:root[data-hub-winter] .button-primary:hover { background:#f5d998; }
+:root[data-hub-winter] .principle-strip { background:#17362e; border-color:#54725c; }
+:root[data-hub-winter] .workflow-layout { background:var(--hub-panel); box-shadow:0 15px 50px #00171344; }
+:root[data-hub-winter] .workflow-panel { background:var(--hub-panel); }
+:root[data-hub-winter] .workflow-tab:hover { background:#244d3e; }
+:root[data-hub-winter] .workflow-tab[aria-selected='true'] { color:#15332b; background:#e8c77f; }
+:root[data-hub-winter] .workflow-tab[aria-selected='true'] small { color:#3d4c2f; }
+:root[data-hub-winter] :is(.output p,.copy-button,.direction-tabs button,.demo-caption,.token-samples) { color:var(--muted); }
+:root[data-hub-winter] .prompt-box { background:#08231f; border-color:var(--line); }
+:root[data-hub-winter] .lab-section { background:#0d2926b3; border-block:1px solid var(--line); }
+:root[data-hub-winter] .direction-tabs { border-color:var(--line); }
+:root[data-hub-winter] .direction-tabs button[aria-selected='true'] { color:#15332b; background:#e8c77f; }
+:root[data-hub-winter] .install-terminal { background:#071c1b; border-color:#52735c; }
+:root[data-hub-winter] .install-terminal pre { color:#e8d5a3; }
+:root[data-hub-winter] .terminal-bar button[aria-pressed='true'] { color:#e8c77f; background:#294335; }
+:root[data-hub-winter] .skill-dialog { background:var(--hub-panel); border-color:#8b9c77; box-shadow:0 24px 100px #0009; }
+:root[data-hub-winter] .skill-dialog::backdrop { background:#021613d9; }
+:root[data-hub-winter] :is(.dialog-close,.dialog-actions button) { background:#e8c77f; color:#15332b; border-color:#e8c77f; }
+:root[data-hub-winter] :is(.dialog-close,.dialog-actions button):hover { background:#f5d998; }
+:root[data-hub-winter] .dialog-actions button:disabled { background:#e8c77f; opacity:.5; }
+:root[data-hub-winter] .toast { background:#e8c77f; color:#15332b; border-color:#f5d998; }
+:root[data-hub-winter] :is(button,a,[tabindex='0']):focus-visible { outline-color:#e8c77f; }
+:root[data-hub-winter] ::selection { background:#e8c77f; color:#15332b; }
+:root[data-hub-winter][data-hub-scheme='light'] :is(.workflow-layout,.skill-dialog) {
+  --hub-panel:#f3f8f0;
+  --ink:#18372e;
+  --muted:#4b675a;
+  --line:#b8cdbd;
+  --paper:#f3f8f0;
+  color:var(--ink);
+  color-scheme:light;
+}
+:root[data-hub-winter][data-hub-scheme='light'] .workflow-tab:hover { background:#dfeddf; }
+:root[data-hub-winter][data-hub-scheme='light'] .prompt-box { background:#e5eee1; }
+:root[data-hub-winter][data-hub-scheme='light'] :is(.workflow-layout,.skill-dialog) :is(button,a,[tabindex='0']):focus-visible { outline-color:#956a20; }
+@media(prefers-reduced-motion:reduce) { :root[data-hub-winter] { scroll-behavior:auto; } }
