@@ -58,7 +58,7 @@
     "id": "turbo-browser-desktop",
     "title": "Turbo Browser Desktop",
     "type": "app",
-    "url": "https://github.com/TurboTwitch0/turbo-browser-native/releases/tag/v0.2.0",
+    "url": "https://github.com/TurboTwitch0/turbo-browser-native/releases/tag/v0.3.0",
     "description": "Download the Windows x64 desktop browser with Chromium-powered tabs, bookmarks, history, downloads, and private browsing. The unsigned public release includes source and SHA-256 checksums; updates are installed manually.",
     "category": "Tools",
     "year": 2026,
