@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'Welcome to the winter edition',
-        description: 'An icy aurora, snowy Earth landscapes, and gentle snowfall. Pause the snow or make winter your own in Appearance, with all your worlds still a click away.',
+        title: 'A new view of winter',
+        description: 'Explore beneath a blue planet and turquoise auroras, with a new cinematic winter backdrop made for desktop and mobile.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

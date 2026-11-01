@@ -32,3 +32,7 @@ Two new original, high-detail astronomy illustrations were generated for the cen
 | --- | --- |
 | `cinematic-horizon.webp` | Cobalt planetary horizon, blue atmosphere, and a distant sunrise |
 | `cinematic-nebula.webp` | Turquoise and amber dust clouds surrounding a deep-blue star field |
+
+## Winter aurora backdrop
+
+`winter-orbit.webp` is new original OpenAI-generated artwork: an imagined frozen world beneath turquoise auroras and a blue ringed planet, with no people, structures, or text. It is an artistic scene, not a scientific photograph. `winter-orbit-mobile.webp` is a portrait crop optimized for phone screens. The original PNG is retained in `/workspace/generated_images/exec-322bf88b-d23a-4bf5-bd37-17e71f86dc86.png`. Both compressed WebP versions were inspected in the site.

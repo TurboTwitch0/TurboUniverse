@@ -2,7 +2,7 @@
 .app-shell[data-winter] {
   --accent: #176cb1;
   --accent-secondary: #286c89;
-  --hero-image: url('/images/space-06.webp');
+  --hero-image: url('/images/winter-orbit.webp');
   --winter-ink: #234a68;
   --winter-line: #cfe4f0;
 }
@@ -26,7 +26,14 @@
 :root[data-scheme='dark'] .winter-banner-copy p > span { color: #a9c7da; }
 :root[data-scheme='dark'] .winter-snow-toggle:hover, :root[data-scheme='dark'] .winter-dismiss:hover { background: #c5e5f517; }
 :root[data-theme][data-scheme] .app-shell[data-winter] .hero.cinematic-hero { background-image: linear-gradient(180deg, #071a3240 0%, #071a3230 48%, #071b38e0 100%), var(--hero-image); }
-:root[data-theme='space'][data-scheme] .app-shell[data-winter] .hero.cinematic-hero { background-color: #143b5a; background-blend-mode: normal, luminosity; }
+:root[data-theme='space'][data-scheme] .app-shell[data-winter] .hero.cinematic-hero {
+  background-color: #102945;
+  background-image: radial-gradient(ellipse at 50% 45%, #06172b4d, #06172b1a 50%, transparent 74%), linear-gradient(180deg, #07152b08, #07152b10 50%, #07152bbf), var(--hero-image);
+  background-blend-mode: normal;
+  background-position: center, center, center 58%;
+}
+:root[data-theme='space'] .winter-aurora { opacity: .32; }
+:root[data-theme='space'] .winter-aurora::after, :root[data-theme='space'] .winter-crystal { display: none; }
 .winter-scene { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; user-select: none; }
 .winter-aurora { position: absolute; inset: 0; background: radial-gradient(ellipse at 4% 0%, #a9eaff55, transparent 45%), radial-gradient(ellipse at 98% 13%, #bbc5fa44, transparent 44%), linear-gradient(110deg, #7de4ee0d, transparent 65%); mix-blend-mode: screen; }
 .winter-aurora::after { content: ''; position: absolute; top: -26%; left: -15%; width: 130%; height: 57%; border-radius: 50%; transform: rotate(-12deg); background: linear-gradient(180deg, transparent 48%, #99f0e414 67%, #c5faff44 84%, #b5cdfb12 92%, transparent); filter: blur(15px); }
@@ -47,6 +54,7 @@
 :root[data-motion='off'] .winter-flake { animation: none; top: var(--snow-rest-y); opacity: calc(var(--snow-opacity) * .55); }
 @media (prefers-reduced-motion: reduce) { .winter-flake { animation: none; top: var(--snow-rest-y); opacity: calc(var(--snow-opacity) * .55); } }
 @media (max-width: 700px) {
+  :root[data-theme='space'] .app-shell[data-winter] { --hero-image: url('/images/winter-orbit-mobile.webp'); }
   .winter-banner { gap: 11px; padding: 13px 5%; }
   .winter-banner-copy p { font-size: 12px; }
   .winter-banner-copy p > span { display: none; }
