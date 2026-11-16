@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'Hide the player. Keep the bells.',
-        description: 'Hide Christmas radio completely while local bells keep playing. Restore it from the music button in the header. Hidden videos pause.',
+        title: 'Three new worlds to explore',
+        description: 'Meet LaunchLab, TurboManager, and TurboFocus. Find them in Apps and Tools, search by name, or save them to your collection.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

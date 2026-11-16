@@ -373,5 +373,38 @@
     "featured": true,
     "year": 2026,
     "createdAt": "2026-10-28T02:27:08.443Z"
+  },
+  {
+    "title": "LaunchLab",
+    "type": "app",
+    "url": "https://launch-lab-indol.vercel.app/",
+    "description": "Build a portfolio through a CSV data studio, simulated service desk, study room, roadmap, and coding missions.",
+    "category": "Tools",
+    "id": "d958cc16-b68e-54bb-b03d-17680678c6f5",
+    "year": 2026,
+    "featured": false,
+    "createdAt": "2026-11-15T00:00:00Z"
+  },
+  {
+    "title": "TurboManager",
+    "type": "app",
+    "url": "https://sites.google.com/view/turbomanager/full-page-embed",
+    "description": "A task and focus workspace with a Pomodoro timer, task completion, and theme controls.",
+    "category": "Tools",
+    "id": "34d8ac7a-df2c-52c8-8e09-1ba173142fae",
+    "year": 2026,
+    "featured": false,
+    "createdAt": "2026-11-15T00:00:00Z"
+  },
+  {
+    "title": "TurboFocus",
+    "type": "app",
+    "url": "https://sites.google.com/view/turbofocus/full-page-embed",
+    "description": "A focus workspace with a Pomodoro timer, active task queue, habit grid, and streaks.",
+    "category": "Tools",
+    "id": "e9de9352-41ad-538c-80b4-d794bb0f5a4c",
+    "year": 2026,
+    "featured": false,
+    "createdAt": "2026-11-15T00:00:00Z"
   }
 ]
