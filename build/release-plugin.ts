@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'Three new worlds to explore',
-        description: 'Meet LaunchLab, TurboManager, and TurboFocus. Find them in Apps and Tools, search by name, or save them to your collection.',
+        title: 'A smoother Christmas radio',
+        description: 'Warmer bells, seeking and repeat, saved radio settings, and clearer hide controls. Reopen your radio anytime from the music button.',
       }, null, 2) + '\n';
     },
     configureServer(server) {
