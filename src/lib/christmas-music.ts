@@ -1,6 +1,9 @@
-/** An original bell performance of J. Pierpont's historic Jingle Bells melody. */
-const frequencies: Record<string, number> = { C: 523.25, D: 587.33, E: 659.25, F: 698.46, G: 783.99 };
-const chorus: [string, number][] = [
+/** Original bell arrangements of historic melodies. */
+const frequencies = { B4: 493.88, C: 523.25, D: 587.33, E: 659.25, F: 698.46, G: 783.99, A: 880, B: 987.77, C6: 1046.5, D6: 1174.66 };
+type Melody = readonly (readonly [keyof typeof frequencies, number])[];
+
+// J. Pierpont's Jingle Bells chorus.
+const jingleBells: Melody = [
   ['E', 1], ['E', 1], ['E', 2], ['E', 1], ['E', 1], ['E', 2],
   ['E', 1], ['G', 1], ['C', 1.5], ['D', .5], ['E', 4],
   ['F', 1], ['F', 1], ['F', 1.5], ['F', .5], ['F', 1], ['E', 1], ['E', 1], ['E', .5], ['E', .5],
@@ -10,16 +13,47 @@ const chorus: [string, number][] = [
   ['F', 1], ['F', 1], ['F', 1.5], ['F', .5], ['F', 1], ['E', 1], ['E', 1], ['E', .5], ['E', .5],
   ['G', 1], ['G', 1], ['F', 1], ['D', 1], ['C', 4],
 ];
-const beat = 60 / 132;
-export const JINGLE_DURATION = chorus.reduce((sum, [, duration]) => sum + duration * beat, 0) + 1;
+
+// Deck the Halls uses the traditional Welsh tune Nos Galan.
+const deckOpening: Melody = [['G', 1.5], ['F', .5], ['E', 1], ['D', 1], ['C', 1], ['D', 1], ['E', 1], ['C', 1]];
+const deckRefrain: Melody = [['D', .5], ['E', .5], ['F', .5], ['D', .5], ['E', 1], ['D', 1], ['C', 1], ['B4', 1], ['C', 2]];
+const deckTheHalls: Melody = [
+  ...deckOpening, ...deckRefrain, ...deckOpening, ...deckRefrain,
+  ['D', 1.5], ['E', .5], ['F', 1], ['D', 1], ['E', 1.5], ['F', .5], ['G', 1], ['D', 1],
+  ['E', .5], ['F', .5], ['G', .5], ['A', .5], ['B', 1], ['C6', 1], ['D6', 1], ['B', 1], ['C6', 2],
+  ...deckOpening,
+  ['A', .5], ['A', .5], ['A', .5], ['A', .5], ['G', 1], ['F', 1], ['E', 1], ['D', 1], ['C', 2],
+];
+
 const harmony = {
   C: [130.81, 164.81, 196],
   F: [174.61, 220, 261.63],
   G: [196, 246.94, 293.66],
+  Am: [110, 130.81, 164.81],
 };
-const bars: (keyof typeof harmony)[] = ['C', 'C', 'C', 'C', 'F', 'C', 'G', 'G', 'C', 'C', 'C', 'C', 'F', 'C', 'G', 'C'];
+
+export type LocalChristmasTrack = 'bells' | 'deck-the-halls';
+type Arrangement = { melody: Melody; beat: number; transpose: number; bars: readonly (keyof typeof harmony)[] };
+const arrangements: Record<LocalChristmasTrack, Arrangement> = {
+  bells: {
+    melody: jingleBells, beat: 60 / 132, transpose: 1,
+    bars: ['C', 'C', 'C', 'C', 'F', 'C', 'G', 'G', 'C', 'C', 'C', 'C', 'F', 'C', 'G', 'C'],
+  },
+  'deck-the-halls': {
+    melody: deckTheHalls, beat: 60 / 116, transpose: 2 ** (-5 / 12),
+    bars: ['C', 'C', 'G', 'C', 'C', 'C', 'G', 'C', 'G', 'C', 'G', 'C', 'C', 'C', 'Am', 'C'],
+  },
+};
+
+export function christmasTrackDuration(track: LocalChristmasTrack) {
+  const { melody, beat } = arrangements[track];
+  return melody.reduce((sum, [, beats]) => sum + beats, 0) * beat + 1;
+}
+export const JINGLE_DURATION = christmasTrackDuration('bells');
 
 export class ChristmasBells {
+  private readonly arrangement: Arrangement;
+  private readonly duration: number;
   private context: AudioContext | null = null;
   private gain: GainNode | null = null;
   private voices = new Map<OscillatorNode, GainNode>();
@@ -28,7 +62,12 @@ export class ChristmasBells {
   private active = false;
   private request = 0;
 
-  get position() { return Math.max(0, Math.min(JINGLE_DURATION, this.offset + (this.active && this.context ? this.context.currentTime - this.startedAt : 0))); }
+  constructor(track: LocalChristmasTrack = 'bells') {
+    this.arrangement = arrangements[track];
+    this.duration = christmasTrackDuration(track);
+  }
+
+  get position() { return Math.max(0, Math.min(this.duration, this.offset + (this.active && this.context ? this.context.currentTime - this.startedAt : 0))); }
 
   async play(volume: number) {
     this.pause();
@@ -45,25 +84,27 @@ export class ChristmasBells {
     catch (error) { if (request !== this.request || this.context !== context) return; throw error; }
     if (request !== this.request || this.context !== context) return;
     if (context.state !== 'running') throw new Error('Sound could not start. Select Play again to enable audio.');
-    if (this.offset >= JINGLE_DURATION - .1) this.offset = 0;
+    if (this.offset >= this.duration - .1) this.offset = 0;
     this.setVolume(volume);
     this.startedAt = context.currentTime;
     this.active = true;
     let time = 0;
-    for (const [note, beats] of chorus) {
+    const { melody, beat, transpose, bars } = this.arrangement;
+    for (const [note, beats] of melody) {
       const ring = Math.min(.72 + beats * .2, 1.5);
       // A strong soft fundamental and quiet, near-harmonic overtones avoid a sharp metallic beep.
       for (const [ratio, level] of [[1, .112], [2.01, .018], [4.02, .004]]) {
-        this.note(frequencies[note] * ratio, time, ring, level, .012);
+        this.note(frequencies[note] * transpose * ratio, time, ring, level, .012);
       }
       time += beats * beat;
     }
     // Quiet lower-register chords and alternating bass give the melody a warm music-box backing.
     for (const [index, chord] of bars.entries()) {
       const start = index * 4 * beat;
-      for (const frequency of harmony[chord]) this.note(frequency, start, 3.6 * beat, .011, .06);
-      this.note(harmony[chord][0] / 2, start, 1.3 * beat, .024, .018);
-      this.note(harmony[chord][2] / 2, start + 2 * beat, 1.1 * beat, .018, .018);
+      const [root, third, fifth] = harmony[chord].map(frequency => frequency * transpose);
+      for (const frequency of [root, third, fifth]) this.note(frequency, start, 3.6 * beat, .011, .06);
+      this.note(root / 2, start, 1.3 * beat, .024, .018);
+      this.note(fifth / 2, start + 2 * beat, 1.1 * beat, .018, .018);
     }
   }
 
@@ -110,7 +151,7 @@ export class ChristmasBells {
     this.voices.clear();
   }
   /** Scrubbing pauses sound; callers may explicitly play again to continue from this position. */
-  seek(seconds: number) { this.pause(); this.offset = Number.isFinite(seconds) ? Math.max(0, Math.min(JINGLE_DURATION, seconds)) : 0; }
+  seek(seconds: number) { this.pause(); this.offset = Number.isFinite(seconds) ? Math.max(0, Math.min(this.duration, seconds)) : 0; }
   stop() { this.pause(); this.offset = 0; }
   dispose() {
     this.stop();

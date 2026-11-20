@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'A smoother Christmas radio',
-        description: 'Warmer bells, seeking and repeat, saved radio settings, and clearer hide controls. Reopen your radio anytime from the music button.',
+        title: 'Two Christmas classics to play offline',
+        description: 'Play Deck the Halls or Jingle Bells directly from the radio card. Minimize the player for a compact play and pause control.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

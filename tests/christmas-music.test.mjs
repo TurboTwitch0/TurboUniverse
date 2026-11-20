@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ChristmasBells, JINGLE_DURATION } from '../src/lib/christmas-music.ts';
+import { ChristmasBells, JINGLE_DURATION, christmasTrackDuration } from '../src/lib/christmas-music.ts';
 
-function audioFixture(t, deferResume = false) {
+function audioFixture(t, deferResume = false, track = 'bells') {
   const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
   const contexts = [], voices = [], gains = [], resumes = [];
   const parameter = () => ({
@@ -36,7 +36,7 @@ function audioFixture(t, deferResume = false) {
     async close() { this.state = 'closed'; }
   }
   Object.defineProperty(globalThis, 'window', { configurable: true, value: { AudioContext: FakeAudioContext } });
-  const bells = new ChristmasBells();
+  const bells = new ChristmasBells(track);
   t.after(() => {
     bells.dispose();
     if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow); else delete globalThis.window;
@@ -121,4 +121,21 @@ test('volume changes are finite, bounded, and safe to mute during playback', asy
   await bells.play(.5);
   for (const value of [2, -.3, NaN, Infinity, 0, .7]) bells.setVolume(value);
   assert.deepEqual(gains[0].gain.targets, [.5, 1, 0, 0, 0, 0, .7]);
+});
+
+test('Deck the Halls uses its own melody and seeks to its own end', async t => {
+  const { bells, voices } = audioFixture(t, false, 'deck-the-halls');
+  const deckDuration = christmasTrackDuration('deck-the-halls');
+  assert.ok(deckDuration > JINGLE_DURATION);
+
+  await bells.play(.4);
+  assert.ok(Math.abs(voices[0].frequency.value - 587.33) < .1, 'opens with D in its arrangement in F');
+  assert.ok(voices.some(voice => voice.startAt > JINGLE_DURATION), 'the arrangement continues after the Jingle Bells limit');
+
+  bells.seek(JINGLE_DURATION + 1);
+  assert.equal(bells.position, JINGLE_DURATION + 1);
+  bells.seek(deckDuration + 1);
+  assert.equal(bells.position, deckDuration);
+  await bells.play(.4);
+  assert.equal(bells.position, 0, 'playing at the end restarts the tune');
 });

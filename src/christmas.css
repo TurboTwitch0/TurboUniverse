@@ -69,7 +69,7 @@ body:has(.app-shell[data-winter]) { background: #061d20; }
 }
 :root[data-scheme='light'] .app-shell[data-winter] .appearance-dialog .appearance-mode { background: var(--theme-background); }
 :root[data-scheme='light'] .app-shell[data-winter] .appearance-dialog .appearance-mode > button { color: var(--theme-text); }
-.app-shell[data-winter] .christmas-player { width: 100%; }
+.app-shell[data-winter] .christmas-player:not(.is-docked) { width: 100%; }
 @media (max-width: 1100px) {
   .christmas-lounge { grid-template-columns: minmax(0, 1fr) minmax(270px, 330px); gap: 18px; }
   .christmas-lounge .winter-banner-symbol { display: none; }
