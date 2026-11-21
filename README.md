@@ -53,6 +53,8 @@ The Space + Light identity uses a consistent cobalt, ink, mist, and cyan palette
 
 The home page’s **Your shortcuts** panel puts up to four saved or recently explored worlds within reach, with direct Open links and project previews. It appears only after you save or explore a world. Opening project details or a card’s **Open world** link also adds it to **Your launchpad**, a compact list of up to six recently explored worlds. Reopening moves it to the front; reload keeps the list when browser storage is available. **Clear recent** clears that history without changing saved worlds. Only project IDs stay in this browser, and browsing still works when storage is blocked. Unpublished projects have GitHub source links with **Setup pending** labels.
 
+Recent visits use fresh device history before each change. Supported Web Locks serialize saved and recent changes across tabs; absent or denied locks use an ordered per-page fallback, which cannot guarantee atomic simultaneous writes between tabs. If recent-history storage fails, that history stays available for the current visit until reload. Storage recovery does not copy a temporary list over another tab’s permanent history; reload reads the permanent list again.
+
 ## Free on-device AI
 
 Open **AI studio** in the navigation or home page preview. **Free local AI** runs the Apache-licensed Qwen2.5 0.5B model in a dedicated browser worker through WebLLM. It generates real streamed replies for Chat, Writing, Studying, Coding, and Brainstorming. There is no paid inference service, API key, subscription, billable credit, or server inference endpoint.

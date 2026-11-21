@@ -1,34 +1,24 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { parseRecentWorlds, RECENT_WORLDS_KEY, rememberWorld } from './recentWorlds';
-
-function readRecentWorlds() {
-  try { return parseRecentWorlds(localStorage.getItem(RECENT_WORLDS_KEY)); }
-  catch { return []; }
-}
+import { useCallback, useEffect, useState } from 'react';
+import { createRecentWorldStore, RECENT_WORLDS_KEY } from './recentWorlds';
+import { withWorldStorageLock } from './worldStorageLock';
 
 export function useRecentWorlds() {
-  const [recentIds, setRecentIds] = useState(readRecentWorlds);
-  const current = useRef(recentIds);
-  const update = useCallback((ids: string[]) => {
-    if (current.current === ids) return;
-    current.current = ids;
-    setRecentIds(ids);
-    try {
-      if (ids.length) localStorage.setItem(RECENT_WORLDS_KEY, JSON.stringify(ids));
-      else localStorage.removeItem(RECENT_WORLDS_KEY);
-    } catch { /* Shortcuts remain available during this visit. */ }
-  }, []);
-  const recordRecent = useCallback((id: string) => update(rememberWorld(current.current, id)), [update]);
-  const clearRecent = useCallback(() => update([]), [update]);
+  const [store] = useState(() => createRecentWorldStore(() => localStorage,
+    action => withWorldStorageLock(RECENT_WORLDS_KEY, action, navigator.locks)));
+  const [recentIds, setRecentIds] = useState(store.snapshot);
+  const recordRecent = useCallback((id: string) => {
+    void store.record(id).then(() => setRecentIds(store.sync()));
+  }, [store]);
+  const clearRecent = useCallback(() => {
+    void store.clear().then(() => setRecentIds(store.sync()));
+  }, [store]);
   useEffect(() => {
     const sync = (event: StorageEvent) => {
       if (event.key !== RECENT_WORLDS_KEY && event.key !== null) return;
-      const ids = readRecentWorlds();
-      current.current = ids;
-      setRecentIds(ids);
+      setRecentIds(store.sync());
     };
     window.addEventListener('storage', sync);
     return () => window.removeEventListener('storage', sync);
-  }, []);
+  }, [store]);
   return { recentIds, recordRecent, clearRecent };
 }
