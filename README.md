@@ -136,6 +136,8 @@ node scripts/smoke-owner-session.mjs
 npm run test:foundry
 ```
 
+Production dependency maintenance uses `npm audit --omit=dev`. The lockfile includes patched Multer and body-parser versions. A narrow override keeps the Blob SDK’s OIDC configuration helper on its patched 0.3.x line until the upstream dependency pin advances; the Blob SDK API stays unchanged.
+
 `npm run test:local-ai` is the separate real-inference check. It downloads the model, requires a working WebGPU device, and uses a persistent isolated browser profile under the task’s work directory. It verifies real replies and another response with external network requests blocked. It is intentionally separate from the standard API tests and daily refresh.
 
 The browser checks use Playwright and installed Chromium (`CHROMIUM_PATH` can override its location), start isolated servers, and leave your collection unchanged. Build first. Feature checks cover all eight seasonal appearances, calendar rollover, hemisphere selection, saved-world persistence, orbit interactions, announcement expiry, and mobile layout. The API tests use temporary storage and exercise real HTTP requests, persistence, validation, and multipart uploads.
