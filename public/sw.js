@@ -1,5 +1,5 @@
 /* TurboUniverse: retain the app shell and last successful project list offline. */
-const VERSION = 'v30-shortcuts-imports';
+const VERSION = 'v31-valid-collections';
 const SHELL_CACHE = `turbo-universe-shell-${VERSION}`;
 const PROJECT_CACHE = `turbo-universe-projects-${VERSION}`;
 let projectRequestSequence = 0;
@@ -13,6 +13,28 @@ const SHELL_FILES = [
   '/images/earth-hero.webp', '/images/earth-detail.webp', '/images/earth-spring.webp', '/images/earth-winter.webp',
   ...Array.from({ length: 6 }, (_, index) => `/images/space-${String(index + 1).padStart(2, '0')}.webp`),
 ];
+
+// A completed 200 response may still be a gateway page or unusable payload.
+// Only the collection contract consumed by the app can replace offline worlds.
+async function usableProjectSnapshot(response) {
+  if (!response?.ok) return false;
+  try {
+    const value = await response.clone().json();
+    if (!value || typeof value !== 'object' || Array.isArray(value) || !Array.isArray(value.projects)) return false;
+    const identifiers = new Set();
+    return value.projects.every(project => {
+      if (!project || typeof project !== 'object' || Array.isArray(project) ||
+          typeof project.id !== 'string' || !project.id.trim() || identifiers.has(project.id) ||
+          typeof project.title !== 'string' || !project.title.trim() ||
+          !['website', 'app'].includes(project.type) || typeof project.url !== 'string' ||
+          typeof project.description !== 'string' || typeof project.category !== 'string' ||
+          !Number.isInteger(project.year) || typeof project.featured !== 'boolean' ||
+          typeof project.createdAt !== 'string') return false;
+      identifiers.add(project.id);
+      return true;
+    });
+  } catch { return false; }
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -38,10 +60,11 @@ self.addEventListener('activate', (event) => {
     // this update installed. Carry it forward before retiring that cache.
     try {
       const projects = await caches.open(PROJECT_CACHE);
-      if (!(await projects.match('/api/projects'))) {
+      if (!(await usableProjectSnapshot(await projects.match('/api/projects')))) {
+        await projects.delete('/api/projects');
         for (const key of keys.filter(key => key.startsWith('turbo-universe-projects-') && key !== PROJECT_CACHE).reverse()) {
           const previous = await (await caches.open(key)).match('/api/projects');
-          if (previous?.ok) { await projects.put('/api/projects', previous); break; }
+          if (await usableProjectSnapshot(previous)) { await projects.put('/api/projects', previous); break; }
         }
       }
     } catch { /* Updating must still work when this device denies storage. */ }
@@ -63,9 +86,9 @@ async function cacheResponse(cacheName, request, response) {
 // Cross-tab fetches can finish out of order. Serialize cache writes and keep
 // the newest successful request; a slow older response must not replace it.
 async function cacheProjectResponse(request, response, sequence) {
-  if (!response.ok) return;
-  // A 200 response whose body is interrupted is not a successful snapshot.
-  try { await response.clone().arrayBuffer(); } catch { return; }
+  // Validate before advancing request order: an invalid newer response cannot
+  // suppress an older, complete collection that is still arriving.
+  if (!(await usableProjectSnapshot(response))) return;
   newestSuccessfulProjectRequest = Math.max(newestSuccessfulProjectRequest, sequence);
   const pending = projectCacheWrites.then(async () => {
     if (sequence < newestSuccessfulProjectRequest) return;
