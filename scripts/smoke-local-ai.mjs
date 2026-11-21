@@ -36,6 +36,7 @@ async function ask(page, question) {
   await page.getByLabel('Your prompt', { exact: true }).fill(question);
   await page.getByRole('button', { name: 'Send prompt', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('[aria-label="Local AI conversation"]')?.getAttribute('aria-busy') === 'false', null, { timeout: 100_000 });
+  await page.waitForFunction(() => document.activeElement?.matches('textarea:not(:disabled)'));
   const alert = page.locator('.ai-local-error');
   assert.equal(await alert.count(), 0, `Generation failed: ${await alert.allTextContents()}`);
   const text = await log.locator('.ai-message-assistant p').last().innerText();

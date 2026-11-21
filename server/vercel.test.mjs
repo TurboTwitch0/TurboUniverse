@@ -84,6 +84,23 @@ test('Vercel mutations require owner access and reject cross-origin writes', asy
   assert.equal((await fetch(`${base}/api/projects/${seed.id}`, { method: 'DELETE', headers: auth })).status, 404);
 });
 
+test('Vercel imports retain setup-pending status across instances and reject unknown statuses', async t => {
+  const settings = { blobToken: 'fake-token', adminKey, blobSDK: fakeBlobSDK(), initialProjects: [] };
+  const base = await fixture(t, settings);
+  for (const status of ['published', null, true]) {
+    const rejected = await fetch(`${base}/api/projects`, { method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' }, body: JSON.stringify({ ...sample, status }) });
+    assert.equal(rejected.status, 400);
+  }
+  const response = await fetch(`${base}/api/projects`, {
+    method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...sample, title: 'Source project', url: 'https://github.com/TurboTwitch0/TurboWatch', status: 'setup-pending' }),
+  });
+  assert.equal(response.status, 201);
+  assert.equal((await response.json()).project.status, 'setup-pending');
+  const reopened = await fixture(t, settings);
+  assert.equal((await (await fetch(`${reopened}/api/projects`)).json()).projects[0].status, 'setup-pending');
+});
+
 test('Vercel cover and downloadable files persist privately across handler instances', async t => {
   const sdk = fakeBlobSDK();
   const settings = { blobToken: 'fake-token', adminKey, blobSDK: sdk, initialProjects: [] };

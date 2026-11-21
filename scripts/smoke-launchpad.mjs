@@ -49,7 +49,11 @@ try {
   const grid = page.locator('.project-grid');
   await grid.getByRole('button', { name: 'View TurboChat', exact: true }).waitFor();
   assert.equal(await page.locator('.recent-worlds').count(), 0);
+  assert.equal(await page.locator('.personal-launchpad').count(), 0, 'No shortcuts are invented for a new visitor');
   await grid.getByRole('button', { name: 'Save TurboChat', exact: true }).click();
+  const shortcuts = page.locator('.personal-launchpad');
+  await shortcuts.getByRole('heading', { name: 'Your shortcuts', exact: true }).waitFor();
+  await assertExternalLink(shortcuts.getByRole('link', { name: 'Open shortcut TurboChat', exact: true }), CHAT_URL);
   await viewWorld(page, 'TurboChat');
   await page.getByRole('button', { name: 'Revisit TurboChat', exact: true }).waitFor();
   assert.deepEqual(await recentTitles(page), ['TurboChat']);
@@ -81,6 +85,13 @@ try {
   assert.match(await source.locator('..').innerText(), /SETUP PENDING/);
   await viewWorld(page, 'TurboWatch');
   await assertExternalLink(page.locator('.recent-worlds').getByRole('link', { name: 'View source for TurboWatch', exact: true }), WATCH_URL);
+  await shortcuts.getByRole('button', { name: 'Recent', exact: true }).click();
+  assert.equal(await shortcuts.getByRole('button', { name: 'Recent', exact: true }).getAttribute('aria-pressed'), 'true');
+  await assertExternalLink(shortcuts.getByRole('link', { name: 'View source for TurboWatch', exact: true }), WATCH_URL);
+  assert.deepEqual(await shortcuts.locator('.personal-shortcut strong').allTextContents(), ['TurboWatch', 'TurboChat', 'TurboGames']);
+  await shortcuts.getByRole('button', { name: 'Preview shortcut TurboGames', exact: true }).click();
+  await page.getByRole('dialog', { name: 'TurboGames', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Close project', exact: true }).click();
 
   const screenshots = path.resolve('../launchpad-checks');
   await mkdir(screenshots, { recursive: true });
@@ -92,13 +103,16 @@ try {
     assert.equal(await page.locator('.recent-worlds').evaluate(element => element.scrollWidth <= element.clientWidth + 1), true, `Recent worlds overflow at ${width}px`);
     const clipped = await page.locator('.recent-world').evaluateAll(elements => elements.some(element => element.scrollWidth > element.clientWidth + 1));
     assert.equal(clipped, false, `Recent world content overflow at ${width}px`);
+    assert.equal(await shortcuts.evaluate(element => element.scrollWidth <= element.clientWidth + 1), true, `Home shortcuts overflow at ${width}px`);
     await page.screenshot({ path: path.join(screenshots, `mobile-${width}.png`) });
   }
 
   await page.getByRole('button', { name: 'Clear recent worlds', exact: true }).click();
   assert.equal(await page.locator('.recent-worlds').count(), 0);
   assert.equal(await page.evaluate(key => localStorage.getItem(key), RECENT_KEY), null);
-  await page.getByRole('group', { name: 'Filter projects' }).getByRole('button', { name: /^Saved/ }).click();
+  assert.deepEqual(await shortcuts.locator('.personal-shortcut strong').allTextContents(), ['TurboChat'], 'Clearing history preserves saved shortcuts');
+  await shortcuts.getByRole('button', { name: 'View saved', exact: true }).click();
+  assert.equal(await page.getByRole('group', { name: 'Filter projects' }).getByRole('button', { name: /^Saved/ }).getAttribute('aria-pressed'), 'true');
   assert.equal(await grid.locator('.project-card').count(), 1);
   await grid.getByRole('button', { name: 'View TurboChat', exact: true }).waitFor();
   await page.reload();
@@ -127,7 +141,7 @@ try {
   assert.equal(await blockedPage.locator('.recent-worlds').count(), 0);
   assert.deepEqual(blockedErrors, []);
   await blockedContext.close();
-  console.log('Launchpad: details, recent order and revisit, canonical secure launch, reload, clear preserving saved worlds, pending source links, malformed/blocked storage, desktop/390/320px passed.');
+  console.log('Launchpad: personalized home shortcuts, saved/recent switching and filtered navigation, details, recent order and revisit, canonical secure launch, reload, clear preserving saved worlds, pending source links, malformed/blocked storage, desktop/390/320px passed.');
 } finally {
   await browser?.close();
   await new Promise(resolve => server.close(resolve));

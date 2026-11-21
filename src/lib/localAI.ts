@@ -1,11 +1,18 @@
 import type { WebWorkerMLCEngine } from '@mlc-ai/web-llm';
 
 export const LOCAL_AI_MODEL = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
+export const LOCAL_AI_INPUT_MAX_BYTES = 1200;
 const FLOAT32_MODEL = 'Qwen2.5-0.5B-Instruct-q4f32_1-MLC';
 const LOAD_TIMEOUT_MS = 5 * 60 * 1000;
 const REPLY_TIMEOUT_MS = 90 * 1000;
 
 export type LocalMessage = { role: 'user' | 'assistant'; content: string };
+export function getLocalPromptError(text: string): string | null {
+  return new TextEncoder().encode(text.trim()).length > LOCAL_AI_INPUT_MAX_BYTES
+    ? 'This prompt is too long for the small local model. Shorten it or ask one part at a time.'
+    : null;
+}
+type LocalAIState = { status: 'idle' | 'loading' | 'ready'; progress: number; busy: boolean };
 type ProgressCallback = (progress: number, text: string) => void;
 type GPUAccess = { requestAdapter(): Promise<{ features: { has(feature: string): boolean } } | null> };
 type Loading = {
@@ -26,6 +33,23 @@ let worker: Worker | null = null;
 let engine: WebWorkerMLCEngine | null = null;
 let loading: Loading | null = null;
 let generation: Generation | null = null;
+let state: LocalAIState = { status: 'idle', progress: 0, busy: false };
+const subscribers = new Set<(state: LocalAIState) => void>();
+
+export function getLocalAIState() { return state; }
+export function subscribeLocalAI(listener: (state: LocalAIState) => void) {
+  subscribers.add(listener);
+  listener(state);
+  return () => {
+    subscribers.delete(listener);
+    if (!subscribers.size) unloadLocalAI();
+  };
+}
+
+function updateState(status: LocalAIState['status'], progress = 0) {
+  state = { status, progress, busy: !!generation };
+  for (const listener of subscribers) listener(state);
+}
 
 function cancelled() {
   return new DOMException('Local AI was cancelled.', 'AbortError');
@@ -50,6 +74,7 @@ function release(error: Error) {
   engine = null;
   worker?.terminate();
   worker = null;
+  updateState('idle');
 }
 
 /** Starts the public model download only when the UI explicitly calls this. */
@@ -74,6 +99,7 @@ export function loadLocalAI(onProgress: ProgressCallback): Promise<void> {
   }, LOAD_TIMEOUT_MS);
   const operation: Loading = { id, promise, reject: rejectLoad, timer };
   loading = operation;
+  updateState('loading');
 
   void (async () => {
     try {
@@ -103,7 +129,11 @@ export function loadLocalAI(onProgress: ProgressCallback): Promise<void> {
       });
       const loaded = await CreateWebWorkerMLCEngine(modelWorker, model, {
         initProgressCallback: report => {
-          if (id === lifecycle) onProgress(Math.min(1, Math.max(0, report.progress)), report.text);
+          if (id === lifecycle) {
+            const progress = Number.isFinite(report.progress) ? Math.min(1, Math.max(0, report.progress)) : 0;
+            updateState('loading', progress);
+            onProgress(progress, report.text);
+          }
         },
       }, { context_window_size: 2048 });
       if (id !== lifecycle) {
@@ -111,6 +141,7 @@ export function loadLocalAI(onProgress: ProgressCallback): Promise<void> {
         return;
       }
       engine = loaded;
+      updateState('ready', 1);
       onProgress(1, 'Local AI is ready.');
       resolveLoad();
     } catch (error) {
@@ -140,7 +171,7 @@ function boundedText(value: string, maxCharacters: number, maxBytes: number): st
 function recentMessages(messages: LocalMessage[]): LocalMessage[] {
   const recent: LocalMessage[] = [];
   let characters = 2400;
-  let bytes = 1200;
+  let bytes = LOCAL_AI_INPUT_MAX_BYTES;
   for (const message of messages.slice(-6).reverse()) {
     const content = boundedText(message.content.trim(), characters, bytes);
     if (!content) continue;
@@ -163,23 +194,31 @@ export async function generateLocalReply(
   const currentEngine = engine;
   if (!currentEngine) throw new Error('Download and load local AI before starting a conversation.');
   if (generation) throw new Error('Local AI is already replying. Stop the current reply first.');
+  const latest = messages.at(-1);
+  if (latest?.role === 'user') {
+    const error = getLocalPromptError(latest.content);
+    if (error) throw new Error(error);
+  }
   const history = recentMessages(messages);
   if (history.at(-1)?.role !== 'user') throw new Error('Enter a message before asking local AI to reply.');
 
   const id = lifecycle;
-  let resolveStop!: (text: string) => void;
   let rejectCancelled!: (error: Error) => void;
-  const interruption = new Promise<string>((resolve, reject) => {
-    resolveStop = resolve;
-    rejectCancelled = reject;
-  });
+  const interruption = new Promise<string>((_, reject) => { rejectCancelled = reject; });
+  let stopTimer: ReturnType<typeof setTimeout> | undefined;
   const operation: Generation = {
     stopped: false,
     text: '',
     cancel: rejectCancelled,
-    stop: () => resolveStop(operation.text),
+    stop: () => {
+      if (stopTimer) return;
+      stopTimer = setTimeout(() => {
+        if (generation === operation) release(new Error('The local model could not stop cleanly. Reload it to continue.'));
+      }, 3000);
+    },
   };
   generation = operation;
+  updateState('ready', 1);
   const timer = setTimeout(() => {
     if (generation !== operation) return;
     currentEngine.interruptGenerate();
@@ -187,36 +226,45 @@ export async function generateLocalReply(
   }, REPLY_TIMEOUT_MS);
 
   const reply = (async () => {
-    const context = boundedText(activity.trim(), 160, 160);
-    const chunks = await currentEngine.chat.completions.create({
-      messages: [
-        {
-          role: 'system',
-          content: 'You are Turbo, a friendly assistant in Turbo Universe. Give brief, helpful, honest answers. You run locally and cannot browse or take actions.'
-            + (context ? ` The user is viewing: ${context}.` : ''),
-        },
-        ...history,
-      ],
-      max_tokens: 192,
-      temperature: 0.7,
-      stream: true,
-    });
-    for await (const chunk of chunks) {
-      if (operation.stopped || id !== lifecycle) return operation.text;
-      operation.text += chunk.choices[0]?.delta.content ?? '';
-      onText(operation.text);
+    try {
+      const context = boundedText(activity.trim(), 160, 160);
+      const chunks = await currentEngine.chat.completions.create({
+        messages: [
+          {
+            role: 'system',
+            content: 'You are Turbo, a friendly assistant in Turbo Universe. Give brief, helpful, honest answers. You run locally and cannot browse or take actions.'
+              + (context ? ` The user is viewing: ${context}.` : ''),
+          },
+          ...history,
+        ],
+        max_tokens: 192,
+        temperature: 0.7,
+        stream: true,
+      });
+      for await (const chunk of chunks) {
+        if (operation.stopped || id !== lifecycle) return operation.text;
+        operation.text += chunk.choices[0]?.delta.content ?? '';
+        onText(operation.text);
+      }
+      if (!operation.stopped && !operation.text.trim()) {
+        throw new Error('Local AI returned an empty reply. Try asking a shorter question.');
+      }
+      return operation.text;
+    } catch (error) {
+      if (operation.stopped) return operation.text;
+      throw error;
     }
-    if (!operation.stopped && !operation.text.trim()) {
-      throw new Error('Local AI returned an empty reply. Try asking a shorter question.');
-    }
-    return operation.text;
   })();
 
   try {
     return await Promise.race([reply, interruption]);
   } finally {
     clearTimeout(timer);
-    if (generation === operation) generation = null;
+    clearTimeout(stopTimer);
+    if (generation === operation) {
+      generation = null;
+      updateState('ready', 1);
+    }
   }
 }
 

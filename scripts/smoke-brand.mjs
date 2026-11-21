@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { chromium } from 'playwright';
@@ -9,7 +10,7 @@ import { createVercelApp } from '../api/index.mjs';
 import catalog from '../server/catalog.json' with { type: 'json' };
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const screenshots = path.resolve(process.env.BRAND_OUTPUT_DIR || path.join(root, '../../outputs/turbouniverse-brand-kit'));
+const screenshots = path.resolve(process.env.BRAND_OUTPUT_DIR || path.join(tmpdir(), 'turbouniverse-brand-kit'));
 const app = express();
 const api = createVercelApp({ blobToken: '', adminKey: '' });
 app.use((request, response, next) => request.path.startsWith('/api/') ? api(request, response, next) : next());

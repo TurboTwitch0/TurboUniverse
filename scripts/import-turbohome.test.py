@@ -47,6 +47,21 @@ class LinkDiscoveryTests(unittest.TestCase):
         self.assertFalse(any("accounts.google.com" in url for url in urls))
         self.assertFalse(any("/d/editor-id/" in url for url in urls))
 
+    def test_malformed_links_do_not_interrupt_valid_project_discovery(self):
+        html = """
+            <a href="https://[broken">Broken bracket</a>
+            <a href="https://good.example／broken">Invalid host</a>
+            <a href="https://example.com:not-a-port/path">Invalid port</a>
+            <a href="https://www.google.com/url?q=https%3A%2F%2F%5Bbroken">Broken redirect</a>
+            <a href="https://studio.example/">Working project</a>
+        """
+        projects = importer.collect_projects([(HOME, html)])
+        self.assertEqual([project['url'] for project in projects], ['https://studio.example/'])
+
+    def test_valid_ipv6_destinations_keep_their_url_brackets_and_port(self):
+        self.assertEqual(importer.normalize_url('https://[2001:db8::1]:443/app#section'), 'https://[2001:db8::1]/app')
+        self.assertEqual(importer.normalize_url('http://[2001:db8::1]:8080/app'), 'http://[2001:db8::1]:8080/app')
+
     def test_internal_scope_is_exact_and_rejects_lookalikes(self):
         self.assertTrue(importer.is_internal(HOME))
         self.assertTrue(importer.is_internal("https://sites.google.com/stu.neisd.net/turbohome/apps"))

@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { ArrowUpRight, LoaderCircle, LockKeyhole, X } from 'lucide-react';
 import { setOwnerKey } from '../api';
 
 export default function OwnerLogin({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const fieldId = useId();
   const [key, setKey] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const dialog = useRef<HTMLDivElement>(null);
+  const keyInput = useRef<HTMLInputElement>(null);
   const request = useRef<AbortController | null>(null);
   const closeRef = useRef(onClose);
   function cancelRequest() {
@@ -27,8 +29,9 @@ export default function OwnerLogin({ onClose, onSuccess }: { onClose: () => void
       const nodes = dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled)');
       if (!nodes?.length) return;
       const first = nodes[0], last = nodes[nodes.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      const outside = !dialog.current?.contains(document.activeElement);
+      if (event.shiftKey && (document.activeElement === first || outside)) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || outside)) { event.preventDefault(); first.focus(); }
     }
     document.addEventListener('keydown', keydown);
     return () => {
@@ -38,6 +41,10 @@ export default function OwnerLogin({ onClose, onSuccess }: { onClose: () => void
       previousFocus?.focus();
     };
   }, []);
+  useEffect(() => {
+    if (busy) dialog.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus();
+    else if (error) keyInput.current?.focus();
+  }, [error, busy]);
   async function login(event: FormEvent) {
     event.preventDefault();
     const ownerKey = key.trim();
@@ -64,9 +71,9 @@ export default function OwnerLogin({ onClose, onSuccess }: { onClose: () => void
     <div className="project-dialog owner-login-dialog" ref={dialog} role="dialog" aria-modal="true" aria-labelledby="owner-login-title">
       <div className="dialog-head"><div><span className="eyebrow">THE CREATOR’S CONTROL ROOM</span><h2 id="owner-login-title">Welcome back, Turbo.</h2></div><button className="icon-button" onClick={closeDialog} aria-label="Close owner sign-in"><X size={20} /></button></div>
       <p className="dialog-description muted">Sign in to add projects and manage your universe.</p>
-      <form onSubmit={login} className="owner-login-form"><label className="field">Owner key<input type="password" name="owner-key" value={key} onChange={event => setKey(event.target.value)} autoComplete="current-password" required disabled={busy} /></label>
-        <p className="field-hint">Your sign-in stays in this browser tab. Close the tab or sign out when you’re done.</p>
-        {error && <p className="form-error" role="alert">{error}</p>}
+      <form onSubmit={login} className="owner-login-form" aria-busy={busy}><label className="field">Owner key<input ref={keyInput} type="password" name="owner-key" value={key} onChange={event => { setKey(event.target.value); setError(''); }} autoComplete="current-password" required disabled={busy} aria-invalid={error ? true : undefined} aria-describedby={error ? `${fieldId}-hint ${fieldId}-error` : `${fieldId}-hint`} /></label>
+        <p id={`${fieldId}-hint`} className="field-hint">Your sign-in stays in this browser tab. Close the tab or sign out when you’re done.</p>
+        {error && <p id={`${fieldId}-error`} className="form-error" role="alert">{error}</p>}
         <div className="form-footer"><span className="muted"><LockKeyhole size={12} /> Owner access</span><button type="submit" className="primary-button" disabled={busy || !key.trim()}>{busy ? <LoaderCircle size={16} className="spin" /> : <ArrowUpRight size={16} />}{busy ? 'Signing in…' : 'Manage my universe'}</button></div>
       </form>
     </div>

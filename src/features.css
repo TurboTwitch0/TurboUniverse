@@ -1,4 +1,5 @@
 .appearance-layout { position: relative; z-index: 12; }
+.appearance-layout:has(.appearance-backdrop) { z-index: 100; }
 .update-announcement { display: flex; align-items: center; gap: 13px; padding: 13px 6.2%; border-bottom: 1px solid var(--theme-line, #4b4133); background: var(--theme-panel, #28231b); color: var(--theme-text, #eee5d5); }
 .update-announcement-icon { display: flex; align-items: center; color: var(--accent); }
 .update-announcement-copy { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; font-size: 11px; line-height: 1.7; }

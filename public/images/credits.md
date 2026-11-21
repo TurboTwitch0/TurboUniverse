@@ -36,3 +36,7 @@ Two new original, high-detail astronomy illustrations were generated for the cen
 ## Winter aurora backdrop
 
 `winter-orbit.webp` is new original OpenAI-generated artwork: an imagined frozen world beneath turquoise auroras and a blue ringed planet, with no people, structures, or text. It is an artistic scene, not a scientific photograph. `winter-orbit-mobile.webp` is a portrait crop optimized for phone screens. The original PNG is retained in `/workspace/generated_images/exec-322bf88b-d23a-4bf5-bd37-17e71f86dc86.png`. Both compressed WebP versions were inspected in the site.
+
+## Full-page Christmas forest
+
+`christmas-forest.webp` is original OpenAI-generated artwork of a dawn snowfield, frosted evergreen trees, and warm Christmas lights, with no people or structures. `christmas-forest-mobile.webp` is a responsive portrait crop. The original is retained at `/workspace/generated_images/exec-4e931fe0-b501-446e-9052-cabd9bc58034.png`.

@@ -18,22 +18,27 @@ function updateWorldUrl(id: string | null, method: 'pushState' | 'replaceState')
 }
 
 /** Project details are addressable, reloadable, and follow browser navigation. */
-export function useWorldLinks<T extends World>(projects: T[]) {
+export function useWorldLinks<T extends World>(projects: T[], ready = true) {
   const [selected, setSelected] = useState<T | null>(null);
+  const [unavailableWorld, setUnavailableWorld] = useState<string | null>(null);
   const projectsRef = useRef(projects);
+  const readyRef = useRef(ready);
   const resolvedId = useRef<string | null>(null);
   projectsRef.current = projects;
+  readyRef.current = ready;
 
   const syncFromLocation = useCallback(() => {
     const id = requestedWorld();
     const project = projectsRef.current.find(item => item.id === id) ?? null;
     // A formerly available world may have been removed from the collection.
-    if (id && id === resolvedId.current && !project) updateWorldUrl(null, 'replaceState');
+    const removed = id && id === resolvedId.current && !project;
+    if (removed) updateWorldUrl(null, 'replaceState');
     resolvedId.current = project?.id ?? null;
     setSelected(project);
+    setUnavailableWorld(readyRef.current && id && !project && !removed ? id : null);
   }, []);
 
-  useEffect(() => { syncFromLocation(); }, [projects, syncFromLocation]);
+  useEffect(() => { syncFromLocation(); }, [projects, ready, syncFromLocation]);
   useEffect(() => {
     window.addEventListener('popstate', syncFromLocation);
     return () => window.removeEventListener('popstate', syncFromLocation);
@@ -42,14 +47,16 @@ export function useWorldLinks<T extends World>(projects: T[]) {
   const openWorld = useCallback((project: T) => {
     updateWorldUrl(project.id, 'pushState');
     resolvedId.current = project.id;
+    setUnavailableWorld(null);
     setSelected(project);
   }, []);
 
   const closeWorld = useCallback(() => {
     updateWorldUrl(null, 'replaceState');
     resolvedId.current = null;
+    setUnavailableWorld(null);
     setSelected(null);
   }, []);
 
-  return { selected, openWorld, closeWorld };
+  return { selected, unavailableWorld, openWorld, closeWorld };
 }

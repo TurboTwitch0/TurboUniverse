@@ -68,11 +68,12 @@ export class ChristmasBells {
   }
 
   get position() { return Math.max(0, Math.min(this.duration, this.offset + (this.active && this.context ? this.context.currentTime - this.startedAt : 0))); }
+  get interrupted() { return this.active && this.context !== null && this.context.state !== 'running'; }
 
   async play(volume: number) {
     this.pause();
     const request = ++this.request;
-    if (!this.context) {
+    if (!this.context || this.context.state === 'closed') {
       if (!window.AudioContext) throw new Error('Bell playback is not supported in this browser. Try one of the official videos.');
       this.context = new window.AudioContext();
       this.gain = this.context.createGain();

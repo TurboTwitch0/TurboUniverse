@@ -8,6 +8,7 @@ import { createStore } from './store.mjs';
 import catalog from './catalog.json' with { type: 'json' };
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
+const MAX_UPLOAD_BYTES = 30 * 1024 * 1024;
 const imageTypes = new Map([
   ['image/png', '.png'],
   ['image/jpeg', '.jpg'],
@@ -78,7 +79,7 @@ export function createApp({ dataDir = process.env.DATA_DIR || path.join(reposito
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && request.headers.origin) {
       let origin;
       try { origin = new URL(request.headers.origin); } catch { return next(invalid('Unrecognized request origin.', 403)); }
-      const requestHost = request.headers.host?.split(':')[0];
+      const requestHost = request.hostname;
       if (origin.hostname !== requestHost && !(['localhost', '127.0.0.1', '[::1]'].includes(origin.hostname) && ['localhost', '127.0.0.1', '[::1]'].includes(requestHost))) {
         return next(invalid('Cross-site changes are not allowed.', 403));
       }
@@ -101,7 +102,7 @@ export function createApp({ dataDir = process.env.DATA_DIR || path.join(reposito
   });
   const upload = multer({
     storage,
-    limits: { files: 2, fileSize: 30 * 1024 * 1024, fields: 12, fieldSize: 8192 },
+    limits: { files: 2, fileSize: MAX_UPLOAD_BYTES, fields: 12, fieldSize: 8192 },
     fileFilter: (_request, file, callback) => {
       if (file.fieldname === 'cover' && !imageTypes.has(file.mimetype)) {
         return callback(invalid('Cover images must be PNG, JPEG, WebP, or GIF.'));
@@ -114,17 +115,21 @@ export function createApp({ dataDir = process.env.DATA_DIR || path.join(reposito
   }).fields([{ name: 'cover', maxCount: 1 }, { name: 'file', maxCount: 1 }]);
 
   app.get('/api/health', (_request, response) => response.json({ status: 'ok' }));
-  app.get('/api/config', (_request, response) => response.json({ canManage: true, requiresLogin: false, maxUploadBytes: 30 * 1024 * 1024, storage: 'local' }));
+  app.get('/api/config', (_request, response) => response.json({ canManage: true, requiresLogin: false, maxUploadBytes: MAX_UPLOAD_BYTES, storage: 'local' }));
   app.get('/api/admin', (_request, response) => response.json({ authenticated: true }));
   app.get('/api/projects', async (_request, response) => response.json({ projects: await store.list() }));
 
   app.post('/api/projects', upload, async (request, response, next) => {
     const uploaded = Object.values(request.files || {}).flat();
     try {
+      if (uploaded.reduce((sum, file) => sum + file.size, 0) > MAX_UPLOAD_BYTES) {
+        throw invalid('The cover and project file together must be 30 MB or smaller.', 413);
+      }
       const body = request.body || {};
       const title = text(body.title, 'Title', 100, true);
       const type = text(body.type, 'Project type', 20, true);
       if (!['website', 'app'].includes(type)) throw invalid('Project type must be website or app.');
+      if (body.status !== undefined && body.status !== 'setup-pending') throw invalid('Project status must be setup-pending when provided.');
       const url = cleanUrl(body.url);
       const cover = request.files?.cover?.[0];
       const file = request.files?.file?.[0];
@@ -143,6 +148,7 @@ export function createApp({ dataDir = process.env.DATA_DIR || path.join(reposito
         category: text(body.category, 'Category', 40) || 'Creative',
         year, featured: body.featured === true || body.featured === 'true',
         createdAt: new Date().toISOString(),
+        ...(body.status === 'setup-pending' ? { status: 'setup-pending' } : {}),
         ...(cover ? { coverUrl: `/uploads/${cover.filename}` } : {}),
         ...(file ? { fileUrl: `/uploads/${file.filename}`, fileName: cleanFileName(file.originalname) } : {}),
       };

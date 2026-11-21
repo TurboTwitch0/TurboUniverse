@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { request as httpRequest } from 'node:http';
 import { createApp } from './index.mjs';
 import { createStore } from './store.mjs';
 
@@ -71,6 +72,39 @@ test('validation rejects unsafe URLs, missing fields, invalid project types, and
   assert.deepEqual(await (await fetch(`${base}/api/projects`)).json(), { projects: [] });
 });
 
+test('local origin checks accept bracketed IPv6 loopback hostnames', async (t) => {
+  const { base } = await fixture(t);
+  const status = await new Promise((resolve, reject) => {
+    const request = httpRequest(`${base}/api/projects`, {
+      method: 'POST',
+      headers: { ...headers, Host: '[::1]:3001', Origin: 'http://[::1]:5173' },
+    }, response => {
+      response.resume();
+      response.once('end', () => resolve(response.statusCode));
+    });
+    request.once('error', reject);
+    request.end(JSON.stringify(sample));
+  });
+  assert.equal(status, 201);
+});
+
+test('local project imports preserve setup-pending status and reject unknown statuses', async (t) => {
+  const { base, directory } = await fixture(t);
+  for (const status of ['published', null, true]) {
+    const rejected = await fetch(`${base}/api/projects`, { method: 'POST', headers, body: JSON.stringify({ ...sample, status }) });
+    assert.equal(rejected.status, 400);
+  }
+  const response = await fetch(`${base}/api/projects`, {
+    method: 'POST', headers,
+    body: JSON.stringify({ ...sample, title: 'Source project', url: 'https://github.com/TurboTwitch0/TurboWatch', status: 'setup-pending' }),
+  });
+  assert.equal(response.status, 201);
+  const { project } = await response.json();
+  assert.equal(project.status, 'setup-pending');
+  assert.equal((await createStore(directory).list())[0].status, 'setup-pending');
+  assert.equal((await (await fetch(`${base}/api/projects`)).json()).projects[0].status, 'setup-pending');
+});
+
 test('actual multipart uploads persist, images display, and HTML downloads as an attachment', async (t) => {
   const { base, directory } = await fixture(t);
   const form = new FormData();
@@ -111,6 +145,22 @@ test('invalid cover image is rejected and uploaded files are removed', async (t)
   const response = await fetch(`${base}/api/projects`, { method: 'POST', body: form });
   assert.equal(response.status, 400);
   assert.match((await response.json()).error, /image format/);
+  assert.deepEqual(await readdir(path.join(directory, 'uploads')), []);
+});
+
+test('combined local uploads respect the advertised limit and clean up rejected files', async (t) => {
+  const { base, directory } = await fixture(t);
+  const { maxUploadBytes } = await (await fetch(`${base}/api/config`)).json();
+  const pixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6ZyQAAAAASUVORK5CYII=', 'base64');
+  const form = new FormData();
+  form.set('title', 'Combined limit');
+  form.set('type', 'app');
+  form.set('cover', new Blob([pixel], { type: 'image/png' }), 'cover.png');
+  form.set('file', new Blob([Buffer.alloc(maxUploadBytes - pixel.length + 1)], { type: 'application/zip' }), 'app.zip');
+  const response = await fetch(`${base}/api/projects`, { method: 'POST', body: form });
+  assert.equal(response.status, 413);
+  assert.match((await response.json()).error, /together.*30 MB/);
+  assert.deepEqual((await (await fetch(`${base}/api/projects`)).json()).projects, []);
   assert.deepEqual(await readdir(path.join(directory, 'uploads')), []);
 });
 

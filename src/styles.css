@@ -1924,7 +1924,7 @@ h1,h2,h3,p {
 }
 .toast {
   position: fixed;
-  z-index: 150;
+  z-index: 90;
   bottom: 25px;
   left: 50%;
   transform: translateX(-50%);
@@ -3788,3 +3788,9 @@ body {
     font-size: 6px;
   }
 }
+
+.section-loading { min-height: 240px; display: grid; place-items: center; color: var(--theme-muted); font-size: 14px; }
+.world-link-notice { display: flex; align-items: center; gap: 18px; padding: 14px 6.2%; background: var(--theme-panel); border-bottom: 1px solid var(--theme-line); color: var(--theme-text); font-size: 13px; }
+.world-link-notice > p { flex: 1; }
+.world-link-notice > button { min-height: 44px; flex-shrink: 0; }
+@media (max-width: 540px) { .world-link-notice { flex-wrap: wrap; gap: 5px 12px; padding: 12px 5%; } .world-link-notice > p { flex-basis: calc(100% - 50px); } .world-link-notice > .icon-button { margin-left: auto; } }

@@ -58,6 +58,10 @@
 .ai-local-error { border:1px solid var(--theme-line); border-left:3px solid #dc6d53; border-radius:8px; padding:18px 22px; margin-bottom:25px; overflow-wrap:anywhere; }
 .ai-local-error strong { font-size:13px; }
 .ai-local-error p { font-size:12px; margin-top:6px; color:var(--theme-muted); }
+.ai-local-error > button { min-height:44px; margin-top:12px; padding:10px 14px; font-size:12px; }
+.ai-scroll-latest { display:block; min-height:44px; margin:0 auto 12px; padding:9px 14px; border:1px solid var(--theme-line); border-radius:24px; background:var(--theme-panel); color:var(--accent); font-size:11px; }
+.ai-scroll-latest:hover { border-color:var(--accent); }
+.ai-prompt-limit { color:var(--theme-text); font-size:12px; line-height:1.7; padding:10px 12px; border-left:3px solid var(--accent); background:var(--theme-panel-raised); border-radius:4px; }
 .ai-keyboard-hint { font-size:10px; line-height:1.6; color:var(--theme-muted); }
 .ai-reply-tools { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:14px; }
 .ai-reply-copy { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:7px 10px; border:1px solid var(--theme-line); border-radius:6px; font-size:11px; color:var(--theme-text); background:var(--theme-panel); }

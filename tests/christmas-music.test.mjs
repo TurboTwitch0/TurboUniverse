@@ -123,6 +123,26 @@ test('volume changes are finite, bounded, and safe to mute during playback', asy
   assert.deepEqual(gains[0].gain.targets, [.5, 1, 0, 0, 0, 0, .7]);
 });
 
+test('device interruptions preserve the song position and closed contexts restart on explicit play', async t => {
+  const { bells, contexts } = audioFixture(t);
+  await bells.play(.4);
+  const first = contexts[0];
+  first.currentTime = 3;
+  first.state = 'suspended';
+  assert.equal(bells.interrupted, true);
+  bells.pause();
+  assert.equal(bells.position, 3);
+  assert.equal(bells.interrupted, false);
+  await bells.play(.4);
+  first.currentTime = 4;
+  await first.close();
+  assert.equal(bells.interrupted, true);
+  await bells.play(.4);
+  assert.equal(contexts.length, 2, 'a closed context is replaced when the visitor chooses Play');
+  contexts[1].currentTime = 2;
+  assert.equal(bells.position, 6, 'recreated audio continues from the interrupted position');
+});
+
 test('Deck the Halls uses its own melody and seeks to its own end', async t => {
   const { bells, voices } = audioFixture(t, false, 'deck-the-halls');
   const deckDuration = christmasTrackDuration('deck-the-halls');

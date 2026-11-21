@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { ArrowUpRight, Check, FileJson, ImagePlus, LoaderCircle, Upload, X } from 'lucide-react';
 import { apiFetch } from '../api';
 
@@ -11,6 +11,7 @@ type ImportProject = {
   category: string;
   year: number;
   featured: boolean;
+  status?: 'setup-pending';
 };
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -69,6 +70,7 @@ function parseImport(text: string): ImportProject[] {
       throw new Error(`“${item.title}” needs a category of 40 characters or fewer.`);
     }
     if (item.featured !== undefined && typeof item.featured !== 'boolean') throw new Error(`“${item.title}” needs featured to be true or false.`);
+    if (item.status !== undefined && item.status !== 'setup-pending') throw new Error(`“${item.title}” has an invalid status. Use setup-pending or omit status.`);
     return {
       title: item.title.trim(),
       type: item.type === 'app' ? 'app' : 'website',
@@ -77,6 +79,7 @@ function parseImport(text: string): ImportProject[] {
       category: typeof item.category === 'string' && item.category.trim() ? item.category.trim() : 'Creative',
       year,
       featured: item.featured === true,
+      ...(item.status === 'setup-pending' ? { status: 'setup-pending' } : {}),
     };
   });
 }
@@ -92,12 +95,14 @@ async function checkResponse(response: Response) {
 }
 
 export default function ProjectDialog({ onClose, onCreated, maxUploadBytes }: Props) {
+  const panelId = useId();
   const cloudUpload = maxUploadBytes < 10_000_000;
   const aggregateLimit = cloudUpload ? Math.max(0, maxUploadBytes - 20_000) : maxUploadBytes;
   const coverLimit = Math.min(10 * 1024 * 1024, aggregateLimit);
   const fileLimit = Math.min(30 * 1024 * 1024, aggregateLimit);
   const sizeHint = cloudUpload ? `under ${Math.floor(maxUploadBytes / 1_000_000)} MB combined` : 'up to 30 MB';
   const [tab, setTab] = useState<'add' | 'import'>('add');
+  const [draft, setDraft] = useState({ title: '', type: 'website', url: '', description: '', category: 'Creative', year: String(CURRENT_YEAR) });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [cover, setCover] = useState<File | null>(null);
@@ -108,6 +113,7 @@ export default function ProjectDialog({ onClose, onCreated, maxUploadBytes }: Pr
   const previousFocus = useRef<HTMLElement | null>(null);
   const busyRef = useRef(false);
   const onCloseRef = useRef(onClose);
+  const importReadRequest = useRef(0);
   onCloseRef.current = onClose;
   busyRef.current = busy;
 
@@ -135,6 +141,7 @@ export default function ProjectDialog({ onClose, onCreated, maxUploadBytes }: Pr
     }
     document.addEventListener('keydown', handleKey);
     return () => {
+      importReadRequest.current += 1;
       window.clearTimeout(timer);
       document.removeEventListener('keydown', handleKey);
       document.body.style.overflow = originalOverflow;
@@ -143,8 +150,14 @@ export default function ProjectDialog({ onClose, onCreated, maxUploadBytes }: Pr
   }, []);
 
   function switchTab(next: 'add' | 'import') {
+    importReadRequest.current += 1;
     setTab(next);
     setError('');
+  }
+
+  function updateDraft(event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+    const { name, value } = event.currentTarget;
+    setDraft(current => ({ ...current, [name]: value }));
   }
 
   async function addProject(event: FormEvent<HTMLFormElement>) {
@@ -214,6 +227,7 @@ export default function ProjectDialog({ onClose, onCreated, maxUploadBytes }: Pr
   }
 
   async function readImportFile(file: File | undefined) {
+    const request = ++importReadRequest.current;
     if (!file) return;
     setError('');
     if (file.size > 2 * 1024 * 1024) {
@@ -222,10 +236,12 @@ export default function ProjectDialog({ onClose, onCreated, maxUploadBytes }: Pr
     }
     try {
       const text = await file.text();
+      if (request !== importReadRequest.current) return;
       parseImport(text);
       setBulkText(text);
       setProgress({ completed: 0, total: 0 });
     } catch (cause) {
+      if (request !== importReadRequest.current) return;
       setError(cause instanceof Error ? cause.message : 'The import file could not be read.');
     }
   }
@@ -251,41 +267,41 @@ export default function ProjectDialog({ onClose, onCreated, maxUploadBytes }: Pr
           <button className="icon-button" type="button" onClick={onClose} disabled={busy} aria-label="Close add project dialog"><X size={21} /></button>
         </div>
         <p className="dialog-description muted" id="project-dialog-description">Bring your websites and apps together. Projects are saved in your collection.</p>
-        <div className="dialog-tabs" aria-label="Choose how to add projects">
+        <div className="dialog-tabs" role="group" aria-label="Choose how to add projects">
           <button className={`dialog-tab ${tab === 'add' ? 'active' : ''}`} type="button" aria-pressed={tab === 'add'} onClick={() => switchTab('add')} disabled={busy}>Add a project</button>
           <button className={`dialog-tab ${tab === 'import' ? 'active' : ''}`} type="button" aria-pressed={tab === 'import'} onClick={() => switchTab('import')} disabled={busy}>Bulk import</button>
         </div>
         {tab === 'add' ? (
-          <form onSubmit={addProject}>
+          <form onSubmit={addProject} aria-busy={busy} aria-describedby={error ? `${panelId}-add-error` : undefined}>
             <fieldset disabled={busy} className="form-grid">
               <div className="field-row">
-                <label className="field">Project name <input data-autofocus name="title" placeholder="Give your world a name" required maxLength={100} autoComplete="off" /></label>
-                <label className="field">Project type <select name="type" defaultValue="website"><option value="website">Website</option><option value="app">App</option></select></label>
+                <label className="field">Project name <input data-autofocus name="title" value={draft.title} onChange={updateDraft} placeholder="Give your world a name" required maxLength={100} autoComplete="off" /></label>
+                <label className="field">Project type <select name="type" value={draft.type} onChange={updateDraft}><option value="website">Website</option><option value="app">App</option></select></label>
               </div>
-              <label className="field">Project link <input name="url" type="url" placeholder="https://your-next-big-idea.com" autoComplete="url" /><span className="field-hint">Add a link, upload a file below, or both.</span></label>
-              <label className="field">The story <textarea name="description" rows={3} maxLength={1000} placeholder="What did you build? What makes it yours?" /></label>
+              <label className="field">Project link <input name="url" type="url" value={draft.url} onChange={updateDraft} placeholder="https://your-next-big-idea.com" autoComplete="url" /><span className="field-hint">Add a link, upload a file below, or both.</span></label>
+              <label className="field">The story <textarea name="description" value={draft.description} onChange={updateDraft} rows={3} maxLength={1000} placeholder="What did you build? What makes it yours?" /></label>
               <div className="field-row">
-                <label className="field">Category <select name="category" defaultValue="Creative">{CATEGORIES.map((category) => <option key={category}>{category}</option>)}</select></label>
-                <label className="field">Year created <input name="year" type="number" min={1900} max={2100} defaultValue={CURRENT_YEAR} required /></label>
+                <label className="field">Category <select name="category" value={draft.category} onChange={updateDraft}>{CATEGORIES.map((category) => <option key={category}>{category}</option>)}</select></label>
+                <label className="field">Year created <input name="year" type="number" value={draft.year} onChange={updateDraft} min={1900} max={2100} required /></label>
               </div>
               <div className="field-row">
                 <label className="upload-zone upload-field"><ImagePlus size={22} /><span>{cover ? cover.name : 'Add a cover image'}</span><span className="field-hint">PNG, JPEG, WebP, GIF · {cloudUpload ? sizeHint : 'up to 10 MB'}</span><input type="file" name="cover" aria-label="Cover image" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(event) => setCover(event.target.files?.[0] || null)} /></label>
                 <label className="upload-zone upload-field"><Upload size={22} /><span>{projectFile ? projectFile.name : 'Upload project files'}</span><span className="field-hint">ZIP, HTML, APK, PDF · {sizeHint}</span><input type="file" name="file" aria-label="Project file" accept=".zip,.html,.apk,.pdf" onChange={(event) => setProjectFile(event.target.files?.[0] || null)} /></label>
               </div>
             </fieldset>
-            {error && <p className="form-error" role="alert">{error}</p>}
+            {error && <p id={`${panelId}-add-error`} className="form-error" role="alert">{error}</p>}
             <div className="form-footer"><span className="muted">Your next chapter starts here.</span><button className="primary-button" type="submit" disabled={busy}>{busy ? <><LoaderCircle size={17} className="spin" /> Uploading…</> : <>Add to the universe <ArrowUpRight size={17} /></>}</button></div>
           </form>
         ) : (
-          <form onSubmit={importProjects}>
+          <form onSubmit={importProjects} aria-busy={busy} aria-describedby={error ? `${panelId}-import-error` : undefined}>
             <fieldset disabled={busy} className="form-grid">
               <label className="upload-zone upload-field"><FileJson size={25} /><span>Choose a project list</span><span className="field-hint">JSON · up to 100 projects per import</span><input type="file" accept=".json,application/json" aria-label="Import project list" onChange={(event) => void readImportFile(event.target.files?.[0])} /></label>
-              <label className="field">Or paste project links <textarea className="bulk-textarea" rows={8} value={bulkText} onChange={(event) => { setBulkText(event.target.value); setProgress({ completed: 0, total: 0 }); }} placeholder={'https://my-first-site.com\nhttps://my-favorite-app.com\n\nOne link per line, or paste a JSON project list.'} spellCheck={false} /></label>
+              <label className="field">Or paste project links <textarea className="bulk-textarea" rows={8} value={bulkText} onChange={(event) => { importReadRequest.current += 1; setBulkText(event.target.value); setProgress({ completed: 0, total: 0 }); }} placeholder={'https://my-first-site.com\nhttps://my-favorite-app.com\n\nOne link per line, or paste a JSON project list.'} spellCheck={false} /></label>
               <span className="field-hint">Links become website projects. Use JSON to include names, descriptions, categories, and app types.</span>
               <button className="text-button" type="button" onClick={downloadExample}>Download an example JSON file <ArrowUpRight size={14} /></button>
             </fieldset>
             {progress.total > 0 && <p className="import-progress" role="status" aria-live="polite">{busy ? <LoaderCircle size={15} className="spin" /> : <Check size={15} />} {progress.completed} of {progress.total} projects saved</p>}
-            {error && <p className="form-error" role="alert">{error}</p>}
+            {error && <p id={`${panelId}-import-error`} className="form-error" role="alert">{error}</p>}
             <div className="form-footer"><span className="muted">All your worlds. One home.</span><button className="primary-button" type="submit" disabled={busy || !bulkText.trim()}>{busy ? <><LoaderCircle size={17} className="spin" /> Importing…</> : <>Import projects <Upload size={17} /></>}</button></div>
           </form>
         )}

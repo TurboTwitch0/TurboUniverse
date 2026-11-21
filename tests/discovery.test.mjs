@@ -21,6 +21,13 @@ test('type, category, and saved filters narrow the same collection together', ()
   assert.equal(discoverProjects(worlds, { ...options, filter: 'saved' }).length, 0);
 });
 
+test('brand names can be searched with punctuation or without their displayed spaces', () => {
+  assert.deepEqual(discoverProjects(worlds, { ...options, search: 'Turbo-Games!' }).map(p => p.id), ['play']);
+  assert.deepEqual(discoverProjects(worlds, { ...options, search: 'OrbitStudy' }).map(p => p.id), ['study']);
+  assert.deepEqual(discoverProjects(worlds, { ...options, search: '“Café”' }).map(p => p.id), ['cafe']);
+  assert.equal(discoverProjects(worlds, { ...options, filter: 'website', search: 'OrbitStudy' }).length, 0);
+});
+
 test('sort modes are stable, handle missing dates, and preserve the source collection', () => {
   const original = worlds.map(p => p.id);
   assert.deepEqual(discoverProjects(worlds, { ...options, sort: 'newest' }).map(p => p.id), ['study', 'play', 'cafe']);

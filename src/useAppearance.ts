@@ -40,7 +40,7 @@ export function useAppearance() {
   useEffect(() => {
     const refresh = () => setNow(new Date());
     const storage = (event: StorageEvent) => {
-      if (event.key === APPEARANCE_STORAGE_KEY) {
+      if (event.key === APPEARANCE_STORAGE_KEY || event.key === null) {
         setPreferences(parseAppearancePreferences(event.newValue, window.matchMedia('(prefers-reduced-motion: reduce)').matches));
       }
     };

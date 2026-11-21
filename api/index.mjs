@@ -91,6 +91,7 @@ export function createVercelApp({ blobToken = process.env.BLOB_READ_WRITE_TOKEN 
       const title = text(body.title, 'Title', 100, true);
       const type = text(body.type, 'Project type', 20, true);
       if (!['website', 'app'].includes(type)) throw invalid('Project type must be website or app.');
+      if (body.status !== undefined && body.status !== 'setup-pending') throw invalid('Project status must be setup-pending when provided.');
       const url = cleanUrl(body.url);
       const cover = request.files?.cover?.[0];
       const file = request.files?.file?.[0];
@@ -100,7 +101,14 @@ export function createVercelApp({ blobToken = process.env.BLOB_READ_WRITE_TOKEN 
       const year = Number(yearText);
       if (!/^\d{4}$/.test(yearText) || year < 1900 || year > 2100) throw invalid('Year must be between 1900 and 2100.');
       if (body.featured !== undefined && ![true, false, 'true', 'false'].includes(body.featured)) throw invalid('Featured must be true or false.');
-      const project = { id: randomUUID(), title, type, url, description: text(body.description, 'Description', 1000), category: text(body.category, 'Category', 40) || 'Creative', year, featured: body.featured === true || body.featured === 'true', createdAt: new Date().toISOString() };
+      const project = {
+        id: randomUUID(), title, type, url,
+        description: text(body.description, 'Description', 1000),
+        category: text(body.category, 'Category', 40) || 'Creative',
+        year, featured: body.featured === true || body.featured === 'true',
+        createdAt: new Date().toISOString(),
+        ...(body.status === 'setup-pending' ? { status: 'setup-pending' } : {}),
+      };
       for (const entry of [cover, file].filter(Boolean)) {
         const extension = entry === cover ? imageTypes.get(entry.mimetype) : path.extname(entry.originalname).toLowerCase();
         const filename = `${randomUUID()}${extension}`;

@@ -1,11 +1,12 @@
 /* TurboUniverse: retain the app shell and last successful project list offline. */
-const VERSION = 'v27-holiday-playlist';
+const VERSION = 'v28-universe-refresh';
 const SHELL_CACHE = `turbo-universe-shell-${VERSION}`;
 const PROJECT_CACHE = `turbo-universe-projects-${VERSION}`;
 const SHELL_FILES = [
-  '/', '/release.json', '/manifest.webmanifest', '/favicon.svg', '/icon.svg', '/icon-192.png', '/icon-512.png',
+  '/', '/release.json', '/offline-assets.json', '/manifest.webmanifest', '/favicon.svg', '/icon.svg', '/icon-192.png', '/icon-512.png',
   '/images/cinematic-horizon.webp', '/images/cinematic-nebula.webp',
   '/images/winter-orbit.webp', '/images/winter-orbit-mobile.webp',
+  '/images/christmas-forest.webp', '/images/christmas-forest-mobile.webp',
   '/images/earth-hero.webp', '/images/earth-detail.webp', '/images/earth-spring.webp', '/images/earth-winter.webp',
   ...Array.from({ length: 6 }, (_, index) => `/images/space-${String(index + 1).padStart(2, '0')}.webp`),
 ];
@@ -19,7 +20,10 @@ self.addEventListener('install', (event) => {
     const shell = await cache.match('/');
     const html = await shell.text();
     const assets = [...new Set([...html.matchAll(/(?:src|href)=["'](\/assets\/[^"']+)["']/g)].map((match) => match[1]))];
-    await cache.addAll(assets);
+    const offlineManifest = await cache.match('/offline-assets.json');
+    const deferred = offlineManifest ? (await offlineManifest.json()).assets : [];
+    const appAssets = deferred.filter(asset => typeof asset === 'string' && asset.startsWith('/assets/'));
+    await cache.addAll([...new Set([...assets, ...appAssets])]);
     await self.skipWaiting();
   })());
 });
@@ -27,6 +31,17 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
+    // The last collection may have been fetched by the previous worker while
+    // this update installed. Carry it forward before retiring that cache.
+    try {
+      const projects = await caches.open(PROJECT_CACHE);
+      if (!(await projects.match('/api/projects'))) {
+        for (const key of keys.filter(key => key.startsWith('turbo-universe-projects-') && key !== PROJECT_CACHE).reverse()) {
+          const previous = await (await caches.open(key)).match('/api/projects');
+          if (previous?.ok) { await projects.put('/api/projects', previous); break; }
+        }
+      }
+    } catch { /* Updating must still work when this device denies storage. */ }
     await Promise.all(keys.filter((key) => key.startsWith('turbo-universe-') && ![SHELL_CACHE, PROJECT_CACHE].includes(key)).map((key) => caches.delete(key)));
     await self.clients.claim();
   })());
@@ -34,8 +49,10 @@ self.addEventListener('activate', (event) => {
 
 async function cacheResponse(cacheName, request, response) {
   if (response.ok && response.type !== 'opaque') {
-    const cache = await caches.open(cacheName);
-    await cache.put(request, response.clone());
+    try {
+      const cache = await caches.open(cacheName);
+      await cache.put(request, response.clone());
+    } catch { /* Storage limits must not interrupt a successful live response. */ }
   }
   return response;
 }

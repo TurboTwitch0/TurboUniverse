@@ -20,6 +20,7 @@
     "test:features": "node scripts/smoke-features.mjs",
     "test:discovery": "node scripts/smoke-discovery.mjs",
     "test:ai": "node scripts/smoke-ai.mjs",
+    "test:radio": "node scripts/smoke-christmas-radio.mjs",
     "test:launchpad": "node scripts/smoke-launchpad.mjs",
     "test:owner-session": "node scripts/smoke-owner-session.mjs",
     "test:local-ai": "node scripts/smoke-local-ai.mjs",

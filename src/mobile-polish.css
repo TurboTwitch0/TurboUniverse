@@ -5,6 +5,12 @@
 .header-search-button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
 .header-search-button svg { width:18px; height:18px; }
 .header-actions { flex-shrink:0; }
+.dialog-backdrop :is(.project-dialog, .detail-dialog, .film-dialog, .install-dialog) > .icon-button,
+.dialog-backdrop .dialog-head > .icon-button { min-width:44px; min-height:44px; height:44px; flex-shrink:0; }
+.world-link-tools > button { min-height:44px; }
+@media(max-width:700px) {
+  .project-dialog .field :is(input, textarea, select), .world-link-fallback input { font-size:16px; }
+}
 .active-discovery-filters { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:16px 0 0; min-width:0; }
 .active-discovery-filters > button { display:inline-flex; align-items:center; gap:8px; min-width:0; max-width:100%; min-height:36px; padding:8px 11px; border:1px solid var(--theme-line); border-radius:7px; background:color-mix(in srgb,var(--accent) 7%,var(--theme-panel)); color:var(--theme-text); font-size:11px; line-height:1.4; }
 .active-discovery-filters > button:hover { border-color:var(--accent); color:var(--accent); }

@@ -69,6 +69,26 @@ try {
   await page.getByRole('button', { name: 'Get the app', exact: true }).click();
   await page.getByRole('heading', { name: 'Take Turbo with you.' }).waitFor();
   await page.keyboard.press('Escape');
+  await page.evaluate(() => {
+    const event = new Event('beforeinstallprompt', { cancelable: true });
+    event.prompt = () => new Promise((resolve, reject) => { window.rejectInstall = reject; });
+    event.userChoice = Promise.resolve({ outcome: 'dismissed' });
+    window.dispatchEvent(event);
+  });
+  await page.getByRole('button', { name: 'Get the app', exact: true }).click();
+  await page.getByRole('button', { name: 'Install TurboUniverse', exact: true }).click();
+  assert.equal(await page.getByRole('button', { name: 'Opening installation…', exact: true }).isDisabled(), true, 'Pending installation cannot be submitted twice');
+  assert.equal(await page.getByRole('button', { name: 'Close install instructions', exact: true }).evaluate(element => element === document.activeElement), true, 'Pending installation keeps focus on the enabled Close button');
+  await page.keyboard.press('Tab');
+  assert.equal(await page.locator('.install-dialog').evaluate(element => element.contains(document.activeElement)), true, 'Keyboard focus stays in the pending install dialog');
+  await page.evaluate(() => document.activeElement.blur());
+  await page.keyboard.press('Shift+Tab');
+  assert.equal(await page.locator('.install-dialog').evaluate(element => element.contains(document.activeElement)), true, 'The dialog recovers focus after an external interruption');
+  await page.evaluate(() => window.rejectInstall(new Error('Install prompt was consumed')));
+  await page.getByRole('alert').filter({ hasText: 'browser couldn’t open installation' }).waitFor();
+  await page.locator('.install-instructions').waitFor();
+  assert.equal(await page.getByRole('button', { name: 'Install TurboUniverse', exact: true }).count(), 0, 'A consumed prompt falls back to browser menu instructions');
+  await page.keyboard.press('Escape');
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await page.reload();
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
@@ -78,6 +98,16 @@ try {
   await page.getByRole('heading', { name: 'TurboHome', exact: true }).waitFor();
   assert.equal(await page.locator('.project-card').count(), catalog.length + 2, 'Offline collection uses the last successful project list');
   await page.getByRole('status').filter({ hasText: 'You’re offline' }).waitFor();
+  await page.getByRole('button', { name: 'Toggle navigation', exact: true }).click();
+  await page.getByRole('button', { name: 'AI studio', exact: true }).click();
+  await page.getByRole('button', { name: 'Sample tour', exact: true }).click();
+  await page.locator('.ai-section:visible .ai-starters button').click();
+  await page.locator('.ai-section:visible .ai-message-sample').waitFor();
+  assert.match(await page.locator('.ai-section:visible .ai-message-sample').innerText(), /productive afternoon/);
+  await page.getByRole('button', { name: 'Toggle navigation', exact: true }).click();
+  await page.getByRole('button', { name: 'AI (Chromebooks)', exact: true }).click();
+  await page.getByRole('heading', { name: 'AI (Chromebooks)', exact: true }).waitFor();
+  assert.equal(await page.locator('.section-loading').count(), 0, 'Deferred screens load on their first offline visit');
   assert.deepEqual(errors, [], 'No browser runtime errors');
   console.log('Browser smoke passed: catalog entries, uploads/downloads, filtering/search, deletion, bulk import, story, mobile navigation, export, installation UI, and offline browsing.');
 } finally {

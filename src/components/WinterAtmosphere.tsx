@@ -11,12 +11,12 @@ type WinterBannerProps = {
 export function WinterBanner({ snowEnabled, onToggleSnow, onDismiss, motionAllowed = true }: WinterBannerProps) {
   return <aside className="winter-banner" aria-label="Winter decorations">
     <span className="winter-banner-symbol" aria-hidden="true"><Snowflake size={23} strokeWidth={1.3} /></span>
-    <div className="winter-banner-copy"><span className="winter-edition-label">THE CHRISTMAS EDITION / 2026</span><p>Your universe, wrapped in wonder.<span> Lights on. Favorite worlds close. Christmas turned up.</span></p></div>
+    <div className="winter-banner-copy"><span className="winter-edition-label">THE CHRISTMAS EDITION</span><p>Your universe, wrapped in wonder.</p></div>
     <div className="winter-banner-controls">
       {motionAllowed ? <button className="winter-snow-toggle" onClick={onToggleSnow} aria-label={snowEnabled ? 'Pause snowfall' : 'Resume snowfall'} title={snowEnabled ? 'Pause snowfall' : 'Resume snowfall'}>
         {snowEnabled ? <Pause size={14} /> : <Play size={14} />}<span>{snowEnabled ? 'Pause snow' : 'Let it snow'}</span>
       </button> : <span className="winter-still-status" role="img" aria-label="Still snowfall; motion is reduced"><Snowflake size={14} aria-hidden="true" /><span>Still snowfall</span></span>}
-      <button className="winter-dismiss icon-button" onClick={onDismiss} aria-label="Hide winter decorations" title="Hide winter decorations"><X size={17} /></button>
+      <button className="winter-dismiss icon-button" onClick={onDismiss} aria-label="Hide winter decorations" title="Hide winter decorations"><X size={17} /><span>Hide decor</span></button>
     </div>
   </aside>;
 }
@@ -56,23 +56,6 @@ export function WinterPageBackdrop() {
       <g transform="translate(1528 168)"><circle r="31" fill={`url(#${pine}-gold)`} /><path d="M-7-31H7v-7H-7z" fill="#e4c487" /><path d="m0-19 5 13 14 1-11 9 3 14L0 10l-11 8 3-14-11-9 14-1 5-13Z" stroke="#fff0bb" /></g>
       <g transform="translate(1471 325)"><circle r="23" fill={`url(#${pine}-red)`} /><path d="M-5-23H5v-6H-5z" fill="#e4c487" /></g>
       <path d="m127 125 4 12 12 4-12 4-4 12-4-12-12-4 12-4 4-12Zm1305 96 4 12 12 4-12 4-4 12-4-12-12-4 12-4 4-12Z" fill="#e9ca82" opacity=".8" />
-    </svg>
-    <svg className="winter-page-landscape" viewBox="0 0 1600 400" preserveAspectRatio="none" fill="none">
-      <defs><g id={pine}>
-        <path className="winter-tree-silhouette" fill="var(--christmas-tree, #67978c)" d="M50 0 14 65h18L6 115h25L0 165h100l-31-50h25L68 65h18L50 0Z" />
-        <path className="winter-tree-snow" fill="#f8ffff" d="m50 6-24 45 24-9 24 9L50 6ZM29 82l-12 24 33-10 32 10-12-24-20-7-21 7ZM22 133l-11 22 39-10 39 10-12-22-27-8-28 8Z" />
-        <path d="M45 165h10v23H45z" fill="currentColor" opacity=".4" />
-        <circle cx="35" cy="91" r="3.5" fill="var(--christmas-red, #a74c5a)" /><circle cx="67" cy="134" r="3.5" fill="var(--christmas-gold, #bd964d)" />
-        <circle cx="58" cy="51" r="3" fill="var(--christmas-gold, #bd964d)" /><circle cx="32" cy="142" r="3" fill="var(--christmas-red, #a74c5a)" />
-      </g></defs>
-      <path className="winter-snow-drift" d="M0 267c230-62 384 38 590 26 253-15 330-70 563-36 197 28 303-18 447-35v178H0V267Z" />
-      <use href={`#${pine}`} transform="translate(12 119) scale(1.18)" />
-      <use href={`#${pine}`} transform="translate(148 196) scale(.72)" />
-      <use href={`#${pine}`} transform="translate(274 228) scale(.48)" />
-      <use href={`#${pine}`} transform="translate(1278 212) scale(.63)" />
-      <use href={`#${pine}`} transform="translate(1376 152) scale(.95)" />
-      <use href={`#${pine}`} transform="translate(1490 81) scale(1.3)" />
-      <path className="winter-tree-snow" d="M0 337c169-30 337 35 568 11 230-23 392-16 625-2 189 11 306-41 407-32v86H0v-63Z" />
     </svg>
     <div className="winter-snowfall">{flakes.map((style, index) => <i className="winter-flake" key={index} style={style} />)}</div>
   </div>;

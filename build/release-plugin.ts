@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'Two Christmas classics to play offline',
-        description: 'Play Deck the Halls or Jingle Bells directly from the radio card. Minimize the player for a compact play and pause control.',
+        title: 'A brighter winter, a smoother universe',
+        description: 'Explore a new snowy forest and saved-world shortcuts. Your AI drafts stay with you, and Christmas radio now supports native media controls.',
       }, null, 2) + '\n';
     },
     configureServer(server) {
@@ -58,8 +58,21 @@ export function releasePlugin(): Plugin {
         response.end(request.method === 'HEAD' ? undefined : release);
       });
     },
-    generateBundle() {
+    generateBundle(_options, bundle) {
       this.emitFile({ type: 'asset', fileName: 'release.json', source: release });
+      // Keep the app's deferred screens available offline. The optional inference
+      // runtime and its worker remain downloads requested by the AI workspace.
+      const assets = Object.values(bundle).filter(output => {
+        if (output.type === 'chunk') {
+          return !output.moduleIds.some(id => id.includes('/node_modules/@mlc-ai/'));
+        }
+        return /\.(css|woff2)$/.test(output.fileName);
+      }).map(output => `/${output.fileName}`).sort();
+      this.emitFile({
+        type: 'asset',
+        fileName: 'offline-assets.json',
+        source: JSON.stringify({ assets }),
+      });
     },
   };
 }

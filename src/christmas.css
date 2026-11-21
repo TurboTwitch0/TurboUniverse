@@ -1,25 +1,23 @@
-/* A Christmas night that continues behind every route and every scroll. */
+/* A snowy forest that continues behind every route and every scroll. */
 :root[data-theme][data-scheme] .app-shell[data-winter] {
   position: relative; isolation: isolate;
   --theme-background: #061d20; --theme-panel: #102f2ef2; --theme-panel-raised: #1a4039;
   --theme-text: #f4f5e8; --theme-muted: #b7c9c2; --theme-line: #3b5c50;
   --accent: #eed08e; --accent-secondary: #a7d7bc; --accent-ink: #18372c;
   --hero-rgb: 6, 29, 32; --winter-ink: #f4f5e8; --winter-line: #3b5c50;
-  --christmas-red: #ed9b9e; --christmas-gold: #e8c77f; --christmas-tree: #2a6a54;
+  --christmas-red: #ed9b9e; --christmas-gold: #e8c77f;
+  --christmas-background: url('/images/christmas-forest.webp');
   background: #061d20; color: var(--theme-text);
 }
 body:has(.app-shell[data-winter]) { background: #061d20; }
 .app-shell[data-winter] .winter-page-backdrop {
   position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; user-select: none;
-  background-image: radial-gradient(circle at 19px 28px, #fff2c461 0 1px, transparent 1.6px), radial-gradient(circle at 83px 91px, #daf7ed4f 0 1px, transparent 2px), radial-gradient(ellipse at 0 18%, #165b4d88, transparent 55%), radial-gradient(ellipse at 100% 40%, #722f3a5e, transparent 55%), linear-gradient(145deg, #061e24, #0c2a26 55%, #12271f);
-  background-size: 127px 139px, 233px 251px, 100% 100%, 100% 100%, 100% 100%;
+  background-image: linear-gradient(125deg, #05232dd4, #08281ecc 58%, #122720d1), var(--christmas-background);
+  background-size: cover;
+  background-position: center;
 }
-.christmas-ornaments { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .85; }
+.christmas-ornaments { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .28; }
 .christmas-hero-baubles { position: absolute; top: 0; right: 2%; width: clamp(100px, 18vw, 260px); opacity: .85; }
-.app-shell[data-winter] .winter-page-landscape { position: absolute; bottom: -1px; left: 0; width: 100%; height: clamp(160px, 29vh, 340px); opacity: .4; }
-.app-shell[data-winter] .winter-snow-drift { fill: #4d8a762d; }
-.app-shell[data-winter] .winter-tree-silhouette { fill: var(--christmas-tree); }
-.app-shell[data-winter] .winter-tree-snow { fill: #c4dfce; }
 .app-shell[data-winter] .winter-page-backdrop .winter-flake { width: calc(var(--snow-size) * 1.4); height: calc(var(--snow-size) * 1.4); background: #f3fff9; }
 .app-shell[data-winter] :is(main, .world-stage, .universe-showcase, .neptune-section, .popular-worlds, .projects-section, .ai-section, .story-page) { background-color: transparent; }
 .app-shell[data-winter] .site-header { background: #092924f5; border-color: #bb975b66; box-shadow: 0 4px 24px #00131140; }
@@ -33,6 +31,7 @@ body:has(.app-shell[data-winter]) { background: #061d20; }
 .app-shell[data-winter] .christmas-lights > span::before { content: ''; position: absolute; top: -3px; left: 1px; width: 4px; height: 3px; border-radius: 1px; background: #8f9564; }
 .christmas-lounge { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(285px, 365px); align-items: start; gap: 25px; padding: 22px 6.2%; background: linear-gradient(110deg, #173e31e8, #102b28dd 57%, #4c2933c4); border-bottom: 1px solid #d4bd7a55; }
 .christmas-lounge .winter-banner { align-self: center; padding: 0; gap: 16px; border: 0; background: none; }
+.app-shell[data-winter] .christmas-lounge .winter-banner { background: none; }
 .christmas-lounge:has(.is-open) .winter-banner { align-self: start; padding-top: 18px; }
 .christmas-lounge .winter-banner-symbol { background: #e3bd6512; color: #f1d99f; border-color: #f1d99f55; box-shadow: none; border-radius: 50%; }
 .christmas-lounge .winter-banner-copy p { font-size: 16px; color: #f5f1df; }
@@ -59,17 +58,113 @@ body:has(.app-shell[data-winter]) { background: #061d20; }
 .app-shell[data-winter] :is(.search-field input, .search-field kbd) { color: #f1ecd9; }
 .app-shell[data-winter] .search-field input::placeholder { color: #c1ccbd; }
 .app-shell[data-winter] .appearance-mode { border-color: #7a895e88; }
-.app-shell[data-winter] .appearance-mode > button.active { background: #d9c58d; color: #18372c; }
-/* The saved Light choice becomes frosted paper, while the sky stays Christmas night. */
+.app-shell[data-winter] .appearance-mode > button.active { background: var(--accent); color: var(--accent-ink); }
+/* Light mode carries the same winter scene in daylight. */
+:root[data-theme][data-scheme='light'] .app-shell[data-winter] {
+  --theme-background: #e6f0f3;
+  --theme-panel: #f8fcf8f5;
+  --theme-panel-raised: #e1eeea;
+  --theme-text: #173f45;
+  --theme-muted: #3d5b60;
+  --theme-line: #bfd4d3;
+  --accent: #18676a;
+  --accent-secondary: #3b775e;
+  --accent-ink: #fff;
+  --hero-rgb: 230, 240, 243;
+  --winter-ink: #173f45;
+  --winter-line: #bfd4d3;
+  --christmas-red: #98374a;
+  --christmas-gold: #8b6a2d;
+
+  background: #e6f0f3;
+  color: var(--theme-text);
+}
+:root[data-theme][data-scheme='light'][data-palette='classic'] .app-shell[data-winter] {
+  --accent: #175fb0;
+  --accent-secondary: #2d6b95;
+}
+:root[data-theme][data-scheme='dark'][data-palette='classic'] .app-shell[data-winter] {
+  --accent: #b4dcff;
+  --accent-secondary: #b4d8c8;
+  --accent-ink: #183047;
+}
+:root[data-scheme='light'] body:has(.app-shell[data-winter]) { background: #e6f0f3; }
+:root[data-scheme='light'] .app-shell[data-winter] .winter-page-backdrop {
+  background-image: linear-gradient(125deg, #eaf4f9d9, #edf6f3d6 58%, #edf3e9d1), var(--christmas-background);
+}
+:root[data-scheme='light'] .app-shell[data-winter] .christmas-ornaments { opacity: .22; }
+:root[data-scheme='light'] .app-shell[data-winter] .site-header {
+  background: #eff8f5f2;
+  border-color: var(--theme-line);
+  box-shadow: 0 4px 24px #34606a0c;
+}
+:root[data-scheme='light'] .app-shell[data-winter] .brand { color: #1f5152; }
+:root[data-scheme='light'] .app-shell[data-winter] :is(.appearance-bar, .update-announcement, .main-nav.open) {
+  background: #edf7f1f5;
+  border-color: var(--theme-line);
+}
+:root[data-scheme='light'] .app-shell[data-winter] .christmas-lounge {
+  background: linear-gradient(110deg, #e5f2e7f0, #edf4e7ee 57%, #f4eae8eb);
+  border-color: #c2d6c5;
+}
+:root[data-scheme='light'] .app-shell[data-winter] .winter-banner-symbol {
+  color: #376f58;
+  background: #f9fff4cc;
+  border-color: #adcbb9;
+}
+:root[data-scheme='light'] .app-shell[data-winter] .winter-banner-copy p { color: var(--theme-text); }
+:root[data-scheme='light'] .app-shell[data-winter] .winter-banner-copy p > span { color: var(--theme-muted); }
+:root[data-scheme='light'] .app-shell[data-winter] .winter-edition-label { color: var(--christmas-red); }
+:root[data-scheme='light'] .app-shell[data-winter] .winter-snow-toggle {
+  color: var(--theme-text);
+  background: #f8fcf8;
+  border-color: #b6cdbd;
+}
+:root[data-scheme='light'] .app-shell[data-winter] .winter-dismiss { color: #44615b; }
+:root[data-scheme='light'] .app-shell[data-winter] :is(.winter-dismiss, .winter-snow-toggle):hover { background: #d9eadd; }
+:root[data-scheme='light'] .app-shell[data-winter] .site-footer { background: #e3eee6ed; border-color: #b9cebf; }
+:root[data-scheme='light'] .app-shell[data-winter] :is(.search-field, .appearance-mode) {
+  color: var(--theme-text);
+  background: #edf7f0;
+  border-color: #b3cdc4;
+}
+:root[data-scheme='light'] .app-shell[data-winter] .appearance-mode > button.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--theme-panel)); }
+:root[data-scheme='light'] .app-shell[data-winter] :is(.search-field input, .search-field kbd) { color: var(--theme-text); }
+:root[data-scheme='light'] .app-shell[data-winter] .search-field input::placeholder { color: #59756f; }
+:root[data-scheme='light'] .app-shell[data-winter] .section-kicker { color: var(--theme-muted); }
+:root[data-scheme='light'] .app-shell[data-winter] .dialog-backdrop { background: #153d3a8c; }
 :root[data-scheme='light'] .app-shell[data-winter] :is(.project-card, .showcase-catalog, .showcase-ai, .collection-stats, .ai-preview, .ai-workspace, .empty-state, .cbai-browser-check, .ai-model-panel, .ai-chat-panel, .ai-start-panel, .project-dialog, .detail-dialog, .install-dialog, .appearance-dialog) {
   --theme-background: #edf3e9; --theme-panel: #f7f8eef5; --theme-panel-raised: #e8efdf;
   --theme-text: #193c31; --theme-muted: #476356; --theme-line: #becfba;
-  --accent: #92324c; --accent-secondary: #37674e; --accent-ink: #fff;
   color: var(--theme-text); background-color: var(--theme-panel); border-color: var(--theme-line);
 }
 :root[data-scheme='light'] .app-shell[data-winter] .appearance-dialog .appearance-mode { background: var(--theme-background); }
 :root[data-scheme='light'] .app-shell[data-winter] .appearance-dialog .appearance-mode > button { color: var(--theme-text); }
 .app-shell[data-winter] .christmas-player:not(.is-docked) { width: 100%; }
+.winter-restore-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid var(--theme-line);
+  border-radius: 10px;
+  background: var(--theme-panel);
+  color: var(--theme-text);
+  font-size: 11px;
+}
+.winter-restore-button:hover { border-color: var(--accent); }
+.winter-restore-button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.winter-banner-controls .winter-dismiss {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 50px;
+  width: auto;
+  height: 44px;
+}
+.winter-dismiss > span { font-size: 9px; white-space: nowrap; }
 @media (max-width: 1100px) {
   .christmas-lounge { grid-template-columns: minmax(0, 1fr) minmax(270px, 330px); gap: 18px; }
   .christmas-lounge .winter-banner-symbol { display: none; }
@@ -78,13 +173,13 @@ body:has(.app-shell[data-winter]) { background: #061d20; }
   .christmas-lounge .winter-snow-toggle > span { display: none; }
 }
 @media (max-width: 700px) {
+  :root[data-theme][data-scheme] .app-shell[data-winter] { --christmas-background: url('/images/christmas-forest-mobile.webp'); }
   .christmas-lounge { grid-template-columns: minmax(0, 1fr); padding: 18px 5%; gap: 16px; }
   .christmas-lounge .winter-banner { gap: 8px; }
   .christmas-lounge .winter-banner-copy { flex: 1; }
   .christmas-lounge .winter-banner-copy p { font-size: 14px; }
   .christmas-lounge .winter-banner-copy p > span { font-size: 10px; max-width: 250px; }
   .christmas-lounge .winter-banner-controls { margin-left: auto; }
-  .app-shell[data-winter] .winter-page-landscape { height: 190px; opacity: .35; }
-  .christmas-ornaments { width: 190%; left: -45%; opacity: .45; }
+  .christmas-ornaments { width: 190%; left: -45%; }
   .app-shell[data-winter] .christmas-lights > span:nth-child(even) { display: none; }
 }

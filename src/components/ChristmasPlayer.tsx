@@ -81,6 +81,7 @@ export default function ChristmasPlayer({ seasonalVisible = true, restoreRequest
   const [muted, setMuted] = useState(settings.muted);
   const [repeat, setRepeat] = useState(settings.repeat);
   const [position, setPosition] = useState(0);
+  const [mediaTrack, setMediaTrack] = useState<LocalChristmasTrack | null>(null);
   const bells = useRef<ChristmasBells | null>(null);
   const video = useRef<Player | null>(null);
   const videoHost = useRef<HTMLDivElement>(null);
@@ -93,6 +94,13 @@ export default function ChristmasPlayer({ seasonalVisible = true, restoreRequest
   const resumeAfterSeek = useRef(false);
   const toggleElement = useRef<HTMLButtonElement>(null);
   const videoPlayRequested = useRef(false);
+  const mediaActions = useRef<{
+    play: () => void;
+    pause: () => void;
+    stop: () => void;
+    seek: (seconds: number) => void;
+    position: () => number;
+  } | null>(null);
   const track = tracks.find(item => item.id === trackId)!;
   const localTrack = track.local;
   const localDuration = localTrack ? christmasTrackDuration(localTrack) : 0;
@@ -124,6 +132,12 @@ export default function ChristmasPlayer({ seasonalVisible = true, restoreRequest
   useEffect(() => {
     if (status !== 'playing' || !localTrack) return;
     const timer = window.setInterval(() => {
+      if (bells.current?.interrupted) {
+        bells.current.pause();
+        setPosition(bells.current.position);
+        setStatus('paused'); setMessage('Audio was paused by your device. Press Play to continue.');
+        return;
+      }
       const next = bells.current?.position ?? 0;
       setPosition(next);
       if (next >= localDuration) {
@@ -134,6 +148,63 @@ export default function ChristmasPlayer({ seasonalVisible = true, restoreRequest
     }, 200);
     return () => window.clearInterval(timer);
   }, [status, localTrack, localDuration, repeat]);
+
+  useEffect(() => {
+    const session = navigator.mediaSession;
+    if (!session || !mediaTrack) return;
+
+    const currentTrack = tracks.find(item => item.local === mediaTrack)!;
+    if (typeof MediaMetadata !== 'undefined') {
+      session.metadata = new MediaMetadata({
+        title: currentTrack.title,
+        artist: 'TurboUniverse',
+        album: 'Christmas radio',
+        artwork: [{ src: new URL('/icon-512.png', window.location.href).href, sizes: '512x512', type: 'image/png' }],
+      });
+    }
+
+    const handlers: [MediaSessionAction, MediaSessionActionHandler][] = [
+      ['play', () => mediaActions.current?.play()],
+      ['pause', () => mediaActions.current?.pause()],
+      ['stop', () => mediaActions.current?.stop()],
+      ['seekbackward', details => {
+        const seconds = details.seekOffset ?? 10;
+        mediaActions.current?.seek((mediaActions.current?.position() ?? 0) - seconds);
+      }],
+      ['seekforward', details => {
+        const seconds = details.seekOffset ?? 10;
+        mediaActions.current?.seek((mediaActions.current?.position() ?? 0) + seconds);
+      }],
+      ['seekto', details => {
+        if (typeof details.seekTime === 'number') mediaActions.current?.seek(details.seekTime);
+      }],
+    ];
+    const supported: MediaSessionAction[] = [];
+    for (const [action, handler] of handlers) {
+      try { session.setActionHandler(action, handler); supported.push(action); }
+      catch { /* Devices expose different sets of media buttons. */ }
+    }
+    return () => {
+      for (const action of supported) session.setActionHandler(action, null);
+      session.metadata = null;
+      session.playbackState = 'none';
+      try { session.setPositionState?.(); } catch { /* Position controls are optional. */ }
+    };
+  }, [mediaTrack]);
+
+  useEffect(() => {
+    const session = navigator.mediaSession;
+    if (!session || !mediaTrack) return;
+    session.playbackState = status === 'playing' ? 'playing' : 'paused';
+    const duration = christmasTrackDuration(mediaTrack);
+    try {
+      session.setPositionState?.({
+        duration,
+        playbackRate: 1,
+        position: Math.max(0, Math.min(duration, bells.current?.position ?? position)),
+      });
+    } catch { /* Playback remains available without device scrubbing. */ }
+  }, [mediaTrack, position, status]);
 
   function cancelSeek() { window.clearTimeout(seekTimer.current); scrubbing.current = false; resumeAfterSeek.current = false; }
   function finishSeek() {
@@ -161,6 +232,7 @@ export default function ChristmasPlayer({ seasonalVisible = true, restoreRequest
     bells.current?.stop();
     video.current?.destroy(); video.current = null;
     videoHost.current?.replaceChildren();
+    setMediaTrack(null);
     setPosition(0); setStatus('idle'); setMessage('Ready when you are.');
   }
   function choose(id: string) {
@@ -192,6 +264,18 @@ export default function ChristmasPlayer({ seasonalVisible = true, restoreRequest
     }, 15000);
   }
 
+  function startVideo(request: number) {
+    if (request !== attempt.current || hiddenRef.current || !videoPlayRequested.current) return;
+    try {
+      video.current?.setVolume(Math.round(currentVolume.current * 100));
+      video.current?.playVideo?.();
+    } catch {
+      window.clearTimeout(playerTimer.current);
+      videoPlayRequested.current = false;
+      setStatus('error'); setMessage('The video could not start. Try Play again or open the official video.');
+    }
+  }
+
   async function play() {
     cancelSeek();
     setEngaged(true);
@@ -199,7 +283,7 @@ export default function ChristmasPlayer({ seasonalVisible = true, restoreRequest
     if (!localTrack && video.current && status !== 'error') {
       setStatus('loading'); setMessage('Starting the official video…');
       watchVideo(attempt.current);
-      video.current.playVideo?.();
+      startVideo(attempt.current);
       return;
     }
     const request = ++attempt.current;
@@ -214,6 +298,7 @@ export default function ChristmasPlayer({ seasonalVisible = true, restoreRequest
         bells.current ??= new ChristmasBells(localTrack);
         await bells.current.play(currentVolume.current);
         if (request !== attempt.current) return;
+        setMediaTrack(localTrack);
         setStatus('playing'); setMessage(`Playing ${track.title}`);
       } else {
         const api = await loadYouTube();
@@ -230,9 +315,8 @@ export default function ChristmasPlayer({ seasonalVisible = true, restoreRequest
               if (hiddenRef.current || !videoPlayRequested.current) { video.current?.pauseVideo?.(); return; }
               const iframe = videoHost.current?.querySelector('iframe');
               if (iframe) { iframe.title = `${track.artist} — ${track.title}, official YouTube video`; iframe.referrerPolicy = 'strict-origin-when-cross-origin'; }
-              video.current?.setVolume(Math.round(currentVolume.current * 100));
               watchVideo(request);
-              video.current?.playVideo?.();
+              startVideo(request);
             },
             onStateChange: (event: { data: number }) => {
               if (request !== attempt.current) return;
@@ -260,6 +344,14 @@ export default function ChristmasPlayer({ seasonalVisible = true, restoreRequest
       setStatus('error'); setMessage(error instanceof Error ? error.message : 'Music could not start. Please try again.');
     }
   }
+
+  mediaActions.current = {
+    play: () => { void play(); },
+    pause,
+    stop,
+    seek: seconds => { seek(seconds); finishSeek(); },
+    position: () => bells.current?.position ?? 0,
+  };
 
   if (!seasonalVisible && !engaged) return null;
   const compactTitle = localTrack || engaged ? track.title : 'Christmas radio';

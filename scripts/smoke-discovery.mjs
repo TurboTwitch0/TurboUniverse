@@ -29,7 +29,32 @@ try {
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto(`${origin}/?campaign=discovery-check#collection`);
+  let releaseInitial;
+  let requests = 0;
+  const initial = new Promise(resolve => { releaseInitial = resolve; });
+  await page.route('**/api/projects', async route => {
+    requests += 1;
+    if (requests === 1) {
+      await initial;
+      try { await route.fulfill({ json: { projects: catalog.slice(0, 1) } }); }
+      catch { /* The newer refresh cancels this stale response. */ }
+    } else await route.fulfill({ json: { projects: catalog } });
+  });
+  await page.goto(`${origin}/?campaign=discovery-check#collection`, { waitUntil: 'domcontentloaded' });
+  await page.locator('.skeleton-card').first().waitFor();
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  await page.waitForFunction(count => document.querySelectorAll('.project-card').length === count, catalog.length);
+  releaseInitial();
+  await page.waitForTimeout(100);
+  assert.equal(await page.locator('.project-card').count(), catalog.length, 'A stale response cannot replace the newest catalog');
+  await page.unroute('**/api/projects');
+  await page.route('**/api/projects', route => route.fulfill({ status: 503, json: { error: 'Refresh failed' } }));
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  await page.getByText('Couldn’t refresh the collection. Showing your last loaded worlds.', { exact: true }).waitFor();
+  assert.equal(await page.locator('.project-card').count(), catalog.length, 'Refresh errors keep the last successful catalog visible');
+  await page.unroute('**/api/projects');
+  await page.getByRole('button', { name: 'Retry refresh', exact: true }).click();
+  await page.getByRole('button', { name: 'Retry refresh', exact: true }).waitFor({ state: 'hidden' });
   await page.getByRole('heading', { name: 'TurboHome', exact: true }).waitFor();
   assert.equal(await page.locator('.project-card').count(), catalog.length);
   await mkdir(screenshots, { recursive: true });
@@ -61,6 +86,12 @@ try {
   await page.reload();
   await page.locator('.story-heading').waitFor();
   assert.match(await page.title(), /The story/);
+  await page.locator('.skip-link').focus();
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => document.activeElement?.id === 'main-content');
+  assert.equal(new URL(page.url()).hash, '#story', 'Skip to content preserves the active section address');
+  await page.reload();
+  await page.locator('.story-heading').waitFor();
   await page.goBack();
   await page.locator('.collection-page').waitFor();
   await page.goForward();
@@ -92,6 +123,7 @@ try {
   await page.keyboard.press('Escape');
   await page.getByRole('dialog').waitFor({ state: 'hidden' });
   assert.equal(new URL(page.url()).searchParams.has('world'), false, 'Closing details removes the world parameter');
+  await page.waitForFunction(() => document.activeElement?.id === 'main-content');
   await page.getByRole('button', { name: 'View TurboChat', exact: true }).click();
   await page.getByRole('dialog').waitFor();
   await page.goBack();
@@ -140,6 +172,18 @@ try {
   await page.getByRole('dialog').getByRole('heading', { name: 'TurboHome', exact: true }).waitFor();
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   await page.getByRole('dialog').screenshot({ path: path.join(screenshots, 'mobile-related.png') });
+  await page.keyboard.press('Escape');
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await page.waitForFunction(() => document.activeElement?.getAttribute('aria-label') === 'View TurboHome');
+  await page.goto(`${origin}/?world=unavailable-world&campaign=discovery-check#collection`);
+  await page.getByText('This world isn’t in the current collection.', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Browse worlds', exact: true }).click();
+  assert.equal(new URL(page.url()).searchParams.has('world'), false);
+  assert.equal(new URL(page.url()).searchParams.get('campaign'), 'discovery-check');
+  assert.equal(await page.locator('.project-card').count(), catalog.length);
+  await page.getByRole('button', { name: 'Toggle navigation', exact: true }).click();
+  await page.locator('.section-heading').click();
+  assert.equal(await page.getByRole('button', { name: 'Toggle navigation', exact: true }).getAttribute('aria-expanded'), 'false');
   assert.deepEqual(errors, [], 'Discovery and sharing produce no browser errors');
   console.log('Discovery smoke passed: category + multi-term search, clear/reset, alphabetical sort, keyboard search from story, shareable deep links, clipboard/manual copy, reload, browser Back/Forward, reloadable section navigation, related worlds, direct launch links, and mobile layout.');
 } finally {

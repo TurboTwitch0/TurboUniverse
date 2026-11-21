@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { ChevronDown, Globe2, Leaf, Moon, Orbit, SlidersHorizontal, Snowflake, Sprout, Sun, X } from 'lucide-react';
 import { SEASONS, SEASON_LABELS, type AppearancePreferences, type Season } from '../theme';
 import type { WinterPreferences } from '../winter';
@@ -8,6 +8,7 @@ const seasonIcons = { spring: Sprout, summer: Sun, autumn: Leaf, winter: Snowfla
 
 export default function AppearanceControls({ preferences, onChange, season, winterPreferences, onWinterChange, winterActive = false }: Props) {
   const [open, setOpen] = useState(false);
+  const panelId = useId();
   const dialog = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const SeasonIcon = winterActive ? Snowflake : seasonIcons[season];
@@ -44,10 +45,11 @@ export default function AppearanceControls({ preferences, onChange, season, wint
         <button className={preferences.scheme === 'dark' ? 'active' : ''} aria-pressed={preferences.scheme === 'dark'} onClick={() => onChange({ ...preferences, scheme: 'dark' })}><Moon size={14} /> Dark</button>
       </div>
       <span className="appearance-tagline">Your world. Your perspective.</span>
-      <button className="season-trigger" ref={trigger} aria-label="Appearance options" aria-haspopup="dialog" onClick={() => setOpen(true)}><SeasonIcon size={14} /><span>{winterActive ? 'Christmas' : SEASON_LABELS[season]}<span className="season-auto"> / {winterActive && winterPreferences.display === 'on' ? 'ON' : preferences.season === 'auto' ? 'AUTO' : 'PREVIEW'}</span></span><ChevronDown size={12} /></button>
+      {winterPreferences.display === 'off' && <button className="winter-restore-button" onClick={() => onWinterChange({ ...winterPreferences, display: 'on' })}><Snowflake size={14} aria-hidden="true" />Show Christmas</button>}
+      <button className="season-trigger" ref={trigger} aria-label="Appearance options" aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? panelId : undefined} onClick={() => setOpen(true)}><SeasonIcon size={14} /><span>{winterActive ? 'Christmas' : SEASON_LABELS[season]}<span className="season-auto"> / {winterActive && winterPreferences.display === 'on' ? 'ON' : preferences.season === 'auto' ? 'AUTO' : 'PREVIEW'}</span></span><ChevronDown size={12} /></button>
     </section>
     {open && <div className="dialog-backdrop appearance-backdrop" onClick={event => { if (event.currentTarget === event.target) setOpen(false); }}>
-      <div className="appearance-dialog" ref={dialog} role="dialog" aria-modal="true" aria-labelledby="appearance-title">
+      <div className="appearance-dialog" id={panelId} ref={dialog} role="dialog" aria-modal="true" aria-labelledby="appearance-title">
         <div className="dialog-head"><div><span className="eyebrow"><SlidersHorizontal size={12} /> SET YOUR ATMOSPHERE</span><h2 id="appearance-title">A universe that feels like you.</h2></div><button className="icon-button" onClick={() => setOpen(false)} aria-label="Close appearance options"><X size={19} /></button></div>
         <p className="appearance-intro">Follow the seasons, find your favorite colors, and make a little space for yourself.</p>
         <div className="appearance-mode appearance-mode-large" role="group" aria-label="Choose atmosphere"><button className={preferences.mode === 'earth' ? 'active' : ''} aria-pressed={preferences.mode === 'earth'} onClick={() => onChange({ ...preferences, mode: 'earth' })}><Globe2 size={19} /><span><strong>Earth</strong><small>Landscapes & grounded colors</small></span></button><button className={preferences.mode === 'space' ? 'active' : ''} aria-pressed={preferences.mode === 'space'} onClick={() => onChange({ ...preferences, mode: 'space' })}><Orbit size={19} /><span><strong>Space</strong><small>Distant worlds & cosmic light</small></span></button></div>

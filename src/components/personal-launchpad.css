@@ -1,0 +1,145 @@
+.personal-launchpad {
+  padding-top: 24px;
+  padding-bottom: 28px;
+}
+.personal-launchpad-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-bottom: 14px;
+}
+.personal-launchpad h2 {
+  margin: 0;
+  color: var(--theme-text);
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: -.4px;
+}
+.personal-launchpad-views {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--theme-line);
+  border-radius: 11px;
+  background: var(--theme-panel);
+}
+.personal-launchpad-views button,
+.personal-launchpad-browse {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--theme-muted);
+  font-size: 12px;
+}
+.personal-launchpad-views button[aria-pressed='true'] {
+  background: var(--theme-panel-raised);
+  color: var(--accent);
+}
+.personal-launchpad-browse {
+  margin-left: auto;
+  padding-inline: 0;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.personal-launchpad-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.personal-shortcut {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  border: 1px solid var(--theme-line);
+  border-radius: 12px;
+  background: var(--theme-panel);
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 4%, transparent);
+}
+.personal-shortcut-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  min-height: 72px;
+  padding: 12px;
+  border-radius: 11px 0 0 11px;
+  text-align: left;
+  color: var(--theme-text);
+}
+.personal-shortcut-initial {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--theme-panel-raised);
+  color: var(--accent);
+  font-size: 17px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.personal-shortcut-preview > span:last-child { min-width: 0; }
+.personal-shortcut-preview:only-child { border-radius: 11px; }
+.personal-shortcut strong {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.personal-shortcut small {
+  display: block;
+  margin-top: 4px;
+  color: var(--theme-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+.personal-shortcut-open {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: none;
+  min-width: 52px;
+  min-height: 44px;
+  padding: 8px;
+  border-left: 1px solid var(--theme-line);
+  border-radius: 0 11px 11px 0;
+  color: var(--accent);
+  font-size: 10px;
+}
+.personal-shortcut-preview:hover,
+.personal-shortcut-open:hover { background: var(--theme-panel-raised); }
+.personal-launchpad :is(button, a):focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+@media (max-width: 1100px) {
+  .personal-launchpad-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 540px) {
+  .personal-launchpad-heading { gap: 6px 12px; }
+  .personal-launchpad h2 { font-size: 17px; }
+  .personal-launchpad-views { order: 3; width: 100%; }
+  .personal-launchpad-views button { flex: 1; }
+  .personal-shortcut-preview { gap: 8px; padding: 10px; }
+  .personal-shortcut-initial { display: none; }
+  .personal-shortcut-open { min-width: 44px; padding: 6px; }
+}
+@media (max-width: 350px) {
+  .personal-launchpad-grid { grid-template-columns: minmax(0, 1fr); }
+  .personal-shortcut-initial { display: grid; }
+  .personal-shortcut-preview { min-height: 64px; }
+}

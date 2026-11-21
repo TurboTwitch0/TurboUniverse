@@ -57,20 +57,29 @@ def clean_text(value: str) -> str:
 
 
 def normalize_url(value: str, base_url: str = SOURCE) -> str | None:
-    """Accept HTTP(S) links, unwrap Google's outbound redirect, and omit trackers."""
+    """Accept HTTP(S) links, unwrap Google's redirect, and preserve useful queries."""
     value = unescape(value).strip()
     if not value or value.startswith(("#", "javascript:", "mailto:", "tel:", "data:")):
         return None
-    target = urljoin(base_url, value)
+    try:
+        target = urljoin(base_url, value)
+    except ValueError:
+        return None
     for _ in range(3):
-        parsed = urlsplit(target)
+        try:
+            parsed = urlsplit(target)
+        except ValueError:
+            return None
         if parsed.scheme not in {"https", "http"} or not parsed.hostname or parsed.username or parsed.password:
             return None
         if parsed.hostname.lower() in {"www.google.com", "google.com", "sites.google.com"} and parsed.path == "/url":
             query = parse_qs(parsed.query)
             wrapped = (query.get("q") or query.get("url") or [None])[0]
             if wrapped:
-                target = urljoin(base_url, wrapped)
+                try:
+                    target = urljoin(base_url, wrapped)
+                except ValueError:
+                    return None
                 continue
         break
     else:
@@ -83,6 +92,8 @@ def normalize_url(value: str, base_url: str = SOURCE) -> str | None:
         port = parsed.port
     except ValueError:
         return None
+    if ":" in host:
+        host = f"[{host}]"
     netloc = host + (f":{port}" if port and not (parsed.scheme == "https" and port == 443 or parsed.scheme == "http" and port == 80) else "")
     # Keep meaningful query parameters. A signed/query-based project URL must not
     # be rewritten merely to make a prettier portfolio link.

@@ -94,7 +94,7 @@ export default function ChromebookAI({ initialPrompt = '' }: { initialPrompt?: s
       </aside>
     </div>
 
-    <div className="cbai-workspace" id="chromebook-ai-workspace" ref={workspace} tabIndex={-1} role="group" aria-labelledby="local-ai-title">
+    <div className="cbai-workspace" id="chromebook-ai-workspace" ref={workspace} tabIndex={-1} role="group" aria-label="On-device AI workspace">
       <LocalAIChat initialPrompt={initialPrompt} embedded errorHelp="You can retry when you have a stable connection and enough free memory. The browser check confirms graphics access only; it cannot guarantee that a model will load." />
     </div>
   </section>;
