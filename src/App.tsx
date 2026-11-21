@@ -29,16 +29,11 @@ import type { View } from './navigation';
 import RelatedWorlds from './components/RelatedWorlds';
 import WorldImage from './components/WorldImage';
 import { useDiscoveryState } from './useDiscoveryState';
+import { isProjectCollection, type Project } from './projectCollection';
 
 const AIStudio = lazy(() => import('./components/AIStudio'));
 const ChromebookAI = lazy(() => import('./components/ChromebookAI'));
 
-type Project = {
-  id: string; title: string; type: 'website' | 'app'; url: string;
-  description: string; category: string; year: number; featured: boolean;
-  createdAt: string; coverUrl?: string; fileUrl?: string; fileName?: string;
-  status?: 'setup-pending';
-};
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 const scrollBehavior = (): ScrollBehavior => document.documentElement.dataset.motion === 'off' || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 type Capabilities = { canManage: boolean; requiresLogin: boolean; maxUploadBytes: number; storage: string };
@@ -215,6 +210,7 @@ export default function App() {
       if (!response.ok) throw new Error('Your universe couldn’t load. Check the connection and try again.');
       const data = await response.json();
       if (controller.signal.aborted) return;
+      if (!isProjectCollection(data)) throw new Error('The collection response could not be read. Please try again.');
       setProjects(data.projects.map((project: Project) => {
         const presentation = getWorldPresentation(project);
         return presentation ? { ...project, title: presentation.displayTitle, description: presentation.description } : { ...project, description: getCatalogDescription(project) };

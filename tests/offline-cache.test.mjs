@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import { isProjectCollection } from '../src/projectCollection.ts';
 
 const source = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8');
 
@@ -188,6 +189,8 @@ test('malformed 200 responses cannot replace a usable offline collection', async
     JSON.stringify({ projects: [...collection('duplicate').projects, ...collection('duplicate').projects] }),
   ];
   for (const body of invalid) {
+    let parsed; try { parsed = JSON.parse(body); } catch {}
+    assert.equal(isProjectCollection(parsed), false, 'The UI must reject the same unusable collection');
     const request = h.request();
     h.pending.at(-1).resolve(new Response(body, { status: 200 }));
     assert.equal(await (await request.reply).text(), body, 'The original response still reaches the online app');
@@ -230,4 +233,18 @@ test('an intentionally empty collection is valid and replaces older offline worl
   h.pending.at(-1).resolve(Response.json({ projects: [] }));
   await empty.lifetime;
   assert.deepEqual(await h.cached(), { projects: [] });
+});
+
+
+test('client and worker accept current URL, uploaded-file, and intentionally empty collections', async () => {
+  const context = vm.createContext({ self: { addEventListener() {} }, URL, Response });
+  vm.runInContext(source, context);
+  const current = { projects: JSON.parse(readFileSync(new URL('../server/catalog.json', import.meta.url), 'utf8')) };
+  const uploaded = collection('uploaded-world');
+  uploaded.projects[0].url = '';
+  uploaded.projects[0].fileUrl = '/uploads/00000000-0000-0000-0000-000000000000.zip';
+  for (const payload of [current, collection('linked-world'), uploaded, { projects: [] }]) {
+    assert.equal(isProjectCollection(payload), true);
+    assert.equal(await context.usableProjectSnapshot(Response.json(payload)), true);
+  }
 });
