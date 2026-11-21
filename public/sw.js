@@ -1,5 +1,5 @@
 /* TurboUniverse: retain the app shell and last successful project list offline. */
-const VERSION = 'v29-collection-order';
+const VERSION = 'v30-shortcuts-imports';
 const SHELL_CACHE = `turbo-universe-shell-${VERSION}`;
 const PROJECT_CACHE = `turbo-universe-projects-${VERSION}`;
 let projectRequestSequence = 0;
