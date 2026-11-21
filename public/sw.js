@@ -1,7 +1,10 @@
 /* TurboUniverse: retain the app shell and last successful project list offline. */
-const VERSION = 'v28-universe-refresh';
+const VERSION = 'v29-collection-order';
 const SHELL_CACHE = `turbo-universe-shell-${VERSION}`;
 const PROJECT_CACHE = `turbo-universe-projects-${VERSION}`;
+let projectRequestSequence = 0;
+let newestSuccessfulProjectRequest = 0;
+let projectCacheWrites = Promise.resolve();
 const SHELL_FILES = [
   '/', '/release.json', '/offline-assets.json', '/manifest.webmanifest', '/favicon.svg', '/icon.svg', '/icon-192.png', '/icon-512.png',
   '/images/cinematic-horizon.webp', '/images/cinematic-nebula.webp',
@@ -57,6 +60,21 @@ async function cacheResponse(cacheName, request, response) {
   return response;
 }
 
+// Cross-tab fetches can finish out of order. Serialize cache writes and keep
+// the newest successful request; a slow older response must not replace it.
+async function cacheProjectResponse(request, response, sequence) {
+  if (!response.ok) return;
+  // A 200 response whose body is interrupted is not a successful snapshot.
+  try { await response.clone().arrayBuffer(); } catch { return; }
+  newestSuccessfulProjectRequest = Math.max(newestSuccessfulProjectRequest, sequence);
+  const pending = projectCacheWrites.then(async () => {
+    if (sequence < newestSuccessfulProjectRequest) return;
+    await cacheResponse(PROJECT_CACHE, request, response);
+  });
+  projectCacheWrites = pending.catch(() => {});
+  return pending;
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -73,10 +91,15 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.pathname === '/api/projects') {
-    event.respondWith((async () => {
+    const sequence = ++projectRequestSequence;
+    let cacheWrite = Promise.resolve();
+    const reply = (async () => {
       try {
+        const response = await fetch(request);
+        // Keep live responses fast even if an earlier cache write is slow.
         // Validation and server errors are returned directly, never cached.
-        return await cacheResponse(PROJECT_CACHE, request, await fetch(request));
+        cacheWrite = cacheProjectResponse(request, response.clone(), sequence);
+        return response;
       } catch {
         const cached = await caches.match(request, { cacheName: PROJECT_CACHE });
         return cached || new Response(JSON.stringify({ error: 'You are offline. Connect to load your projects for the first time.' }), {
@@ -84,7 +107,9 @@ self.addEventListener('fetch', (event) => {
           headers: { 'Content-Type': 'application/json' },
         });
       }
-    })());
+    })();
+    event.respondWith(reply);
+    event.waitUntil(reply.then(() => cacheWrite).catch(() => {}));
     return;
   }
 

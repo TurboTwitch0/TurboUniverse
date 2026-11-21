@@ -71,3 +71,102 @@ test('a worker upgrade keeps a newer collection already stored by the current wo
   ]);
   assert.deepEqual(await projects.json(), { projects: [{ id: 'new-world' }] });
 });
+
+function catalogFetchHarness(beforePut = async () => {}) {
+  const handlers = {};
+  const pending = [];
+  let stored;
+  const context = vm.createContext({
+    self: { location: { origin: 'https://universe.test' }, addEventListener: (name, handler) => { handlers[name] = handler; } },
+    URL, Request, Response,
+    fetch: () => new Promise((resolve, reject) => { pending.push({ resolve, reject }); }),
+    caches: {
+      open: async () => ({ put: async (_request, response) => { await beforePut(response); stored = response.clone(); } }),
+      match: async () => stored?.clone(),
+    },
+  });
+  vm.runInContext(source, context);
+  return {
+    pending,
+    request() {
+      let reply;
+      let lifetime;
+      handlers.fetch({
+        request: new Request('https://universe.test/api/projects'),
+        respondWith: promise => { reply = promise; },
+        waitUntil: promise => { lifetime = promise; },
+      });
+      return { reply, lifetime };
+    },
+    cached: async () => stored ? stored.clone().json() : null,
+  };
+}
+
+test('a late older tab response cannot replace the newer offline collection', async () => {
+  const h = catalogFetchHarness();
+  const older = h.request();
+  const newer = h.request();
+  h.pending[1].resolve(Response.json({ projects: [{ id: 'new-world' }] }));
+  await newer.lifetime;
+  h.pending[0].resolve(Response.json({ projects: [{ id: 'old-world' }] }));
+  await older.lifetime;
+  assert.equal((await h.cached()).projects[0].id, 'new-world');
+});
+
+test('a newer server error does not discard a valid pending collection response', async () => {
+  const h = catalogFetchHarness();
+  const older = h.request();
+  const newer = h.request();
+  h.pending[1].resolve(Response.json({ error: 'Unavailable' }, { status: 503 }));
+  assert.equal((await newer.reply).status, 503);
+  await newer.lifetime;
+  assert.equal(await h.cached(), null);
+  h.pending[0].resolve(Response.json({ projects: [{ id: 'available-world' }] }));
+  await older.lifetime;
+  assert.equal((await h.cached()).projects[0].id, 'available-world');
+});
+
+test('slow cache writes do not delay live collections and cannot commit in reverse order', { timeout: 3000 }, async () => {
+  let release;
+  let started;
+  const blocked = new Promise(resolve => { release = resolve; });
+  const putting = new Promise(resolve => { started = resolve; });
+  const h = catalogFetchHarness(async response => {
+    if ((await response.clone().json()).projects[0].id === 'old-world') { started(); await blocked; }
+  });
+  const older = h.request();
+  h.pending[0].resolve(Response.json({ projects: [{ id: 'old-world' }] }));
+  await putting;
+  const newer = h.request();
+  h.pending[1].resolve(Response.json({ projects: [{ id: 'new-world' }] }));
+  try {
+    assert.equal((await (await newer.reply).json()).projects[0].id, 'new-world');
+    let cached = false;
+    void newer.lifetime.then(() => { cached = true; });
+    await Promise.resolve();
+    assert.equal(cached, false, 'live data is delivered while the older cache write is still pending');
+  } finally { release(); }
+  await Promise.all([older.lifetime, newer.lifetime]);
+  assert.equal((await h.cached()).projects[0].id, 'new-world');
+});
+
+test('catalog response and worker lifetime remain successful when cache writes are denied', async () => {
+  const h = catalogFetchHarness(async () => { throw new Error('Storage denied'); });
+  const request = h.request();
+  h.pending[0].resolve(Response.json({ projects: [{ id: 'live-world' }] }));
+  assert.equal((await (await request.reply).json()).projects[0].id, 'live-world');
+  await request.lifetime;
+  assert.equal(await h.cached(), null);
+});
+
+test('a newer interrupted body cannot suppress an older complete collection', async () => {
+  const h = catalogFetchHarness();
+  const older = h.request();
+  const newer = h.request();
+  h.pending[1].resolve(new Response(new ReadableStream({ start(controller) { controller.error(new Error('Body failed')); } })));
+  await newer.lifetime;
+  await assert.rejects((await newer.reply).text(), /Body failed/);
+  h.pending[0].resolve(Response.json({ projects: [{ id: 'complete-world' }] }));
+  await older.lifetime;
+  assert.equal((await h.cached()).projects[0].id, 'complete-world');
+});
