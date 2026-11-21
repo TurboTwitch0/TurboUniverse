@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { ArrowUpRight, Check, FileJson, ImagePlus, LoaderCircle, Upload, X } from 'lucide-react';
-import { apiFetch } from '../api';
+import { apiFetch, getOwnerKey } from '../api';
 
 type Props = { onClose: () => void; onCreated: () => void; maxUploadBytes: number };
 type ImportProject = {
@@ -112,12 +112,15 @@ export default function ProjectDialog({ onClose, onCreated, maxUploadBytes }: Pr
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const busyRef = useRef(false);
+  const mounted = useRef(false);
+  const submissionRequest = useRef(0);
   const onCloseRef = useRef(onClose);
   const importReadRequest = useRef(0);
   onCloseRef.current = onClose;
   busyRef.current = busy;
 
   useEffect(() => {
+    mounted.current = true;
     previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -141,6 +144,8 @@ export default function ProjectDialog({ onClose, onCreated, maxUploadBytes }: Pr
     }
     document.addEventListener('keydown', handleKey);
     return () => {
+      mounted.current = false;
+      submissionRequest.current += 1;
       importReadRequest.current += 1;
       window.clearTimeout(timer);
       document.removeEventListener('keydown', handleKey);
@@ -162,10 +167,15 @@ export default function ProjectDialog({ onClose, onCreated, maxUploadBytes }: Pr
 
   async function addProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busyRef.current) return;
+    importReadRequest.current += 1;
+    const request = ++submissionRequest.current;
+    const ownerKey = getOwnerKey();
+    const isCurrent = () => mounted.current && submissionRequest.current === request && getOwnerKey() === ownerKey;
     setError('');
     const form = event.currentTarget;
     const data = new FormData(form);
+    let created = false;
     try {
       const title = String(data.get('title') || '').trim();
       if (!title || title.length > 100) throw new Error('Give your project a title of 1–100 characters.');
@@ -185,44 +195,55 @@ export default function ProjectDialog({ onClose, onCreated, maxUploadBytes }: Pr
         data.set('file', projectFile);
       } else data.delete('file');
       if ((cover?.size || 0) + (projectFile?.size || 0) > aggregateLimit) throw new Error(cloudUpload ? `Keep the cover and project file ${sizeHint}.` : 'Keep the cover and project file under 30 MB combined.');
-      setBusy(true);
+      busyRef.current = true; setBusy(true);
       await checkResponse(await apiFetch('/api/projects', { method: 'POST', body: data }));
-      onCreated();
-      onClose();
+      created = true;
+      if (isCurrent()) onClose();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Something went wrong. Please try again.');
+      if (isCurrent()) setError(cause instanceof Error ? cause.message : 'Something went wrong. Please try again.');
     } finally {
-      setBusy(false);
+      // Accepted writes still belong in the public collection after this form
+      // closes or its owner session ends. Refresh once without closing new UI.
+      if (created) onCreated();
+      if (isCurrent()) { busyRef.current = false; setBusy(false); }
     }
   }
 
   async function importProjects(event: FormEvent) {
     event.preventDefault();
-    if (busy) return;
+    if (busyRef.current) return;
+    importReadRequest.current += 1;
+    const request = ++submissionRequest.current;
+    const ownerKey = getOwnerKey();
+    const isCurrent = () => mounted.current && submissionRequest.current === request && getOwnerKey() === ownerKey;
     setError('');
     let completed = 0;
     try {
       const projects = parseImport(bulkText);
       setProgress({ completed: 0, total: projects.length });
-      setBusy(true);
+      busyRef.current = true; setBusy(true);
       for (let index = 0; index < projects.length; index += 1) {
+        // apiFetch captures the credential synchronously. Never begin another
+        // request from an expired form using a newly signed-in owner's key.
+        if (!isCurrent()) break;
         await checkResponse(await apiFetch('/api/projects', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(projects[index]),
         }));
         completed += 1;
+        if (!isCurrent()) break;
         setProgress({ completed, total: projects.length });
         // Keep only unsaved entries, so retrying a partial import never repeats completed requests.
         setBulkText(index + 1 === projects.length ? '' : JSON.stringify({ projects: projects.slice(index + 1) }, null, 2));
       }
-      onClose();
+      if (isCurrent() && completed === projects.length) onClose();
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : 'The import could not be completed.';
-      setError(completed ? `${completed} project${completed === 1 ? '' : 's'} saved. ${message} The remaining projects are ready to retry.` : message);
+      if (isCurrent()) setError(completed ? `${completed} project${completed === 1 ? '' : 's'} saved. ${message} The remaining projects are ready to retry.` : message);
     } finally {
       if (completed) onCreated();
-      setBusy(false);
+      if (isCurrent()) { busyRef.current = false; setBusy(false); }
     }
   }
 
