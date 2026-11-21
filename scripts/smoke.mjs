@@ -46,6 +46,30 @@ try {
   await page.getByRole('dialog').waitFor({ state: 'hidden' });
   await page.getByRole('searchbox', { name: 'Search projects' }).fill('');
   await page.locator('.filters').getByRole('button', { name: /^All worlds/ }).click();
+  const fixtureResponse = await page.request.post(`${origin}/api/projects`, { data: { title: 'Deletion race fixture', type: 'website', url: 'https://example.com/deletion-race' } });
+  const { project: deletionFixture } = await fixtureResponse.json();
+  const raceContext = await browser.newContext({ serviceWorkers: 'block' });
+  const racePage = await raceContext.newPage();
+  racePage.on('pageerror', error => errors.push(error.message));
+  await racePage.goto(origin);
+  await racePage.getByRole('button', { name: 'View Deletion race fixture', exact: true }).click();
+  let captureDeletion;
+  const pendingDeletion = new Promise(resolve => { captureDeletion = resolve; });
+  await racePage.route(`${origin}/api/projects/${deletionFixture.id}`, route => captureDeletion(route));
+  await racePage.getByRole('button', { name: 'Remove project', exact: true }).click();
+  await racePage.getByRole('button', { name: 'Remove', exact: true }).click();
+  const deletionRoute = await pendingDeletion;
+  assert.equal(await racePage.getByRole('button', { name: 'Cancel', exact: true }).isDisabled(), true, 'An in-flight deletion cannot appear to be cancelled');
+  await racePage.getByRole('button', { name: 'Close project', exact: true }).click();
+  await racePage.locator('.project-grid').getByRole('button', { name: 'View TurboChat', exact: true }).click();
+  await deletionRoute.fulfill({ response: await deletionRoute.fetch() });
+  await racePage.getByRole('button', { name: 'View Deletion race fixture', exact: true }).waitFor({ state: 'detached' });
+  await racePage.getByRole('status').filter({ hasText: 'Project removed from your universe.' }).waitFor();
+  await racePage.getByRole('dialog', { name: 'TurboChat', exact: true }).waitFor();
+  await racePage.getByRole('button', { name: 'Close project', exact: true }).click();
+  await racePage.unroute(`${origin}/api/projects/${deletionFixture.id}`);
+
+  await raceContext.close();
   await page.getByRole('button', { name: 'Add project', exact: true }).click();
   await page.getByRole('button', { name: 'Bulk import', exact: true }).click();
   await page.getByLabel('Or paste project links').fill('https://example.com/one\nhttps://example.com/two');
@@ -109,7 +133,7 @@ try {
   await page.getByRole('heading', { name: 'AI (Chromebooks)', exact: true }).waitFor();
   assert.equal(await page.locator('.section-loading').count(), 0, 'Deferred screens load on their first offline visit');
   assert.deepEqual(errors, [], 'No browser runtime errors');
-  console.log('Browser smoke passed: catalog entries, uploads/downloads, filtering/search, deletion, bulk import, story, mobile navigation, export, installation UI, and offline browsing.');
+  console.log('Browser smoke passed: catalog entries, uploads/downloads, filtering/search, delayed deletion safety, bulk import, story, mobile navigation, export, installation UI, and offline browsing.');
 } finally {
   await browser?.close();
   await new Promise(resolve => server.close(resolve));

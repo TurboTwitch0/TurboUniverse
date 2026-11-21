@@ -121,7 +121,20 @@ function ProjectDetails({ project, onClose, onDelete, editable, saved, onToggleS
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const ref = useRef<HTMLDivElement>(null);
+  const mounted = useRef(false);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   useDialogFocus(ref, onClose, returnFocus);
+  async function remove() {
+    if (busy) return;
+    setBusy(true); setError('');
+    ref.current?.querySelector<HTMLButtonElement>('.detail-close')?.focus();
+    try {
+      await onDelete(project.id);
+      if (mounted.current) onClose();
+    } catch (cause) {
+      if (mounted.current) { setError(cause instanceof Error ? cause.message : 'Could not remove project.'); setBusy(false); }
+    }
+  }
   return <div className="dialog-backdrop" onClick={e => e.target === e.currentTarget && onClose()}><div className="detail-dialog" ref={ref} role="dialog" aria-modal="true" aria-labelledby="project-detail-title">
     <button className="icon-button detail-close" aria-label="Close project" onClick={onClose}><X /></button>
     <ProjectArt project={project} mode={mode} large />
@@ -129,7 +142,7 @@ function ProjectDetails({ project, onClose, onDelete, editable, saved, onToggleS
       <div className="detail-actions">{project.url && <a className="primary-button" href={project.url} target="_blank" rel="noopener noreferrer">{project.status === 'setup-pending' ? 'View project on GitHub' : `Explore ${project.type === 'app' ? 'app' : 'website'}`}<ArrowUpRight size={18} /></a>}{project.fileUrl && <a className="secondary-button" href={project.fileUrl} download={project.fileName}><Download size={18} />Download project</a>}<button className="secondary-button" onClick={onToggleSaved} aria-pressed={saved}><Star size={16} fill={saved ? 'currentColor' : 'none'} />{saved ? 'World saved' : 'Save this world'}</button></div>
       <CopyWorldLink worldId={project.id} />
       <RelatedWorlds currentId={project.id} projects={projects} onSelect={onSelect} />
-      {editable && <div className="detail-bottom">{confirm ? <div className="delete-confirm"><span>Remove from your universe?</span><button className="danger-button" disabled={busy} onClick={async () => { setBusy(true); try { await onDelete(project.id); onClose(); } catch(e) { setError(e instanceof Error ? e.message : 'Could not remove project.'); setBusy(false); } }}>{busy ? 'Removing…' : 'Remove'}</button><button className="text-button" onClick={() => setConfirm(false)}>Cancel</button></div> : <><span>PART OF THE TURBO UNIVERSE</span><button className="text-button" onClick={() => setConfirm(true)}><Trash2 size={14} /> Remove project</button></>}{error && <p className="form-error" role="alert">{error}</p>}</div>}
+      {editable && <div className="detail-bottom">{confirm ? <div className="delete-confirm"><span>Remove from your universe?</span><button className="danger-button" disabled={busy} onClick={() => void remove()}>{busy ? 'Removing…' : 'Remove'}</button><button className="text-button" disabled={busy} onClick={() => setConfirm(false)}>Cancel</button></div> : <><span>PART OF THE TURBO UNIVERSE</span><button className="text-button" onClick={() => setConfirm(true)}><Trash2 size={14} /> Remove project</button></>}{error && <p className="form-error" role="alert">{error}</p>}</div>}
     </div>
   </div></div>;
 }
