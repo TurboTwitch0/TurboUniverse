@@ -20,8 +20,9 @@ The generated briefs in [design-briefs/](design-briefs/) show three possible
 visual directions for the same product. They are starting points, not research
 or completed implementations. Run `npm start` from the toolkit root to build
 and serve the [design lab source](../index.html) at the printed local address.
-The lab lets you compare directions on an illustrative interface; filtering and
-adding notes change the current page only and reset on reload.
+The lab lets you compare directions while creating, editing, and finding notes.
+Changes are saved in this browser when local storage is available. Export JSON
+for a separate copy, and use the two-step reset to restore the starter entries.
 
 Run a source audit on the app after implementation:
 

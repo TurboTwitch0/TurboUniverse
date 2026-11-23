@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { createBrief } from '../lib/brief.mjs';
 import { cli, temporaryDirectory } from './helpers.mjs';
@@ -8,7 +9,7 @@ import { cli, temporaryDirectory } from './helpers.mjs';
 test('CLI help, version, doctor, and invalid arguments have useful exit behavior', () => {
   assert.match(cli([]).stdout, /Usage:/);
   assert.equal(cli(['help']).status, 0);
-  assert.equal(cli(['--version']).stdout.trim(), '1.1.0');
+  assert.equal(cli(['--version']).stdout.trim(), JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version);
   assert.equal(cli(['doctor']).status, 0);
   for (const args of [['unknown'], ['init'], ['brief', '--unknown', 'x'], ['brief', '--name'], ['audit', '--format', 'xml'], ['audit', '--fail-on', 'always']]) {
     const result = cli(args);

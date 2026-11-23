@@ -14,11 +14,11 @@ for (const file of pinned.files) {
 
 const { buildProject } = await import('../vendor/interface-foundry/scripts/build.mjs');
 const result = await buildProject(source);
-const outputRoot = path.join(root, 'dist');
+const outputRoot = path.resolve(process.env.FOUNDRY_DIST_DIR || path.join(root, 'dist'));
 await mkdir(outputRoot, { recursive: true });
 if ((await lstat(outputRoot)).isSymbolicLink() || !(await lstat(outputRoot)).isDirectory()) throw new Error('Expected an ordinary generated dist directory.');
 const output = path.resolve(outputRoot, 'interface-foundry');
-if (path.relative(root, output) !== path.join('dist', 'interface-foundry')) throw new Error('Unexpected generated sub-app location.');
+if (path.relative(outputRoot, output) !== 'interface-foundry') throw new Error('Unexpected generated sub-app location.');
 try { if ((await lstat(output)).isSymbolicLink()) throw new Error('Refusing a symlinked sub-app output.'); }
 catch (error) { if (error.code !== 'ENOENT') throw error; }
 await rm(output, { recursive: true, force: true });
@@ -33,14 +33,14 @@ await writeFile(filename, html);
 for (const extension of ['css', 'js']) await cp(path.join(root, 'integrations', 'interface-foundry', `reader.${extension}`), path.join(output, 'assets', `hub-reader.${extension}`));
 await writeFile(path.join(output, 'LICENSE.txt'), await readFile(path.join(source, 'LICENSE')));
 const files = [];
-for (const name of ['index.html', 'assets/app.js', 'assets/styles.css', 'assets/hub-reader.css', 'assets/hub-reader.js', 'data/skills.json', 'downloads/interface-foundry-toolkit.zip', 'LICENSE.txt']) {
+for (const name of ['index.html', 'assets/app.js', 'assets/notes-store.js', 'assets/prompt-builder.js', 'assets/styles.css', 'assets/fonts/BarlowCondensed-ExtraBold.ttf', 'assets/fonts/SpaceGrotesk-Variable.ttf', 'assets/fonts/BarlowCondensed-OFL.txt', 'assets/fonts/SpaceGrotesk-OFL.txt', 'assets/fonts/SOURCE.md', 'assets/images/foundry-glass-stack.png', 'assets/images/SOURCE.md', 'assets/hub-reader.css', 'assets/hub-reader.js', 'data/skills.json', 'downloads/interface-foundry-toolkit.zip', 'LICENSE.txt']) {
   const bytes = await readFile(path.join(output, name));
   files.push({ path: name, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
 }
 await writeFile(path.join(output, 'provenance.json'), JSON.stringify({
   name: pinned.name, repository: pinned.repository, commit: pinned.commit, license: pinned.license,
   copyright: pinned.copyright, mountPath: pinned.mountPath,
-  adaptations: ['Added the hub subpath base URL and footer links to the hub, license, and source provenance.', 'Added hub-owned reader styles, a dialog padding guard, and seasonal Christmas styling that follows hub appearance preferences. Pinned upstream assets, skill text, and the complete source toolkit remain unchanged.'],
+  adaptations: ['Added the hub subpath base URL and footer links to the hub, license, and source provenance.', 'Added hub-owned reader styles, dialog padding and focus guards, and light/dark seasonal Christmas styling that follows hub appearance preferences. Pinned upstream assets, skill text, and the complete source toolkit remain unchanged.'],
   files,
 }, null, 2) + '\n');
 console.log(`Interface Foundry: ${result.skills} full skills, complete toolkit ZIP, and static assets built at ${pinned.mountPath} from ${pinned.commit}.`);

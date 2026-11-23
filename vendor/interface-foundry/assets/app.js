@@ -1,40 +1,36 @@
-'use strict';
+import { createNotesStore } from './notes-store.js';
+import { buildPrompt } from './prompt-builder.js';
 
 const workflows = {
   direction: {
     title: 'Set a direction.\nThen commit to it.',
     description: 'Define the audience, the main task, and a visual point of view. Turn those decisions into a small set of design tokens that your agent can actually follow.',
-    output: 'A DESIGN.md with typography, color, spacing, interaction rules, and the reasons behind them.',
-    prompt: 'Use foundry-direction to define a calm, editorial interface for a research notes app. Prioritize scanning and retrieval. Create DESIGN.md before changing components.'
+    output: 'A DESIGN.md with typography, color, spacing, interaction rules, and the reasons behind them.'
   },
   audit: {
     title: 'Find the friction.\nFix what matters.',
     description: 'Inspect the interface around a real user task. Look for unclear hierarchy, inaccessible controls, inconsistent components, and broken states. Tie every finding to observable evidence.',
-    output: 'A prioritized audit: the problem, its evidence, its user impact, and a concrete next step. Untested areas stay explicit.',
-    prompt: 'Use foundry-audit to review the research notes app. Follow the create-and-find-a-note flow. Prioritize accessibility and confusing states. Give evidence for each finding; distinguish inspected behavior from assumptions.'
+    output: 'A prioritized audit: the problem, its evidence, its user impact, and a concrete next step. Untested areas stay explicit.'
   },
   reference: {
     title: 'Study the choices.\nMake your own.',
     description: 'Use relevant references to understand hierarchy, density, type, and interaction patterns. Extract the principles that fit your product, with sources and attribution kept intact.',
-    output: 'A reference map that connects observed design decisions to your own tokens and components, with provenance and reuse limits.',
-    prompt: 'Use foundry-reference to study the references I provide for the notes app. Compare typography, hierarchy, density, and navigation. Record source URLs and what we can adapt. Propose an original direction rather than copying a brand.'
+    output: 'A reference map that connects observed design decisions to your own tokens and components, with provenance and reuse limits.'
   },
   reconstruct: {
     title: 'From a visual.\nTo something usable.',
     description: 'Read a screenshot as a system of layout, type, spacing, and components. Rebuild the visible structure, then make explicit choices for the responsive layouts and states the image cannot show.',
-    output: 'A working interface with a visual inventory, reusable tokens, responsive rules, and a clear list of inferred behavior.',
-    prompt: 'Use foundry-reconstruct with the screenshot I attach. First inventory its layout and tokens, then implement it in the existing stack. Make the page responsive, wire its primary actions, and label assumptions about unseen states.'
+    output: 'A working interface with a visual inventory, reusable tokens, responsive rules, and a clear list of inferred behavior.'
   },
   verify: {
     title: 'Follow the flow.\nProve the result.',
     description: 'Open the interface and exercise its main task end to end. Check keyboard access, narrow screens, empty and error states, and whether saved data returns correctly when a backend is present.',
-    output: 'A verification record with steps, actual outcomes, viewport details, supporting evidence, and any checks that could not be run.',
-    prompt: 'Use foundry-verify to test creating, finding, and reopening a note. Check desktop and narrow screens, keyboard navigation, and empty states. Report actual results and failures. Do not claim browser or backend checks you cannot run.'
+    output: 'A verification record with steps, actual outcomes, viewport details, supporting evidence, and any checks that could not be run.'
   }
 };
 
 const themes = {
-  editorial: { summary: 'Warm. Literate. Considered.', caption: 'Paper + ink / Serif headlines / Fine rules', color: '#d5f05a' },
+  editorial: { summary: 'Sharp. Clear. Intentional.', caption: 'Mint + ink / Condensed headlines / Fine rules', color: '#c7ee96' },
   studio: { summary: 'Quiet. Friendly. Purposeful.', caption: 'Sage + pine / Bold sans / Soft corners', color: '#b2dec1' },
   terminal: { summary: 'Precise. Direct. Focused.', caption: 'Phosphor + forest / Monospace / Dashed rules', color: '#b4ed71' }
 };
@@ -44,7 +40,29 @@ const directionTabs = [...document.querySelectorAll('[data-direction]')];
 const toast = document.querySelector('#toast');
 let toastTimer;
 let currentFilter = 'all';
-let noteNumber = 3;
+let currentWorkflow = 'direction';
+let currentDirection = 'editorial';
+const promptProject = document.querySelector('#prompt-project');
+const promptGoal = document.querySelector('#prompt-goal');
+let browserStorage;
+try { browserStorage = window.localStorage; } catch {}
+const notesStore = createNotesStore(browserStorage);
+const noteGrid = document.querySelector('#note-grid');
+const noteSearch = document.querySelector('#note-search');
+const noteDialog = document.querySelector('#note-dialog');
+const noteForm = document.querySelector('#note-form');
+const noteTitle = document.querySelector('#note-title');
+const noteBody = document.querySelector('#note-body');
+const noteKind = document.querySelector('#note-kind');
+const noteError = document.querySelector('#note-error');
+const newNoteButton = document.querySelector('#new-note');
+const resetNotesButton = document.querySelector('#reset-notes');
+let activeNoteId = null;
+let noteReturnId = null;
+let noteDialogTrigger = null;
+let deletedEntry = null;
+let resetArmed = false;
+let resetTimer;
 
 function announce(message) {
   clearTimeout(toastTimer);
@@ -63,10 +81,28 @@ function selectTab(tabs, selected) {
   });
 }
 
+function renderPrompt() {
+  const status = document.querySelector('#prompt-context-status');
+  try {
+    const prompt = buildPrompt(currentWorkflow, { project: promptProject.value, goal: promptGoal.value, direction: currentDirection });
+    document.querySelector('#workflow-prompt').textContent = prompt;
+    promptProject.setAttribute('aria-invalid', 'false');
+    promptGoal.setAttribute('aria-invalid', 'false');
+    status.textContent = promptProject.value.trim() || promptGoal.value.trim()
+      ? 'Your prompt is ready. Choose a skill, then copy it into your coding agent.'
+      : 'Add your project details to tailor this prompt.';
+  } catch (error) {
+    promptProject.setAttribute('aria-invalid', String(promptProject.value.trim().length > 80));
+    promptGoal.setAttribute('aria-invalid', String(promptGoal.value.trim().length > 160));
+    status.textContent = error.message;
+  }
+}
+
 function setWorkflow(tab) {
   const name = tab.dataset.workflow;
+  if (!Object.hasOwn(workflows, name)) return;
   const workflow = workflows[name];
-  if (!workflow) return;
+  currentWorkflow = name;
   selectTab(workflowTabs, tab);
   document.querySelector('#workflow-panel').setAttribute('aria-labelledby', tab.id);
   document.querySelector('#skill-name').textContent = `foundry-${name}`;
@@ -78,14 +114,15 @@ function setWorkflow(tab) {
   });
   document.querySelector('#workflow-description').textContent = workflow.description;
   document.querySelector('#workflow-output').textContent = workflow.output;
-  document.querySelector('#workflow-prompt').textContent = workflow.prompt;
+  renderPrompt();
   document.querySelector('#skill-source').dataset.skill = name;
 }
 
 function setDirection(tab) {
   const name = tab.dataset.direction;
+  if (!Object.hasOwn(themes, name)) return;
   const theme = themes[name];
-  if (!theme) return;
+  currentDirection = name;
   selectTab(directionTabs, tab);
   const preview = document.querySelector('#design-preview');
   preview.dataset.theme = name;
@@ -93,6 +130,17 @@ function setDirection(tab) {
   document.querySelector('#theme-summary').textContent = theme.summary;
   document.querySelector('#token-caption').textContent = theme.caption;
   document.querySelector('#token-color').style.backgroundColor = theme.color;
+  setPresentation('designed');
+  renderPrompt();
+}
+
+function setPresentation(name) {
+  if (!['basic', 'designed'].includes(name)) return;
+  document.querySelector('#design-preview').dataset.presentation = name;
+  document.querySelectorAll('[data-presentation-option]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.presentationOption === name)));
+  document.querySelector('#comparison-description').textContent = name === 'basic'
+    ? 'Basic treatment: plain surfaces and system type. Your entries and tools stay the same.'
+    : `Designed treatment: ${currentDirection[0].toUpperCase()}${currentDirection.slice(1)}. Your entries and tools stay the same.`;
 }
 
 function wireTabs(tabs, callback, vertical = false) {
@@ -130,19 +178,113 @@ async function copyFrom(element, successMessage) {
 }
 
 function updateEntries() {
-  const cards = [...document.querySelectorAll('.note-card')];
-  let shown = 0;
-  cards.forEach((card) => {
-    const visible = currentFilter === 'all' || card.dataset.kind === currentFilter;
-    card.hidden = !visible;
-    if (visible) shown += 1;
+  const all = notesStore.list();
+  const visible = notesStore.search(noteSearch.value, currentFilter);
+  const cards = visible.map(note => {
+    const card = document.createElement('article');
+    card.className = 'note-card';
+    card.dataset.kind = note.kind;
+    card.dataset.noteId = note.id;
+    const open = document.createElement('button');
+    open.className = 'note-open';
+    open.type = 'button';
+    open.setAttribute('aria-label', `Edit ${note.kind}: ${note.title}`);
+    open.addEventListener('click', () => openNote(note.id, open));
+    const meta = document.createElement('div');
+    meta.className = 'note-meta';
+    const kind = document.createElement('span');
+    kind.className = 'note-type';
+    kind.textContent = note.kind.toUpperCase();
+    const arrow = document.createElement('span');
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '↗';
+    meta.append(kind, arrow);
+    const title = document.createElement('h4');
+    title.textContent = note.title;
+    const body = document.createElement('p');
+    body.textContent = note.body || 'Open to add a thought.';
+    const footer = document.createElement('div');
+    footer.className = 'note-footer';
+    footer.textContent = note.kind === 'decision' ? 'DECISION LOG' : 'YOUR COLLECTION';
+    const number = document.createElement('span');
+    number.textContent = String(all.findIndex(entry => entry.id === note.id) + 1).padStart(2, '0');
+    footer.append(number);
+    open.append(meta, title, body, footer);
+    card.append(open);
+    return card;
   });
-  document.querySelector('#sidebar-count').textContent = String(cards.length);
-  document.querySelector('#entry-count').textContent = `${shown} ${shown === 1 ? 'entry' : 'entries'}`;
+  noteGrid.replaceChildren(...cards);
+  document.querySelector('#sidebar-count').textContent = String(all.length);
+  document.querySelector('#entry-count').textContent = `${visible.length} ${visible.length === 1 ? 'entry' : 'entries'}`;
+  const empty = document.querySelector('#empty-notes');
+  empty.hidden = visible.length > 0;
+  empty.textContent = all.length ? 'No entries match. Try another search or filter.' : 'A blank page, ready for your next idea. Create a note to begin.';
+  document.querySelector('#reload-notes').hidden = !notesStore.storageConflict;
+  document.querySelector('#workspace-status').textContent = notesStore.storageConflict
+    ? 'Notes changed in another tab. Your edits are temporary. Export them before reloading the saved collection.'
+    : notesStore.damagedCollection
+    ? 'Saved notes could not be read. The original data is preserved. These notes are temporary; export to keep them, or use Reset demo to replace the damaged collection.'
+    : notesStore.persistent ? 'Notes saved in this browser.' : 'Notes are temporary. Browser storage is unavailable; export to keep a copy.';
+}
+
+function cancelReset() {
+  clearTimeout(resetTimer);
+  resetArmed = false;
+  resetNotesButton.textContent = 'Reset demo';
+}
+
+function showAllEntries() {
+  currentFilter = 'all';
+  noteSearch.value = '';
+  document.querySelectorAll('[data-filter]').forEach(option => option.setAttribute('aria-pressed', String(option.dataset.filter === 'all')));
+}
+
+function focusEntry(id) {
+  const card = [...document.querySelectorAll('.note-card')].find(item => item.dataset.noteId === id);
+  const button = card?.querySelector('.note-open');
+  if (button) button.focus();
+  else if (noteDialogTrigger?.isConnected) noteDialogTrigger.focus();
+  else newNoteButton.focus();
+}
+
+function openNote(id, trigger) {
+  cancelReset();
+  const entry = id ? notesStore.list().find(note => note.id === id) : null;
+  if (id && !entry) { updateEntries(); announce('That entry is no longer available.'); return; }
+  activeNoteId = entry?.id ?? null;
+  noteReturnId = activeNoteId;
+  noteDialogTrigger = trigger;
+  document.querySelector('#note-id').value = activeNoteId ?? '';
+  document.querySelector('#note-dialog-title').textContent = entry ? 'Edit your entry' : 'Capture an idea';
+  noteTitle.value = entry?.title ?? '';
+  noteBody.value = entry?.body ?? '';
+  noteKind.value = entry?.kind ?? 'note';
+  noteError.textContent = '';
+  document.querySelector('#delete-note').hidden = !entry;
+  noteDialog.showModal();
+  noteTitle.focus();
 }
 
 wireTabs(workflowTabs, setWorkflow, true);
 wireTabs(directionTabs, setDirection);
+document.querySelectorAll('[data-presentation-option]').forEach(button => {
+  button.addEventListener('click', () => setPresentation(button.dataset.presentationOption));
+});
+promptProject.addEventListener('input', renderPrompt);
+promptGoal.addEventListener('input', renderPrompt);
+renderPrompt();
+setPresentation('designed');
+
+const artStage = document.querySelector('#hero-stage');
+const artThemeButtons = [...document.querySelectorAll('[data-art-theme-option]')];
+artThemeButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    const name = button.dataset.artThemeOption;
+    if (!artStage || !['mint', 'paper', 'ink'].includes(name)) return;
+    artStage.dataset.artTheme = name;
+    artThemeButtons.forEach(option => option.setAttribute('aria-pressed', String(option === button)));
+  });
+});
 
 document.querySelector('#copy-prompt').addEventListener('click', () => {
   copyFrom(document.querySelector('#workflow-prompt'), 'Prompt copied. Paste it into your coding agent.');
@@ -165,6 +307,7 @@ document.querySelectorAll('[data-agent]').forEach((button) => {
 
 document.querySelectorAll('[data-filter]').forEach((button) => {
   button.addEventListener('click', () => {
+    cancelReset();
     currentFilter = button.dataset.filter;
     document.querySelectorAll('[data-filter]').forEach((option) => {
       option.setAttribute('aria-pressed', String(option === button));
@@ -173,39 +316,82 @@ document.querySelectorAll('[data-filter]').forEach((button) => {
   });
 });
 
-document.querySelector('#new-note').addEventListener('click', () => {
-  noteNumber += 1;
-  const card = document.createElement('article');
-  card.className = 'note-card';
-  card.dataset.kind = 'note';
-  const meta = document.createElement('div');
-  meta.className = 'note-meta';
-  const kind = document.createElement('span');
-  kind.className = 'note-type';
-  kind.textContent = 'NOTE';
-  const arrow = document.createElement('span');
-  arrow.setAttribute('aria-hidden', 'true');
-  arrow.textContent = '↗';
-  meta.append(kind, arrow);
-  const heading = document.createElement('h4');
-  heading.textContent = `A new idea. No. ${noteNumber}`;
-  const description = document.createElement('p');
-  description.textContent = 'One small thought, ready to become something useful. This is a local demo entry.';
-  const footer = document.createElement('div');
-  footer.className = 'note-footer';
-  footer.textContent = 'YOUR NEXT THOUGHT';
-  const number = document.createElement('span');
-  number.textContent = String(noteNumber).padStart(2, '0');
-  footer.append(number);
-  card.append(meta, heading, description, footer);
-  document.querySelector('#note-grid').prepend(card);
-  currentFilter = 'all';
-  document.querySelectorAll('[data-filter]').forEach((option) => {
-    option.setAttribute('aria-pressed', String(option.dataset.filter === 'all'));
-  });
-  updateEntries();
-  announce('New note added to the local demo. It resets when you reload.');
+newNoteButton.addEventListener('click', () => openNote(null, newNoteButton));
+noteSearch.addEventListener('input', () => { cancelReset(); updateEntries(); });
+noteForm.addEventListener('submit', event => {
+  event.preventDefault();
+  try {
+    const values = { title: noteTitle.value, body: noteBody.value, kind: noteKind.value };
+    const entry = activeNoteId ? notesStore.update(activeNoteId, values) : notesStore.create(values);
+    noteReturnId = entry.id;
+    showAllEntries();
+    updateEntries();
+    noteDialog.close();
+    announce(notesStore.persistent ? 'Entry saved in this browser.' : 'Entry added for this session. Export to keep a copy.');
+  } catch (error) { noteError.textContent = error.message; noteTitle.focus(); }
 });
+document.querySelector('#close-note').addEventListener('click', () => noteDialog.close());
+document.querySelector('#cancel-note').addEventListener('click', () => noteDialog.close());
+noteDialog.addEventListener('click', event => {
+  if (event.target !== noteDialog) return;
+  const rect = noteDialog.getBoundingClientRect();
+  if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) noteDialog.close();
+});
+noteDialog.addEventListener('close', () => {
+  if (noteDialog.open) return;
+  focusEntry(noteReturnId);
+  activeNoteId = null;
+});
+document.querySelector('#delete-note').addEventListener('click', () => {
+  if (!activeNoteId) return;
+  try {
+    const index = notesStore.list().findIndex(note => note.id === activeNoteId);
+    deletedEntry = { note: notesStore.remove(activeNoteId), index };
+    noteReturnId = null;
+    updateEntries();
+    document.querySelector('#note-undo').hidden = false;
+    noteDialog.close();
+    announce('Entry deleted. Undo is available below the collection.');
+  } catch (error) { noteError.textContent = error.message; }
+});
+document.querySelector('#undo-delete').addEventListener('click', () => {
+  if (!deletedEntry) return;
+  try {
+    const entry = notesStore.restore(deletedEntry.note, deletedEntry.index);
+    deletedEntry = null;
+    document.querySelector('#note-undo').hidden = true;
+    showAllEntries();
+    updateEntries();
+    focusEntry(entry.id);
+    announce('Entry restored.');
+  } catch (error) { announce(error.message); }
+});
+document.querySelector('#export-notes').addEventListener('click', () => {
+  const collection = { version: 1, exportedAt: new Date().toISOString(), notes: notesStore.list() };
+  saveFile(new Blob([JSON.stringify(collection, null, 2)], { type: 'application/json' }), 'interface-foundry-notes.json');
+  announce('Exported your entries as a JSON file.');
+});
+resetNotesButton.addEventListener('click', () => {
+  if (!resetArmed) {
+    resetArmed = true;
+    resetNotesButton.textContent = 'Confirm reset';
+    announce('Press Confirm reset within 10 seconds to replace your entries with the starter notes. Export first to keep a copy.');
+    resetTimer = setTimeout(cancelReset, 10000);
+    return;
+  }
+  cancelReset();
+  notesStore.reset();
+  deletedEntry = null;
+  document.querySelector('#note-undo').hidden = true;
+  showAllEntries();
+  updateEntries();
+  announce('Starter collection restored.');
+});
+document.querySelector('#reload-notes').addEventListener('click', () => {
+  if (window.confirm('Export this tab’s temporary notes first to keep them. Reload and replace them with the saved collection?')) window.location.reload();
+});
+
+updateEntries();
 
 const skillDialog = document.querySelector('#skill-dialog');
 const skillContent = document.querySelector('#skill-content');
@@ -295,8 +481,13 @@ document.querySelector('#skill-source').addEventListener('click', event => {
 });
 retrySkillButton.addEventListener('click', loadCurrentSkill);
 document.querySelector('#close-skill').addEventListener('click', () => skillDialog.close());
-skillDialog.addEventListener('click', event => { if (event.target === skillDialog) skillDialog.close(); });
+skillDialog.addEventListener('click', event => {
+  if (event.target !== skillDialog) return;
+  const rect = skillDialog.getBoundingClientRect();
+  if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) skillDialog.close();
+});
 skillDialog.addEventListener('close', () => {
+  if (skillDialog.open) return;
   skillRequestId += 1;
   currentSkillText = null;
   dialogTrigger?.focus();

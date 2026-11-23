@@ -12,9 +12,9 @@ import { createVercelApp } from '../api/index.mjs';
 import catalog from '../server/catalog.json' with { type: 'json' };
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const dist = path.join(root, 'dist');
+const dist = path.resolve(process.env.FOUNDRY_DIST_DIR || path.join(root, 'dist'));
 const output = path.resolve(process.env.FOUNDRY_OUTPUT_DIR || path.join(tmpdir(), 'turbo-universe', 'interface-foundry-integration'));
-const sourceCommit = '56ca9eec9a12136e78ab8b44aaf24947c0fe634a';
+const sourceCommit = '19132844472b4ecee51ca199ea8aefb9e24dc2d3';
 const workflowNames = ['direction', 'audit', 'reference', 'reconstruct', 'verify'];
 const report = { sourceCommit, startedAt: new Date().toISOString(), output, checks: [], browserErrors: [], networkErrors: [], screenshots: [] };
 const app = express();
@@ -217,7 +217,7 @@ async function verifyHub(page, context) {
     [foundry] = await Promise.all([context.waitForEvent('page'), nav.click()]);
     watch(foundry);
   } else await nav.click();
-  await foundry.getByRole('heading', { name: 'Give your next interface a point of view.', exact: true }).waitFor();
+  await foundry.getByRole('heading', { name: /MAKE GOOD\s*INTERFACES\./ }).waitFor();
   assert.equal(new URL(foundry.url()).pathname, '/interface-foundry/');
   assert.equal(await foundry.locator('base').getAttribute('href'), '/interface-foundry/');
   passed('Hub navigation, catalog search and Design filtering, details, and save/reload lead to Foundry');
@@ -239,6 +239,18 @@ async function verifyWorkflows(page, context, skills) {
     await page.waitForFunction(() => !document.querySelector('#copy-skill').disabled);
     assert.equal(await page.locator('#skill-dialog-title').textContent(), `foundry-${name}`);
     assert.equal(await page.locator('#skill-content').textContent(), skills[name], `Complete ${name} skill is readable`);
+    if (name === 'direction') {
+      const readerState = await dialog.evaluate(element => {
+        const text = element.querySelector('#skill-content');
+        text.scrollTop = text.scrollHeight;
+        const dialogBox = element.getBoundingClientRect();
+        return { scrolls: text.scrollTop > 0, controlsFit: [...element.querySelectorAll('.dialog-header,.dialog-actions')].every(control => { const box = control.getBoundingClientRect(); return box.top >= dialogBox.top && box.bottom <= dialogBox.bottom; }) };
+      });
+      assert.equal(readerState.scrolls, true, 'Long skill text scrolls independently');
+      assert.equal(readerState.controlsFit, true, 'Reader controls remain visible while its text scrolls');
+      await dialog.click({ position: { x: 4, y: 4 }, force: true });
+      assert.equal(await dialog.evaluate(element => element.open), true, 'Inner reader padding keeps the reader open');
+    }
     await page.locator('#copy-skill').click();
     await page.waitForFunction(() => document.querySelector('#skill-feedback').textContent.startsWith('Skill copied.'));
     const copied = await page.evaluate(() => navigator.clipboard.readText());
@@ -299,6 +311,9 @@ async function verifyArchive(page, skills) {
   assert.equal(sourcePackage.name, 'interface-foundry');
   assert.equal(sourcePackage.license, 'MIT');
   assert.equal(sourcePackage.scripts.build, 'node scripts/build.mjs');
+  const pinned = JSON.parse(await readFile(path.join(root, 'vendor', 'interface-foundry.upstream.json'), 'utf8'));
+  assert.equal(entries.size, pinned.files.length, 'Downloaded toolkit includes exactly the pinned source files');
+  for (const file of pinned.files) assert.equal(sha256(get(file.path)), file.sha256, `Downloaded source matches the reviewed pin: ${file.path}`);
   assert.deepEqual(get('index.html'), await readFile(path.join(root, 'vendor', 'interface-foundry', 'index.html')), 'Source ZIP preserves original upstream HTML before hub base/footer adaptations');
   for (const filename of ['assets/app.js', 'assets/styles.css']) assert.deepEqual(get(filename), await readFile(path.join(dist, 'interface-foundry', filename)), `Source ZIP and live site have the same ${filename}`);
   for (const name of workflowNames) {
@@ -330,16 +345,43 @@ async function verifyLabAndResponsive(page) {
   await page.getByRole('button', { name: 'Decisions', exact: true }).click();
   assert.equal(await page.locator('.note-card:visible').count(), 1);
   await page.locator('#new-note').click();
+  await page.locator('#note-title').fill('A useful release note');
+  await page.locator('#note-body').fill('Keep the whole workflow working after reload.');
+  await page.locator('#save-note').click();
+  await page.locator('#note-dialog').waitFor({ state: 'hidden' });
   assert.equal(await page.locator('.note-card:visible').count(), 4);
   assert.equal(await page.locator('#entry-count').textContent(), '4 entries');
-  await page.getByRole('heading', { name: 'A new idea. No. 4', exact: true }).waitFor();
+  await page.getByRole('heading', { name: 'A useful release note', exact: true }).waitFor();
   await page.getByRole('button', { name: 'Notes', exact: true }).click();
   assert.equal(await page.locator('.note-card:visible').count(), 3);
   await page.reload();
   await page.locator('#new-note').waitFor();
-  assert.equal(await page.locator('.note-card').count(), 3, 'Browser demo notes reset on reload as disclosed');
-  assert.equal(await page.locator('#entry-count').textContent(), '3 entries');
-  passed('Editorial/Studio/Terminal controls and keyboard navigation, note filters, New note, and disclosed reset-on-reload behavior');
+  assert.equal(await page.locator('.note-card').count(), 4, 'Saved notes survive reload');
+  await page.getByRole('button', { name: 'Edit note: A useful release note', exact: true }).click();
+  await page.locator('#note-title').fill('A refined release note');
+  await page.locator('#save-note').click();
+  await page.locator('#note-search').fill('refined');
+  assert.equal(await page.locator('.note-card:visible').count(), 1);
+  await page.getByRole('button', { name: 'Edit note: A refined release note', exact: true }).click();
+  await page.locator('#delete-note').click();
+  assert.equal(await page.locator('.note-card:visible').count(), 0);
+  await page.locator('#undo-delete').click();
+  assert.equal(await page.locator('.note-card:visible').count(), 4);
+  const [notesDownload] = await Promise.all([page.waitForEvent('download'), page.locator('#export-notes').click()]);
+  const exported = JSON.parse((await downloadBytes(notesDownload)).toString('utf8'));
+  assert.equal(exported.notes.length, 4);
+  assert.ok(exported.notes.some(note => note.title === 'A refined release note'));
+  await page.getByRole('button', { name: 'Basic', exact: true }).click();
+  assert.equal(await page.locator('#design-preview').getAttribute('data-presentation'), 'basic');
+  await page.getByRole('button', { name: 'Designed', exact: true }).click();
+  await page.locator('#prompt-project').fill('TurboUniverse');
+  await page.locator('#prompt-goal').fill('Find and launch a saved world');
+  assert.match(await page.locator('#workflow-prompt').textContent(), /TurboUniverse.*Find and launch a saved world/s);
+  await page.locator('#reset-notes').click();
+  assert.equal(await page.locator('.note-card').count(), 4, 'Reset requires confirmation');
+  await page.locator('#reset-notes').click();
+  assert.equal(await page.locator('.note-card').count(), 3);
+  passed('Design directions and keyboard navigation, persistent note create/edit/search/delete/undo/export, confirmed reset, visual comparison, and local prompt tailoring');
   await page.setViewportSize({ width: 1440, height: 1000 });
   await noOverflow(page, '1440px Foundry');
   await page.evaluate(async () => { await document.fonts.ready; window.scrollTo(0, 0); });
@@ -406,12 +448,140 @@ async function verifyHubHeader(page) {
     if (mobile) {
       const [foundry] = await Promise.all([page.context().waitForEvent('page'), page.getByRole('link', { name: 'Open Interface Foundry', exact: true }).click()]);
       watch(foundry);
-      await foundry.getByRole('heading', { name: 'Give your next interface a point of view.', exact: true }).waitFor();
+      await foundry.getByRole('heading', { name: /MAKE GOOD\s*INTERFACES\./ }).waitFor();
       await foundry.close();
       await toggle.click();
     }
   }
   passed('Hub header and all six navigation controls fit without clipping/collision at 320, 390, 768, 801, 820, 900, 1024, and 1280px; mobile Foundry navigation opens');
+}
+
+async function verifyStoredNotesRecovery() {
+  const context = await browser.newContext({ acceptDownloads: true });
+  const page = await context.newPage();
+  try {
+    await page.goto(`${origin}/interface-foundry/`);
+    const damaged = '{recover-this-original-collection';
+    await page.evaluate(value => localStorage.setItem('interface-foundry-notes-v1', value), damaged);
+    await page.reload();
+    await page.getByText(/Saved notes could not be read\. The original data is preserved/).waitFor();
+    await page.locator('#new-note').click();
+    await page.locator('#note-title').fill('Recoverable temporary idea');
+    await page.locator('#save-note').click();
+    assert.equal(await page.evaluate(() => localStorage.getItem('interface-foundry-notes-v1')), damaged);
+    const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#export-notes').click()]);
+    const exported = JSON.parse((await downloadBytes(download)).toString('utf8'));
+    assert.ok(exported.notes.some(note => note.title === 'Recoverable temporary idea'));
+    await page.locator('#reset-notes').click();
+    assert.equal(await page.evaluate(() => localStorage.getItem('interface-foundry-notes-v1')), damaged);
+    await page.locator('#reset-notes').click();
+    const recovered = await page.evaluate(() => JSON.parse(localStorage.getItem('interface-foundry-notes-v1')));
+    assert.equal(recovered.version, 1);
+    assert.equal(recovered.notes.length, 3);
+    await page.reload();
+    await page.getByText('Notes saved in this browser.', { exact: true }).waitFor();
+  } finally { await context.close(); }
+
+  const denied = await browser.newContext({ acceptDownloads: true });
+  try {
+    await denied.addInitScript(() => Object.defineProperty(window, 'localStorage', { get() { throw new Error('Storage denied for verification'); } }));
+    const temporary = await denied.newPage();
+    await temporary.goto(`${origin}/interface-foundry/`);
+    await temporary.getByText(/Notes are temporary\. Browser storage is unavailable/).waitFor();
+    await temporary.locator('#new-note').click();
+    await temporary.locator('#note-title').fill('A note without storage');
+    await temporary.locator('#save-note').click();
+    const [download] = await Promise.all([temporary.waitForEvent('download'), temporary.locator('#export-notes').click()]);
+    const exported = JSON.parse((await downloadBytes(download)).toString('utf8'));
+    assert.ok(exported.notes.some(note => note.title === 'A note without storage'));
+  } finally { await denied.close(); }
+  passed('Real browser damaged-storage preservation, temporary-note export, confirmed recovery reset, and denied-storage fallback');
+}
+
+async function verifyTwoTabNotesConflict() {
+  const context = await browser.newContext({ acceptDownloads: true });
+  try {
+    const first = await context.newPage(), stale = await context.newPage();
+    await first.goto(`${origin}/interface-foundry/`);
+    await stale.goto(`${origin}/interface-foundry/`);
+    for (const [page, title] of [[first, 'First tab durable idea'], [stale, 'Second tab temporary idea']]) {
+      if (page === stale) await page.waitForFunction(() => localStorage.getItem('interface-foundry-notes-v1')?.includes('First tab durable idea'));
+      await page.locator('#new-note').click();
+      await page.locator('#note-title').fill(title);
+      await page.locator('#save-note').click();
+      await page.locator('#note-dialog').waitFor({ state: 'hidden' });
+    }
+    await stale.getByText(/Notes changed in another tab\. Your edits are temporary/).waitFor();
+    const durable = await first.evaluate(() => localStorage.getItem('interface-foundry-notes-v1'));
+    assert.equal(await stale.evaluate(() => localStorage.getItem('interface-foundry-notes-v1')), durable);
+    const saved = JSON.parse(durable);
+    assert.ok(saved.notes.some(note => note.title === 'First tab durable idea'));
+    assert.equal(saved.notes.some(note => note.title === 'Second tab temporary idea'), false);
+    const [download] = await Promise.all([stale.waitForEvent('download'), stale.locator('#export-notes').click()]);
+    const exported = JSON.parse((await downloadBytes(download)).toString('utf8'));
+    assert.ok(exported.notes.some(note => note.title === 'Second tab temporary idea'));
+    await stale.locator('#reset-notes').click();
+    await stale.locator('#reset-notes').click();
+    assert.equal(await stale.evaluate(() => localStorage.getItem('interface-foundry-notes-v1')), durable, 'Reset cannot unlock stale persistence');
+    stale.once('dialog', dialog => dialog.dismiss());
+    await stale.locator('#reload-notes').click();
+    await stale.getByText(/Notes changed in another tab/).waitFor();
+    stale.once('dialog', dialog => dialog.accept());
+    await Promise.all([stale.waitForNavigation(), stale.locator('#reload-notes').click()]);
+    await stale.getByRole('heading', { name: 'First tab durable idea', exact: true }).waitFor();
+    await stale.getByText('Notes saved in this browser.', { exact: true }).waitFor();
+    assert.equal(await stale.locator('#reload-notes').isVisible(), false);
+  } finally { await context.close(); }
+  passed('Two real tabs preserve an observed newer saved collection, export stale edits, keep resets blocked, and confirm explicit reload recovery (best-effort stale-write detection)');
+}
+
+async function verifyWinterAppearance() {
+  report.winterAppearance = [];
+  for (const scheme of ['light', 'dark']) {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
+    await context.addInitScript(scheme => {
+      localStorage.setItem('turbo-universe-appearance', JSON.stringify({ scheme, season: 'winter' }));
+      localStorage.setItem('turbo-universe-winter', JSON.stringify({ display: 'on' }));
+    }, scheme);
+    const page = await context.newPage();
+    try {
+      await page.goto(`${origin}/interface-foundry/`);
+      await page.locator('#new-note').waitFor();
+      await page.evaluate(() => document.fonts.ready);
+      const contrast = await page.evaluate(() => {
+        const rgb = value => (value.match(/[\d.]+/g) || []).map(Number);
+        const luminance = channels => channels.slice(0, 3).map(value => value / 255).map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4).reduce((sum, value, index) => sum + value * [.2126, .7152, .0722][index], 0);
+        const selectors = ['.principle-strip > div', '#comparison-description', '#workflow-description', '.prompt-customizer-title', '.prompt-context-fields label', '#prompt-context-status', '.prompt-box', '.install-section > div > p:not(.eyebrow)', '.install-terminal > p', '.deploy-steps p', '.footer-bottom > p', '.footer-brand', '.footer-bottom > a:last-child', '.presentation-switch button[aria-pressed="true"]', '.site-header .nav-primary', '.direction-tabs button[aria-selected="false"]', '.direction-tabs button[aria-selected="true"]', '.workflow-tab[aria-selected="true"] small', '.workflow-tab[aria-selected="true"] .tab-number', '.skill-source'];
+        return selectors.map(selector => {
+          const element = document.querySelector(selector);
+          let background = [255, 255, 255];
+          const ancestors = []; for (let node = element; node; node = node.parentElement) ancestors.unshift(node);
+          for (const node of ancestors) {
+            const color = rgb(getComputedStyle(node).backgroundColor), alpha = color[3] ?? 1;
+            background = background.map((value, index) => color[index] * alpha + value * (1 - alpha));
+          }
+          const foreground = rgb(getComputedStyle(element).color);
+          const a = luminance(foreground), b = luminance(background);
+          return { selector, ratio: (Math.max(a, b) + .05) / (Math.min(a, b) + .05) };
+        });
+      });
+      for (const item of contrast) assert.ok(item.ratio >= 4.5, `${scheme} winter ${item.selector} text contrast is ${item.ratio.toFixed(2)}:1`);
+      const background = await page.locator('body').evaluate(element => getComputedStyle(element).backgroundColor);
+      assert.equal(background, scheme === 'light' ? 'rgb(240, 246, 238)' : 'rgb(6, 29, 32)');
+      for (const width of [1440, 390, 320]) {
+        await page.setViewportSize({ width, height: 1000 });
+        await noOverflow(page, `${width}px ${scheme} winter`);
+        await page.evaluate(() => { document.activeElement?.blur(); window.scrollTo(0, 0); });
+        await page.screenshot({ path: path.join(output, `winter-${scheme}-${width}.png`), fullPage: true, animations: 'disabled' });
+        await page.locator('#new-note').click();
+        const bounds = await page.locator('#note-dialog').evaluate(element => { const box = element.getBoundingClientRect(); return { left: box.left, right: box.right, content: element.scrollWidth, width: element.clientWidth }; });
+        assert.ok(bounds.left >= -1 && bounds.right <= width + 1 && bounds.content <= bounds.width + 1, `${width}px ${scheme} note editor fits`);
+        await page.keyboard.press('Escape');
+      }
+      report.winterAppearance.push({ scheme, background, contrast });
+    } finally { await context.close(); }
+  }
+  passed('Light and dark winter text contrasts, bright light-mode canvas, note editor, and complete 320/390/1440px layouts');
 }
 
 async function verifyServiceWorker() {
@@ -440,7 +610,7 @@ async function verifyServiceWorker() {
       return false;
     }, undefined, { timeout: 20000 });
     await page.goto(`${origin}/interface-foundry/`);
-    await page.getByRole('heading', { name: 'Give your next interface a point of view.', exact: true }).waitFor();
+    await page.getByRole('heading', { name: /MAKE GOOD\s*INTERFACES\./ }).waitFor();
     const cache = await page.evaluate(async () => {
       const result = [];
       for (const name of await caches.keys()) {
@@ -490,6 +660,9 @@ try {
   assert.deepEqual(report.networkErrors, [], 'No failed page requests or HTTP errors');
   passed('Foundry and hub integration have no browser console/runtime errors or failed page requests');
   await context.close();
+  await verifyStoredNotesRecovery();
+  await verifyTwoTabNotesConflict();
+  await verifyWinterAppearance();
   await verifyServiceWorker();
   report.status = 'passed';
   console.log(`Interface Foundry smoke passed. Evidence: ${output}`);

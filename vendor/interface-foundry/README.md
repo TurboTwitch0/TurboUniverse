@@ -4,6 +4,24 @@ The complete source for Interface Foundry: an interactive design-workflow websit
 
 Explore the five workflows, inspect the bundled skill instructions, try three visual directions in the design lab, and download the toolkit from the website. The site runs in the browser; no AI service, API key, account, or database is required.
 
+The live design lab supports creating and editing notes or decisions, searching,
+filtering, deleting with undo, and exporting the collection as JSON. Notes stay
+in this browser using local storage when available; the workspace reports when
+changes are temporary. Resetting the demo requires a second confirmation click.
+
+If another tab changes the saved collection before this tab writes, its newer
+bytes are preserved and this tab keeps its edits temporarily. Export those edits
+before using **Reload saved notes**, which asks for confirmation. A detected
+conflict remains until reload, including after Reset demo. This read-before-write
+check is best effort: local storage offers no atomic compare-and-set or guarantee
+against simultaneous writes from separate browser processes.
+
+Compare **Basic** and **Designed** treatments on the same working content, then
+choose Editorial, Studio, or Terminal to explore a design direction. In the
+toolkit, enter your project name and main task to tailor any of the five copyable
+prompts. Prompt composition happens locally from the bundled templates; it does
+not send your project details to an AI service.
+
 ## Run locally
 
 Requires **Node.js 20 or newer** and Git. Node 24 is the recommended deployment version. The project has no runtime dependencies; the lockfile makes installation reproducible.
@@ -19,7 +37,7 @@ Open **http://127.0.0.1:4173**. `npm start` builds the site before serving `dist
 
 ```sh
 npm run build   # Generate the complete static site in dist/
-npm test        # CLI, installer, audit, server, and build regression tests
+npm test        # CLI, build, notes persistence, and interaction journeys
 npm run check   # JavaScript syntax, skill metadata, and local HTML references
 npm run audit   # Advisory source heuristic scan of the website
 ```

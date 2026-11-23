@@ -16,7 +16,7 @@ function refreshHubWinter() {
   const active = winter.display === 'on' || (winter.display !== 'off' && seasonal);
   document.documentElement.toggleAttribute('data-hub-winter', active);
   document.documentElement.dataset.hubScheme = appearance.scheme === 'dark' ? 'dark' : 'light';
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', active ? '#061d20' : '#f4f2ea');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', active ? (appearance.scheme === 'dark' ? '#061d20' : '#f0f6ee') : '#e5eee5');
 }
 refreshHubWinter();
 window.addEventListener('storage', event => {
@@ -39,5 +39,22 @@ if (reader && skillText) {
     const inside = event.clientX >= bounds.left && event.clientX <= bounds.right && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
     if (inside) event.stopImmediatePropagation();
   }, true);
-  reader.addEventListener('close', () => { skillText.scrollTop = 0; });
+  let movedFocus;
+  reader.addEventListener('close', () => {
+    skillText.scrollTop = 0;
+    // The native close event arrives after focus restoration. If the visitor has
+    // already moved to another control, the upstream return handler must not
+    // steal that new focus when this queued event is finally delivered.
+    const focused = document.activeElement;
+    const trigger = document.querySelector('#skill-source');
+    movedFocus = focused instanceof HTMLElement && focused !== document.body && focused !== trigger && !reader.contains(focused) ? focused : null;
+  }, true);
+  // Register after both the module and deferred scripts so this runs after the
+  // standalone app's close handler, within the same native event delivery.
+  const preserveMovedFocus = () => reader.addEventListener('close', () => {
+    if (!reader.open && movedFocus?.isConnected && document.activeElement === document.querySelector('#skill-source')) movedFocus.focus();
+    movedFocus = null;
+  });
+  if (document.readyState === 'complete') preserveMovedFocus();
+  else window.addEventListener('DOMContentLoaded', preserveMovedFocus, { once: true });
 }

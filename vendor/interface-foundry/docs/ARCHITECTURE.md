@@ -9,7 +9,9 @@ Both use the Markdown files in `skills/` as the skill source of truth.
 | Location | Responsibility |
 | --- | --- |
 | [index.html](../index.html) | Website structure, initial content, navigation, workflow and direction tabs, skill dialog, and download links. |
-| [assets/app.js](../assets/app.js) | Browser interactions: tabs, copying, skill loading and downloads, entry filtering, and temporary demo notes. |
+| [assets/app.js](../assets/app.js) | Browser interactions: tabs, copying, skill loading, note editing/search/export, and accessible dialog flows. |
+| [assets/notes-store.js](../assets/notes-store.js) | Validated notes, local persistence, search, deletion/restoration, and safe in-memory fallback. |
+| [assets/prompt-builder.js](../assets/prompt-builder.js) | Validated plain-text instructions for the selected workflow, project, task, and design direction. |
 | [assets/styles.css](../assets/styles.css) | Responsive page layout, design-lab themes, interaction states, dialog styling, and reduced-motion treatment. |
 | [skills/](../skills/) | Five original `SKILL.md` workflows and their supporting report or design templates. |
 | [bin/foundry.mjs](../bin/foundry.mjs) | CLI entry point and error reporting. |
@@ -44,6 +46,8 @@ dist/
   index.html
   assets/
     app.js
+    notes-store.js
+    prompt-builder.js
     styles.css
   data/
     skills.json
@@ -67,10 +71,21 @@ The local preview server is for development, not a production application server
 
 ## Browser state and skill loading
 
-The browser stores the selected workflow, direction, filter, and demo entries
-in memory. Adding a note changes the current document only; reloading restores
-the initial examples. There are no accounts, database writes, model calls, or
-persistent user records in the design lab.
+The selected workflow, direction, presentation, prompt context, and filter live in memory. Notes and decisions
+use a versioned local-storage record, `interface-foundry-notes-v1`. Creation,
+editing, deletion, and undo validate values before changing the collection.
+Entries persist across reloads in this browser when writes succeed; denied or
+exhausted storage leaves a working in-memory collection with a visible warning.
+There are no accounts, database writes, or model calls. Data does not sync across
+devices. JSON export provides a local backup; reset uses a second confirmation
+click before replacing the collection with starter entries.
+
+Basic/Designed changes presentation without replacing or resetting note data.
+Selecting a direction returns to the designed presentation. The prompt composer
+inserts project/task details into local plain-text templates, validates their
+80/160-character limits, and renders through `textContent`. Invalid context
+leaves the last valid prompt available and reports the input issue. Prompt
+context is not persisted or sent over the network.
 
 The skill dialog fetches `data/skills.json` when first opened. Successful content
 is reused, concurrent requests share the same promise, and failed loads can be

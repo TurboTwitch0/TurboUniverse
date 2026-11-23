@@ -7,10 +7,10 @@ import { runInNewContext } from 'node:vm';
 const root = new URL('../', import.meta.url);
 test('Foundry source is pinned to the reviewed public revision with hosting identity excluded', async () => {
   const pinned = JSON.parse(await readFile(new URL('vendor/interface-foundry.upstream.json', root), 'utf8'));
-  assert.equal(pinned.commit, '56ca9eec9a12136e78ab8b44aaf24947c0fe634a');
+  assert.equal(pinned.commit, '19132844472b4ecee51ca199ea8aefb9e24dc2d3');
   assert.equal(pinned.visibilityAtReview, 'public');
   assert.equal(pinned.license, 'MIT');
-  assert.equal(pinned.files.length, 44);
+  assert.equal(pinned.files.length, 57);
   assert.ok(!pinned.files.some(file => file.path.startsWith('.openai/') || /node_modules|(?:^|\/)\.git\//.test(file.path)));
   for (const file of pinned.files) {
     const location = new URL(`vendor/interface-foundry/${file.path}`, root);
