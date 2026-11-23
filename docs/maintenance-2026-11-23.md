@@ -19,6 +19,8 @@ The hub’s tested runtime is `dd4fe1fab3feda130a884b08dd6fd22fc6e2b8b3`. The su
 
 Browser remote `660a4d1`, Games remote `f14bb2b`, and StudyOrbit remote `66d7214` were integrated before repairs. StudyOrbit's newer Grade 7 lessons remain intact. No new gaming app was created.
 
+StudyOrbit’s latest main is `1703fda4b979ba8f125005917d3b07f8eb836428`, which adds a Grade 7 theme and point-of-view lesson and contains the PWA repairs unchanged. That newer work was preserved by fast-forwarding the checkout; all 265 tests, typecheck and production build were rerun successfully against it.
+
 InterfaceFoundry's existing embedded site is refreshed from reviewed upstream source `19132844472b4ecee51ca199ea8aefb9e24dc2d3` (v1.3 plus the reviewed notes repair). It adds original glass artwork, local fonts, editable/exportable notes, tailored local prompt text and a Basic/Designed comparison. Review caught and repaired a stale-tab notes overwrite before final integration. The notes model detects changed stored snapshots, preserves newer stored bytes and this tab's temporary edits, and asks visitors to export before an explicit reload. This is best-effort localStorage conflict detection, not an atomic cross-tab transaction. Close older Foundry tabs before editing with the new version; those older clients do not use the conflict guard. Corrupt and unreadable stored notes remain protected until the existing explicit recovery action. No AI service receives the prompt context.
 
 ## Validation
