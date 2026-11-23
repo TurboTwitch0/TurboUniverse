@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'A brighter winter, a smoother universe',
-        description: 'Explore a new snowy forest and saved-world shortcuts. Your AI drafts stay with you, and Christmas radio now supports native media controls.',
+        title: 'Sharper tools, smoother exploring',
+        description: 'Keep your place while managing saved worlds. InterfaceFoundry now offers saved notes, tailored prompts and a brighter winter look.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

@@ -134,6 +134,7 @@ npm run test:radio
 node scripts/smoke-launchpad.mjs
 node scripts/smoke-owner-session.mjs
 npm run test:project-dialog
+npm run test:collection-focus
 npm run test:foundry
 ```
 

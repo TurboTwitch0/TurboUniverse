@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import { createServer as createHttpServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
@@ -12,13 +13,14 @@ import catalog from '../server/catalog.json' with { type: 'json' };
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const temporary = await mkdtemp(path.join(tmpdir(), 'turbo-collection-focus-'));
-const vite = await createServer({ root, configFile: false, cacheDir: path.join(temporary, 'vite'), plugins: [react()], server: { middlewareMode: true, hmr: false } });
 const app = express();
+const server = createHttpServer(app);
+const vite = await createServer({ root, configFile: false, cacheDir: path.join(temporary, 'vite'), plugins: [react()], server: { middlewareMode: true, hmr: { server, overlay: false } } });
 const api = createVercelApp({ blobToken: '', adminKey: '' });
 app.get('/focus-blank.html', (_request, response) => response.type('html').send('<title>Isolated focus fixture</title>'));
 app.use((request, response, next) => request.path.startsWith('/api/') ? api(request, response, next) : next());
 app.use(vite.middlewares);
-const server = app.listen(0, '127.0.0.1');
+server.listen(0, '127.0.0.1');
 await new Promise(resolve => server.once('listening', resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
 const ids = ['TurboChat', 'TurboGames', 'TurboStocks'].map(title => catalog.find(project => project.title === title).id);
@@ -124,6 +126,30 @@ try {
     else await page.locator('.recent-worlds').waitFor({ state: 'hidden' });
     assert.equal(await page.evaluate(() => document.activeElement === document.body), true, 'History navigation cancels restoration even when both views reuse the same collection section');
     await context.close(); console.log(`PASS: delayed ${kind} action respects shared-section history navigation`);
+  }
+  for (const kind of ['saved', 'recent']) {
+    const { context, page } = await fixture(); await savedView(page);
+    const query = await page.locator('.project-grid .project-card h3').nth(1).textContent();
+    await page.evaluate(query => {
+      const current = new URL(location.href), previous = new URL(current);
+      previous.searchParams.set('q', query.trim());
+      history.replaceState(history.state, '', previous);
+      history.pushState(history.state, '', current);
+    }, query);
+    const key = kind === 'saved' ? 'turbo-universe-saved-worlds' : 'turbo-universe-recent-worlds';
+    const release = await hold(context, page, key);
+    const origin = kind === 'saved' ? page.locator('.project-grid .save-project-button').first() : page.getByRole('button', { name: 'Clear recent worlds', exact: true });
+    await origin.focus(); await page.keyboard.press('Enter');
+    await page.goBack();
+    await page.waitForFunction(() => document.querySelector('input[aria-label="Search projects"]').value.length > 0 && document.querySelectorAll('.project-grid .project-card').length === 1);
+    await release();
+    if (kind === 'saved') await page.waitForFunction(() => JSON.parse(localStorage.getItem('turbo-universe-saved-worlds') || '[]').length === 2);
+    else await page.locator('.recent-worlds').waitFor({ state: 'hidden' });
+    // A finished action must settle without moving focus into the newer search.
+    await page.waitForTimeout(80);
+    assert.equal(await page.evaluate(() => document.activeElement === document.body), true);
+    assert.equal(await page.getByRole('searchbox', { name: 'Search projects', exact: true }).inputValue(), query.trim());
+    await context.close(); console.log(`PASS: delayed ${kind} action respects same-view search history`);
   }
   assert.deepEqual(errors, []);
 } finally {

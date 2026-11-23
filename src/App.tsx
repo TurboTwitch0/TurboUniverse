@@ -34,7 +34,7 @@ import { isProjectCollection, type Project } from './projectCollection';
 const AIStudio = lazy(() => import('./components/AIStudio'));
 const ChromebookAI = lazy(() => import('./components/ChromebookAI'));
 
-type CollectionFocus = { origin: HTMLElement; section: HTMLElement; grid: HTMLElement | null; index: number; kind: 'saved' | 'recent'; view: string; ready: boolean };
+type CollectionFocus = { origin: HTMLElement; section: HTMLElement; grid: HTMLElement | null; index: number; kind: 'saved' | 'recent'; context: string; ready: boolean };
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 const scrollBehavior = (): ScrollBehavior => document.documentElement.dataset.motion === 'off' || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 type Capabilities = { canManage: boolean; requiresLogin: boolean; maxUploadBytes: number; storage: string };
@@ -190,6 +190,7 @@ export default function App() {
   const installRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const pendingCollectionFocus = useRef<CollectionFocus | null>(null);
+  const collectionFocusContext = JSON.stringify([view, filter, search, category, sort]);
   const [, finishCollectionFocus] = useState(0);
   useEffect(() => {
     const moved = (event: FocusEvent) => {
@@ -201,7 +202,7 @@ export default function App() {
   useLayoutEffect(() => {
     const request = pendingCollectionFocus.current;
     if (!request) return;
-    if (request.view !== view) { pendingCollectionFocus.current = null; return; }
+    if (request.context !== collectionFocusContext) { pendingCollectionFocus.current = null; return; }
     if (!request.ready) return;
     pendingCollectionFocus.current = null;
     if (request.origin.isConnected || !request.section.isConnected || document.activeElement !== document.body) return;
@@ -218,7 +219,7 @@ export default function App() {
     const card = origin.closest<HTMLElement>('.project-card');
     if (kind === 'saved' && (!card || !origin.matches('.save-project-button'))) return null;
     if (kind === 'recent' && !origin.closest('.recent-worlds')) return null;
-    const request: CollectionFocus = { origin, section, grid, index: card && grid ? [...grid.querySelectorAll('.project-card')].indexOf(card) : 0, kind, view, ready: false };
+    const request: CollectionFocus = { origin, section, grid, index: card && grid ? [...grid.querySelectorAll('.project-card')].indexOf(card) : 0, kind, context: collectionFocusContext, ready: false };
     pendingCollectionFocus.current = request;
     return request;
   };
