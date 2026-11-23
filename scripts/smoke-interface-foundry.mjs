@@ -199,6 +199,7 @@ async function verifyHub(page, context) {
   await page.getByLabel('Category', { exact: true }).selectOption('Design');
   assert.equal(await grid.locator('.project-card').count(), 1, 'Foundry is discoverable in Design');
   await grid.getByRole('button', { name: 'Save Interface Foundry', exact: true }).click();
+  await grid.getByRole('button', { name: 'Unsave Interface Foundry', exact: true }).waitFor();
   await page.reload();
   await readyHub(page);
   await search.fill('Interface Foundry');
