@@ -10,7 +10,7 @@ export function useRecentWorlds() {
     void store.record(id).then(() => setRecentIds(store.sync()));
   }, [store]);
   const clearRecent = useCallback(() => {
-    void store.clear().then(() => setRecentIds(store.sync()));
+    return store.clear().then(() => setRecentIds(store.sync()));
   }, [store]);
   useEffect(() => {
     const sync = (event: StorageEvent) => {

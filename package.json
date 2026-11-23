@@ -27,7 +27,8 @@
     "test:brand": "node scripts/smoke-brand.mjs",
     "test:orbital": "node scripts/smoke-orbital-stage.mjs",
     "test:foundry": "node scripts/smoke-interface-foundry.mjs",
-    "test:project-dialog": "node scripts/smoke-project-dialog.mjs"
+    "test:project-dialog": "node scripts/smoke-project-dialog.mjs",
+    "test:collection-focus": "node scripts/smoke-collection-focus.mjs"
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "^5.3.0",

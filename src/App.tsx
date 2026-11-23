@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowDownToLine, ArrowRight, ArrowUpRight, Check, CirclePlay, Command, Compass, Download, Globe2, Layers3, LayoutGrid, Menu, MonitorSmartphone, Music2, Plus, Search, Smartphone, Sparkles, Star, Trash2, WifiOff, X } from 'lucide-react';
 import ProjectDialog from './components/ProjectDialog';
 import OwnerLogin from './components/OwnerLogin';
@@ -34,6 +34,7 @@ import { isProjectCollection, type Project } from './projectCollection';
 const AIStudio = lazy(() => import('./components/AIStudio'));
 const ChromebookAI = lazy(() => import('./components/ChromebookAI'));
 
+type CollectionFocus = { origin: HTMLElement; section: HTMLElement; grid: HTMLElement | null; index: number; kind: 'saved' | 'recent'; view: string; ready: boolean };
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 const scrollBehavior = (): ScrollBehavior => document.documentElement.dataset.motion === 'off' || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 type Capabilities = { canManage: boolean; requiresLogin: boolean; maxUploadBytes: number; storage: string };
@@ -188,6 +189,43 @@ export default function App() {
   const editable = capabilities.canManage && (!capabilities.requiresLogin || owner);
   const installRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const pendingCollectionFocus = useRef<CollectionFocus | null>(null);
+  const [, finishCollectionFocus] = useState(0);
+  useEffect(() => {
+    const moved = (event: FocusEvent) => {
+      if (pendingCollectionFocus.current && event.target !== pendingCollectionFocus.current.origin) pendingCollectionFocus.current = null;
+    };
+    document.addEventListener('focusin', moved);
+    return () => document.removeEventListener('focusin', moved);
+  }, []);
+  useLayoutEffect(() => {
+    const request = pendingCollectionFocus.current;
+    if (!request) return;
+    if (request.view !== view) { pendingCollectionFocus.current = null; return; }
+    if (!request.ready) return;
+    pendingCollectionFocus.current = null;
+    if (request.origin.isConnected || !request.section.isConnected || document.activeElement !== document.body) return;
+    const cards = request.grid?.isConnected ? [...request.grid.querySelectorAll<HTMLElement>('.project-card')] : [];
+    const next = request.kind === 'saved' && cards.length
+      ? cards[Math.min(request.index, cards.length - 1)].querySelector<HTMLButtonElement>('.save-project-button')
+      : request.kind === 'saved' ? request.section.querySelector<HTMLButtonElement>('.filter-empty button') : null;
+    (next ?? request.section.querySelector<HTMLButtonElement>('[aria-label="Filter projects"] button[aria-pressed="true"]'))?.focus();
+  });
+  const captureCollectionFocus = (kind: CollectionFocus['kind']) => {
+    const origin = document.activeElement, section = document.getElementById('projects');
+    if (!(origin instanceof HTMLElement) || !section?.contains(origin)) return null;
+    const grid = section.querySelector<HTMLElement>('.project-grid');
+    const card = origin.closest<HTMLElement>('.project-card');
+    if (kind === 'saved' && (!card || !origin.matches('.save-project-button'))) return null;
+    if (kind === 'recent' && !origin.closest('.recent-worlds')) return null;
+    const request: CollectionFocus = { origin, section, grid, index: card && grid ? [...grid.querySelectorAll('.project-card')].indexOf(card) : 0, kind, view, ready: false };
+    pendingCollectionFocus.current = request;
+    return request;
+  };
+  const settleCollectionFocus = (request: CollectionFocus | null) => {
+    if (request && pendingCollectionFocus.current === request) { request.ready = true; finishCollectionFocus(value => value + 1); }
+  };
+
   const navigationRef = useRef<HTMLElement>(null);
   const navigationToggleRef = useRef<HTMLButtonElement>(null);
   const closeFilm = useCallback(() => setFilm(false), []);
@@ -309,11 +347,17 @@ export default function App() {
   };
   const removeProject = async (id: string) => { const response = await apiFetch(`/api/projects/${id}`, { method: 'DELETE' }); if (!response.ok) throw new Error('Could not remove project. Please try again.'); setProjects(current => current.filter(project => project.id !== id)); await loadProjects(); setToast('Project removed from your universe.'); };
   const toggleSaved = (project: Project) => {
+    const focus = captureCollectionFocus('saved');
     void toggleSavedWorld(project.id).then(({ saved, persisted, full }) => {
+      settleCollectionFocus(focus);
       if (full) { setToast('You’ve saved 1,000 worlds. Remove one before saving another.'); return; }
       setToast(saved ? (persisted ? `${project.title} saved on this device.` : `${project.title} saved for this visit.`)
         : persisted ? `${project.title} removed from saved worlds.` : `${project.title} removed for this visit. Your browser couldn’t update saved worlds on this device.`);
-    }).catch(() => setToast('Saved worlds couldn’t be updated. Please try again.'));
+    }).catch(() => { settleCollectionFocus(focus); setToast('Saved worlds couldn’t be updated. Please try again.'); });
+  };
+  const clearRecentWorlds = () => {
+    const focus = captureCollectionFocus('recent');
+    void clearRecent().then(() => settleCollectionFocus(focus)).catch(() => { settleCollectionFocus(focus); setToast('Recent worlds couldn’t be cleared. Please try again.'); });
   };
   const savedCount = projects.filter(project => savedIds.includes(project.id)).length;
   const categories = [...new Set(projects.map(project => project.category))].sort((a, b) => a.localeCompare(b));
@@ -367,7 +411,7 @@ export default function App() {
       {view === 'chromebooks' ? <SectionBoundary name="AI for Chromebooks"><Suspense fallback={<div className="section-loading content-section" role="status">Loading AI for Chromebooks…</div>}><ChromebookAI /></Suspense></SectionBoundary> : view === 'ai' ? null : view === 'story' ? <section className="story-page content-section"><div className="section-kicker"><span className="short-line" /> THE PERSON BEHIND THE PIXELS</div><div className="story-heading"><h1>A life in<br /><em>creation.</em></h1><div><p>Every universe starts somewhere.<br />This one starts with Turbo.</p><button className="secondary-button" onClick={() => setFilm(true)}><CirclePlay size={19} /> Play the cinematic story</button></div></div><div className="story-chapters">{story.map(chapter => <article key={chapter.number}><span className="chapter-number">{chapter.number}</span><div><span className="eyebrow">{chapter.label}</span><h2>{chapter.title}</h2><p>{chapter.text}</p></div><Sparkles size={24} /></article>)}</div><div className="story-ending"><Mark /><h2>The next chapter is<br /><span>already loading.</span></h2><button className="primary-button" onClick={explore}>Explore what’s been built <ArrowUpRight size={18} /></button></div></section> : <section className={`projects-section content-section ${view === 'collection' ? 'collection-page' : ''}`} id="projects">
         <div className="section-kicker"><span className="short-line" /> {view === 'collection' ? 'YOUR CREATIVE CONTROL ROOM' : 'THE EVER-EXPANDING COLLECTION'}</div><div className="section-heading"><div><h2>{view === 'collection' ? 'My collection' : 'Enter the universe'}<span className="heading-period">.</span></h2><p>{view === 'collection' ? (editable ? 'All your creations, together. Add something new or take a look around.' : 'Every creation, together. Take a look around the Turbo universe.') : 'Different worlds. Same creative DNA. Find your next rabbit hole.'}</p></div><div className="project-total"><span>{String(projects.length).padStart(2, '0')}</span> {projects.length === 1 ? 'WORLD' : 'WORLDS'} & COUNTING<ArrowUpRight size={17} /></div></div>
         {view === 'collection' && <div className="collection-stats"><div><Layers3 size={20} /><strong>{projects.length}</strong><span>Total projects</span></div><div><Globe2 size={20} /><strong>{websites}</strong><span>Websites</span></div><div><Smartphone size={20} /><strong>{apps}</strong><span>Apps</span></div><button className="secondary-button" onClick={exportProjects} disabled={!projects.length}><ArrowDownToLine size={17} /> Export project list</button></div>}
-        <RecentWorlds projects={projects} recentIds={recentIds} onSelect={openWorld} onLaunch={recordRecent} onClear={clearRecent} />
+        <RecentWorlds projects={projects} recentIds={recentIds} onSelect={openWorld} onLaunch={recordRecent} onClear={clearRecentWorlds} />
         <div className="project-toolbar"><div className="filters" role="group" aria-label="Filter projects"><button className={filter === 'all' ? 'active' : ''} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}><LayoutGrid size={15} /> All worlds <span>{projects.length}</span></button><button className={filter === 'website' ? 'active' : ''} aria-pressed={filter === 'website'} onClick={() => setFilter('website')}><Globe2 size={15} /> Websites <span>{websites}</span></button><button className={filter === 'app' ? 'active' : ''} aria-pressed={filter === 'app'} onClick={() => setFilter('app')}><Smartphone size={15} /> Apps <span>{apps}</span></button><button className={`saved-filter ${filter === 'saved' ? 'active' : ''}`} aria-pressed={filter === 'saved'} onClick={() => setFilter('saved')}><Star size={15} /> Saved <span>{savedCount}</span></button></div><label className="search-field"><Search size={16} /><input ref={searchRef} type="search" maxLength={200} aria-label="Search projects" placeholder="Find your world…" value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => { if (e.key === 'Escape') setSearch(''); }} />{search ? <button className="search-clear" aria-label="Clear search" onClick={() => { setSearch(''); searchRef.current?.focus(); }}><X size={15} /></button> : <kbd><Command size={10} /> K</kbd>}</label></div>
         <div className="discovery-controls"><p className="discovery-results" role="status" aria-label="Search results">{loading ? 'Finding your worlds…' : <><strong>{filtered.length}</strong> of {projects.length} worlds{search.trim() && <span> matching “{search.trim()}”</span>}</>}{hasFilters && <button onClick={resetDiscovery}>Reset filters <X size={12} /></button>}</p><div className="discovery-selects"><label>Category<select aria-label="Category" value={category} onChange={event => setCategory(event.target.value)}><option value="all">Every category</option>{category !== 'all' && !categories.includes(category) && <option value={category}>{category}</option>}{categories.map(item => <option key={item} value={item}>{item}</option>)}</select></label><label>Sort by<select aria-label="Sort worlds" value={sort} onChange={event => setSort(event.target.value as DiscoverySort)}><option value="original">Original order</option><option value="featured">Featured first</option><option value="newest">Newest first</option><option value="az">Name, A–Z</option></select></label></div></div>
         {hasFilters && <div className="active-discovery-filters" role="group" aria-label="Active filters">
