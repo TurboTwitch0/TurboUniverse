@@ -165,3 +165,7 @@ Christmas radio loads no audio or third-party player until a visitor selects Pla
 LaunchLab (https://launch-lab-indol.vercel.app/), TurboManager (https://sites.google.com/view/turbomanager/full-page-embed), and TurboFocus (https://sites.google.com/view/turbofocus/full-page-embed) are included as Apps in Tools. Their stable IDs use the catalog importer's canonical URL identity. Existing collection records remain unchanged, and repeated imports or Google Sites home/full-page aliases do not add duplicates. All use the existing local cover artwork, search, filters, saved worlds, and external launch controls.
 
 The destinations block framing, so they open in ordinary new tabs. Their source HTML is public without sign-in; TurboUniverse does not copy the apps or change their hosting/audience. LaunchLab's published Vercel URL is recorded in the existing local Launch Lab workspace README and deployment record; no Sites hosting metadata exists in that checkout. Integration checks cover the hub entry points and destinations, rather than claiming every external workflow or school network has been tested.
+
+## Maintenance records
+
+The [November 23 maintenance record](docs/maintenance-2026-11-23.md) lists the hub and companion-app repairs, validation, published source revisions, and remaining access/deployment limits. Earlier persistence and recovery work is recorded in [November 21 maintenance](docs/maintenance-2026-11-21.md).
