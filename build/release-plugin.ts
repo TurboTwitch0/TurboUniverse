@@ -20,9 +20,12 @@ function sourceFingerprint(root: string): string {
       }
     }
   }
-  visit(path.join(root, 'src'));
-  visit(path.join(root, 'public'));
-  for (const filename of ['index.html', 'package.json', 'vite.config.ts']) {
+  for (const directory of ['src', 'public', 'api', 'server', 'build', 'integrations']) {
+    visit(path.join(root, directory));
+  }
+  // The pin identifies embedded sources without hashing generated toolkit output.
+  const sourceFiles = ['index.html', 'package.json', 'package-lock.json', 'vite.config.ts', 'vercel.json', 'vendor/interface-foundry.upstream.json'];
+  for (const filename of sourceFiles) {
     try { hash.update(filename).update(readFileSync(path.join(root, filename))); } catch { /* Optional source files. */ }
   }
   return hash.digest('hex').slice(0, 40);
