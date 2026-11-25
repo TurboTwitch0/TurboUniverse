@@ -55,11 +55,14 @@ const noteTitle = document.querySelector('#note-title');
 const noteBody = document.querySelector('#note-body');
 const noteKind = document.querySelector('#note-kind');
 const noteError = document.querySelector('#note-error');
+const noteDiscardConfirmation = document.querySelector('#note-discard-confirmation');
+const keepEditingButton = document.querySelector('#keep-editing-note');
 const newNoteButton = document.querySelector('#new-note');
 const resetNotesButton = document.querySelector('#reset-notes');
 let activeNoteId = null;
 let noteReturnId = null;
 let noteDialogTrigger = null;
+let initialNoteValues;
 let deletedEntry = null;
 let resetArmed = false;
 let resetTimer;
@@ -247,6 +250,30 @@ function focusEntry(id) {
   else newNoteButton.focus();
 }
 
+function readNoteValues() {
+  return { title: noteTitle.value, body: noteBody.value, kind: noteKind.value };
+}
+
+function dismissNote() {
+  const { title, body, kind } = readNoteValues();
+  const changed = title !== initialNoteValues.title || body !== initialNoteValues.body || kind !== initialNoteValues.kind;
+  if (changed) {
+    noteDiscardConfirmation.hidden = false;
+    keepEditingButton.focus();
+  } else noteDialog.close();
+}
+
+function keepEditingNote() {
+  noteDiscardConfirmation.hidden = true;
+  noteTitle.focus();
+}
+
+function handleNoteCancel(event) {
+  event.preventDefault();
+  if (noteDiscardConfirmation.hidden) dismissNote();
+  else keepEditingNote();
+}
+
 function openNote(id, trigger) {
   cancelReset();
   const entry = id ? notesStore.list().find(note => note.id === id) : null;
@@ -259,7 +286,9 @@ function openNote(id, trigger) {
   noteTitle.value = entry?.title ?? '';
   noteBody.value = entry?.body ?? '';
   noteKind.value = entry?.kind ?? 'note';
+  initialNoteValues = readNoteValues();
   noteError.textContent = '';
+  noteDiscardConfirmation.hidden = true;
   document.querySelector('#delete-note').hidden = !entry;
   noteDialog.showModal();
   noteTitle.focus();
@@ -321,7 +350,7 @@ noteSearch.addEventListener('input', () => { cancelReset(); updateEntries(); });
 noteForm.addEventListener('submit', event => {
   event.preventDefault();
   try {
-    const values = { title: noteTitle.value, body: noteBody.value, kind: noteKind.value };
+    const values = readNoteValues();
     const entry = activeNoteId ? notesStore.update(activeNoteId, values) : notesStore.create(values);
     noteReturnId = entry.id;
     showAllEntries();
@@ -330,12 +359,22 @@ noteForm.addEventListener('submit', event => {
     announce(notesStore.persistent ? 'Entry saved in this browser.' : 'Entry added for this session. Export to keep a copy.');
   } catch (error) { noteError.textContent = error.message; noteTitle.focus(); }
 });
-document.querySelector('#close-note').addEventListener('click', () => noteDialog.close());
-document.querySelector('#cancel-note').addEventListener('click', () => noteDialog.close());
+document.querySelector('#close-note').addEventListener('click', dismissNote);
+document.querySelector('#cancel-note').addEventListener('click', dismissNote);
+keepEditingButton.addEventListener('click', keepEditingNote);
+document.querySelector('#discard-note').addEventListener('click', () => noteDialog.close());
+noteForm.addEventListener('input', () => { noteDiscardConfirmation.hidden = true; });
+noteDialog.addEventListener('keydown', event => {
+  if (event.key !== 'Escape' || event.isComposing) return;
+  // Repeated Escape presses can produce a non-cancelable native close request.
+  if (event.repeat) event.preventDefault();
+  else handleNoteCancel(event);
+});
+noteDialog.addEventListener('cancel', handleNoteCancel);
 noteDialog.addEventListener('click', event => {
   if (event.target !== noteDialog) return;
   const rect = noteDialog.getBoundingClientRect();
-  if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) noteDialog.close();
+  if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dismissNote();
 });
 noteDialog.addEventListener('close', () => {
   if (noteDialog.open) return;

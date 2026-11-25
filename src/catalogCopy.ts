@@ -8,7 +8,7 @@ const CATALOG_DESCRIPTIONS: Record<string, string> = {
   "14e9512a-a8a9-4f3a-8327-95c29afec381": "Take a playful detour through the collection. This school-site project is another destination connected by TurboHome.",
   "d9dc92b1-a450-4711-8750-c3756ae20666": "A home on the web for the TurboTwitch0 identity. Explore the project behind the name.",
   "4e62f8ac-3d2b-41ad-85c5-bf2bce92d12f": "A corner of the collection for the moments that bring people together. Take a look inside TurboEvents.",
-  "122cbe8f-e3f4-402e-b32b-c803dab7dd13": "Turbo’s take on a school launchpad. Open a familiar starting point reimagined with a personal touch.",
+  "122cbe8f-e3f4-402e-b32b-c803dab7dd13": "Turbo’s take on a school launchpad. The listed page was unavailable when checked on November 25, 2026.",
   "621bfe75-ea4d-4765-872d-3e57109b83d6": "A shared document of paths into the Turbo universe. Follow the links and choose your next destination.",
   "ce8413db-1b53-4866-877f-aa54dbaa3e82": "A different lens on the Turbo universe. Explore this visual entry point into Turbo’s web projects.",
   "f73b23d5-8771-4272-9e04-d24db566ba76": "A lighter side of the universe. Take a break and explore Turbo’s corner of internet humor.",

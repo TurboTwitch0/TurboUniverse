@@ -345,6 +345,60 @@ test('a note can be created, edited, found after reload, deleted, restored, and 
   assert.ok(Number.isFinite(Date.parse(exported.exportedAt)));
 });
 
+test('leaving a changed note requires an explicit discard and keeps drafts intact until then', async t => {
+  const app = await loadApp();
+  t.after(app.dispose);
+  const editor = app.get('#note-dialog');
+  const title = app.get('#note-title');
+  const body = app.get('#note-body');
+  const confirmation = app.get('#note-discard-confirmation');
+  const keepEditing = app.get('#keep-editing-note');
+
+  app.get('#new-note').click();
+  editor.emit('cancel');
+  await settle();
+  assert.equal(editor.open, false, 'a clean editor still closes on Escape');
+  assert.equal(confirmation.hidden, true);
+
+  app.get('#new-note').click();
+  title.value = 'Unfinished layout idea';
+  body.value = 'Keep this text until I decide.';
+  for (const dismiss of [
+    () => editor.emit('cancel'),
+    () => editor.emit('click', { clientX: 2, clientY: 2 }),
+    () => app.get('#close-note').click(),
+    () => app.get('#cancel-note').click()
+  ]) {
+    dismiss();
+    assert.equal(editor.open, true);
+    assert.equal(confirmation.hidden, false);
+    assert.equal(app.document.activeElement, keepEditing);
+    keepEditing.click();
+    assert.equal(confirmation.hidden, true);
+    assert.equal(title.value, 'Unfinished layout idea');
+    assert.equal(body.value, 'Keep this text until I decide.');
+  }
+  app.get('#note-form').emit('submit');
+  await settle();
+  assert.equal(editor.open, false, 'saving closes without a discard prompt');
+  assert.equal(app.all('.note-card').length, 4);
+  app.get('.note-open').click();
+  app.get('#note-kind').value = 'decision';
+  const escape = () => editor.emit('keydown', { key: 'Escape' });
+  assert.equal(escape().defaultPrevented, true);
+  editor.emit('keydown', { key: 'Escape', repeat: true });
+  assert.equal(confirmation.hidden, false, 'holding Escape keeps the discard choice visible');
+  assert.equal(escape().defaultPrevented, true);
+  assert.equal(editor.open, true, 'Escape on the confirmation returns to the draft');
+  assert.equal(confirmation.hidden, true);
+  escape();
+  app.get('#discard-note').click();
+  await settle();
+  assert.equal(editor.open, false);
+  assert.equal(JSON.parse(app.storage.getItem(STORAGE_KEY)).notes[0].kind, 'note');
+  assert.equal(app.document.activeElement, app.get('.note-open'));
+});
+
 test('storage failure keeps notes usable and exportable, then a later successful save updates status', async t => {
   const saved = memoryStorage();
   let blocked = true;

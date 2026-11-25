@@ -108,7 +108,7 @@ try {
   }
 
   await page.getByRole('button', { name: 'Clear recent worlds', exact: true }).click();
-  assert.equal(await page.locator('.recent-worlds').count(), 0);
+  await page.locator('.recent-worlds').waitFor({ state: 'hidden' });
   assert.equal(await page.evaluate(key => localStorage.getItem(key), RECENT_KEY), null);
   assert.deepEqual(await shortcuts.locator('.personal-shortcut strong').allTextContents(), ['TurboChat'], 'Clearing history preserves saved shortcuts');
   await shortcuts.getByRole('button', { name: 'View saved', exact: true }).click();

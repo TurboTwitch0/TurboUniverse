@@ -1,5 +1,5 @@
 /* TurboUniverse: retain the app shell and last successful project list offline. */
-const VERSION = 'v32-collection-focus';
+const VERSION = 'v33-discovery-controls';
 const SHELL_CACHE = `turbo-universe-shell-${VERSION}`;
 const PROJECT_CACHE = `turbo-universe-projects-${VERSION}`;
 let projectRequestSequence = 0;

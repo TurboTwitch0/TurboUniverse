@@ -45,8 +45,8 @@ export function releasePlugin(): Plugin {
       release = JSON.stringify({
         id: commitIdentifier(config.root),
         publishedAt: new Date().toISOString(),
-        title: 'Sharper tools, smoother exploring',
-        description: 'Keep your place while managing saved worlds. InterfaceFoundry now offers saved notes, tailored prompts and a brighter winter look.',
+        title: 'Find your worlds faster',
+        description: 'Collection shortcuts take you straight to your filters, and Foundry now asks before discarding unfinished notes.',
       }, null, 2) + '\n';
     },
     configureServer(server) {

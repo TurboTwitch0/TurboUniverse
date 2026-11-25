@@ -7,7 +7,7 @@ import { runInNewContext } from 'node:vm';
 const root = new URL('../', import.meta.url);
 test('Foundry source is pinned to the reviewed public revision with hosting identity excluded', async () => {
   const pinned = JSON.parse(await readFile(new URL('vendor/interface-foundry.upstream.json', root), 'utf8'));
-  assert.equal(pinned.commit, '19132844472b4ecee51ca199ea8aefb9e24dc2d3');
+  assert.equal(pinned.commit, '1e8704c06a4518608631c93efdea69a34329ed09');
   assert.equal(pinned.visibilityAtReview, 'public');
   assert.equal(pinned.license, 'MIT');
   assert.equal(pinned.files.length, 57);

@@ -1,7 +1,7 @@
 {
   "name": "Interface Foundry",
   "repository": "https://github.com/TurboTwitch0/INTERFACE-FOUNDRY",
-  "commit": "19132844472b4ecee51ca199ea8aefb9e24dc2d3",
+  "commit": "1e8704c06a4518608631c93efdea69a34329ed09",
   "visibilityAtReview": "public",
   "license": "MIT",
   "copyright": "2026 TurboTwitch0",
@@ -36,11 +36,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "cceec5e95488e7585e43fae0cc2f35bbc4d221487c93eea4171c6b4470fb3778"
+      "sha256": "3bb72b8fd544159376b16af460f5da41213f7a4690a8dcb32ea41ca15c18b36d"
     },
     {
       "path": "assets/app.js",
-      "sha256": "572ce71815069611dd7ee3a778458ac93525cb91e4d6f8b91996da3d2c578eee"
+      "sha256": "03e987dfa80c73ac2cdce3132ee72f1cbe498964f896bd79982e1a0117e45104"
     },
     {
       "path": "assets/fonts/BarlowCondensed-ExtraBold.ttf",
@@ -116,7 +116,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "aa20a0a88c14922d8f00edfe7df01bd39abd4422857b5645f631b53dc726802e"
+      "sha256": "dc5c56e549a33c34fcd706a2aaf923f32272f6c353803ae980714619534f9251"
     },
     {
       "path": "lib/audit.mjs",
@@ -232,7 +232,7 @@
     },
     {
       "path": "test/site-interactions.test.mjs",
-      "sha256": "0818759cc27c0b24a1e30eae4b5ba9828fdab5635bf02d3f7ea2daf9329730b2"
+      "sha256": "5208f061ee058478550e22a64e23980bf5b97bebc2f624f4c67b71dbd27a8cb9"
     },
     {
       "path": "vercel.json",

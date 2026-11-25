@@ -35,6 +35,7 @@ const AIStudio = lazy(() => import('./components/AIStudio'));
 const ChromebookAI = lazy(() => import('./components/ChromebookAI'));
 
 type CollectionFocus = { origin: HTMLElement; section: HTMLElement; grid: HTMLElement | null; index: number; kind: 'saved' | 'recent'; context: string; ready: boolean };
+type DiscoveryControl = 'search' | 'category' | 'sort' | 'active-filter' | 'all-worlds';
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 const scrollBehavior = (): ScrollBehavior => document.documentElement.dataset.motion === 'off' || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 type Capabilities = { canManage: boolean; requiresLogin: boolean; maxUploadBytes: number; storage: string };
@@ -189,6 +190,26 @@ export default function App() {
   const editable = capabilities.canManage && (!capabilities.requiresLogin || owner);
   const installRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const filtersRef = useRef<HTMLDivElement>(null);
+  const categoryRef = useRef<HTMLSelectElement>(null);
+  const sortRef = useRef<HTMLSelectElement>(null);
+  const [collectionDestination, setCollectionDestination] = useState<DiscoveryControl | null>(null);
+  const focusDiscoveryControl = useCallback((control: DiscoveryControl) => {
+    const target = control === 'search' ? searchRef.current
+      : control === 'category' ? categoryRef.current
+      : control === 'sort' ? sortRef.current
+      : control === 'all-worlds' ? filtersRef.current?.querySelector<HTMLButtonElement>('button')
+      : filtersRef.current?.querySelector<HTMLButtonElement>('button[aria-pressed="true"]');
+    if (!target) return;
+    target.focus({ preventScroll: true });
+    // Keep the focused control clear of the sticky header, including on phones.
+    target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+  }, []);
+  useLayoutEffect(() => {
+    if (!collectionDestination) return;
+    if (view === 'collection') focusDiscoveryControl(collectionDestination);
+    setCollectionDestination(null);
+  }, [collectionDestination, focusDiscoveryControl, view]);
   const pendingCollectionFocus = useRef<CollectionFocus | null>(null);
   const collectionFocusContext = JSON.stringify([view, filter, search, category, sort]);
   const [, finishCollectionFocus] = useState(0);
@@ -231,13 +252,12 @@ export default function App() {
   const navigationToggleRef = useRef<HTMLButtonElement>(null);
   const closeFilm = useCallback(() => setFilm(false), []);
   const closeInstall = useCallback(() => setShowInstall(false), []);
-  const focusCollectionSearch = useCallback(() => {
-    setView('collection'); setMobileNav(false);
-    window.setTimeout(() => {
-      document.getElementById('projects')?.scrollIntoView({ behavior: scrollBehavior() });
-      searchRef.current?.focus({ preventScroll: true });
-    }, 0);
+  const openCollectionControls = useCallback((control: DiscoveryControl) => {
+    setView('collection');
+    setMobileNav(false);
+    setCollectionDestination(control);
   }, [setView]);
+  const focusCollectionSearch = useCallback(() => openCollectionControls('search'), [openCollectionControls]);
 
   const projectsRequest = useRef<AbortController | null>(null);
   const loadProjects = useCallback(async () => {
@@ -333,15 +353,23 @@ export default function App() {
     };
   }, [mobileNav]);
 
-  const navigate = (next: View) => { closeDetails(); setView(next); setMobileNav(false); setFilter('all'); setSearch(''); setCategory('all'); setSort('original'); window.scrollTo({ top: 0, behavior: scrollBehavior() }); };
+  const resetDiscovery = () => { setSearch(''); setFilter('all'); setCategory('all'); setSort('original'); };
+  const navigate = (next: View) => { closeDetails(); setView(next); setMobileNav(false); resetDiscovery(); window.scrollTo({ top: 0, behavior: scrollBehavior() }); };
   const openAI = (prompt = '') => {
     setAIStarter(prompt);
     if (prompt) setAIStarterRequest(request => request + 1);
     navigate('ai');
   };
-  const browseWorlds = ({ filter = 'all', category = 'all' }: { filter?: 'all' | 'website' | 'app' | 'saved'; category?: string }) => { navigate('collection'); setFilter(filter); setCategory(category); };
+  const browseWorlds = ({ filter = 'all', category = 'all' }: { filter?: 'all' | 'website' | 'app' | 'saved'; category?: string }) => {
+    closeDetails();
+    setSearch('');
+    setSort('original');
+    setFilter(filter);
+    setCategory(category);
+    openCollectionControls(category === 'all' ? 'active-filter' : 'category');
+  };
   const retryProjects = () => { setError(''); setLoading(true); void loadProjects(); };
-  const explore = () => { setView('collection'); window.setTimeout(() => document.getElementById('projects')?.scrollIntoView({ behavior: scrollBehavior() }), 0); };
+  const explore = () => openCollectionControls('active-filter');
   const exportProjects = () => {
     const blob = new Blob([JSON.stringify({ projects: projects.map(({ title, type, url, description, category, year, featured, status }) => ({ title, type, url, description, category, year, featured, status })) }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'turbo-universe-projects.json'; link.click(); URL.revokeObjectURL(url); setToast('Project list exported. Uploaded files are backed up separately.');
@@ -363,7 +391,10 @@ export default function App() {
   const savedCount = projects.filter(project => savedIds.includes(project.id)).length;
   const categories = [...new Set(projects.map(project => project.category))].sort((a, b) => a.localeCompare(b));
   const filtered = discoverProjects(projects, { filter, category, search, sort, savedIds });
-  const resetDiscovery = () => { setSearch(''); setFilter('all'); setCategory('all'); setSort('original'); };
+  const resetDiscoveryAndFocus = () => {
+    focusDiscoveryControl('all-worlds');
+    resetDiscovery();
+  };
   const hasFilters = !!search.trim() || category !== 'all' || filter !== 'all' || sort !== 'original';
   const websites = projects.filter(p => p.type === 'website').length;
   const apps = projects.filter(p => p.type === 'app').length;
@@ -390,7 +421,7 @@ export default function App() {
 
     {error && projects.length > 0 && <div className="world-link-notice" role="alert"><p>Couldn’t refresh the collection. Showing your last loaded worlds.</p><button className="text-button" onClick={retryProjects}>Retry refresh<ArrowRight size={15} /></button></div>}
 
-    {unavailableWorld && <div className="world-link-notice" role="status"><p>This world isn’t in the current collection.</p><button className="text-button" onClick={() => { closeDetails(); navigate('collection'); }}>Browse worlds<ArrowRight size={15} /></button><button className="icon-button" aria-label="Dismiss unavailable world" onClick={closeDetails}><X size={17} /></button></div>}
+    {unavailableWorld && <div className="world-link-notice" role="status"><p>This world isn’t in the current collection.</p><button className="text-button" onClick={() => browseWorlds({})}>Browse worlds<ArrowRight size={15} /></button><button className="icon-button" aria-label="Dismiss unavailable world" onClick={closeDetails}><X size={17} /></button></div>}
 
     <main id="main-content" tabIndex={-1}>
       {view === 'universe' && <>
@@ -413,18 +444,18 @@ export default function App() {
         <div className="section-kicker"><span className="short-line" /> {view === 'collection' ? 'YOUR CREATIVE CONTROL ROOM' : 'THE EVER-EXPANDING COLLECTION'}</div><div className="section-heading"><div><h2>{view === 'collection' ? 'My collection' : 'Enter the universe'}<span className="heading-period">.</span></h2><p>{view === 'collection' ? (editable ? 'All your creations, together. Add something new or take a look around.' : 'Every creation, together. Take a look around the Turbo universe.') : 'Different worlds. Same creative DNA. Find your next rabbit hole.'}</p></div><div className="project-total"><span>{String(projects.length).padStart(2, '0')}</span> {projects.length === 1 ? 'WORLD' : 'WORLDS'} & COUNTING<ArrowUpRight size={17} /></div></div>
         {view === 'collection' && <div className="collection-stats"><div><Layers3 size={20} /><strong>{projects.length}</strong><span>Total projects</span></div><div><Globe2 size={20} /><strong>{websites}</strong><span>Websites</span></div><div><Smartphone size={20} /><strong>{apps}</strong><span>Apps</span></div><button className="secondary-button" onClick={exportProjects} disabled={!projects.length}><ArrowDownToLine size={17} /> Export project list</button></div>}
         <RecentWorlds projects={projects} recentIds={recentIds} onSelect={openWorld} onLaunch={recordRecent} onClear={clearRecentWorlds} />
-        <div className="project-toolbar"><div className="filters" role="group" aria-label="Filter projects"><button className={filter === 'all' ? 'active' : ''} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}><LayoutGrid size={15} /> All worlds <span>{projects.length}</span></button><button className={filter === 'website' ? 'active' : ''} aria-pressed={filter === 'website'} onClick={() => setFilter('website')}><Globe2 size={15} /> Websites <span>{websites}</span></button><button className={filter === 'app' ? 'active' : ''} aria-pressed={filter === 'app'} onClick={() => setFilter('app')}><Smartphone size={15} /> Apps <span>{apps}</span></button><button className={`saved-filter ${filter === 'saved' ? 'active' : ''}`} aria-pressed={filter === 'saved'} onClick={() => setFilter('saved')}><Star size={15} /> Saved <span>{savedCount}</span></button></div><label className="search-field"><Search size={16} /><input ref={searchRef} type="search" maxLength={200} aria-label="Search projects" placeholder="Find your world…" value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => { if (e.key === 'Escape') setSearch(''); }} />{search ? <button className="search-clear" aria-label="Clear search" onClick={() => { setSearch(''); searchRef.current?.focus(); }}><X size={15} /></button> : <kbd><Command size={10} /> K</kbd>}</label></div>
-        <div className="discovery-controls"><p className="discovery-results" role="status" aria-label="Search results">{loading ? 'Finding your worlds…' : <><strong>{filtered.length}</strong> of {projects.length} worlds{search.trim() && <span> matching “{search.trim()}”</span>}</>}{hasFilters && <button onClick={resetDiscovery}>Reset filters <X size={12} /></button>}</p><div className="discovery-selects"><label>Category<select aria-label="Category" value={category} onChange={event => setCategory(event.target.value)}><option value="all">Every category</option>{category !== 'all' && !categories.includes(category) && <option value={category}>{category}</option>}{categories.map(item => <option key={item} value={item}>{item}</option>)}</select></label><label>Sort by<select aria-label="Sort worlds" value={sort} onChange={event => setSort(event.target.value as DiscoverySort)}><option value="original">Original order</option><option value="featured">Featured first</option><option value="newest">Newest first</option><option value="az">Name, A–Z</option></select></label></div></div>
+        <div className="project-toolbar"><div className="filters" ref={filtersRef} role="group" aria-label="Filter projects"><button className={filter === 'all' ? 'active' : ''} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}><LayoutGrid size={15} /> All worlds <span>{projects.length}</span></button><button className={filter === 'website' ? 'active' : ''} aria-pressed={filter === 'website'} onClick={() => setFilter('website')}><Globe2 size={15} /> Websites <span>{websites}</span></button><button className={filter === 'app' ? 'active' : ''} aria-pressed={filter === 'app'} onClick={() => setFilter('app')}><Smartphone size={15} /> Apps <span>{apps}</span></button><button className={`saved-filter ${filter === 'saved' ? 'active' : ''}`} aria-pressed={filter === 'saved'} onClick={() => setFilter('saved')}><Star size={15} /> Saved <span>{savedCount}</span></button></div><label className="search-field"><Search size={16} /><input ref={searchRef} type="search" maxLength={200} aria-label="Search projects" placeholder="Find your world…" value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => { if (e.key === 'Escape') setSearch(''); }} />{search ? <button className="search-clear" aria-label="Clear search" onClick={() => { setSearch(''); searchRef.current?.focus(); }}><X size={15} /></button> : <kbd><Command size={10} /> K</kbd>}</label></div>
+        <div className="discovery-controls"><p className="discovery-results" role="status" aria-label="Search results">{loading ? 'Finding your worlds…' : <><strong>{filtered.length}</strong> of {projects.length} worlds{search.trim() && <span> matching “{search.trim()}”</span>}</>}{hasFilters && <button onClick={resetDiscoveryAndFocus}>Reset filters <X size={12} /></button>}</p><div className="discovery-selects"><label>Category<select ref={categoryRef} aria-label="Category" value={category} onChange={event => setCategory(event.target.value)}><option value="all">Every category</option>{category !== 'all' && !categories.includes(category) && <option value={category}>{category}</option>}{categories.map(item => <option key={item} value={item}>{item}</option>)}</select></label><label>Sort by<select ref={sortRef} aria-label="Sort worlds" value={sort} onChange={event => setSort(event.target.value as DiscoverySort)}><option value="original">Original order</option><option value="featured">Featured first</option><option value="newest">Newest first</option><option value="az">Name, A–Z</option></select></label></div></div>
         {hasFilters && <div className="active-discovery-filters" role="group" aria-label="Active filters">
-          {filter !== 'all' && <button onClick={() => setFilter('all')} aria-label="Remove type filter"><span>{filter === 'website' ? 'Websites' : filter === 'app' ? 'Apps' : 'Saved worlds'}</span><X size={12} /></button>}
-          {category !== 'all' && <button onClick={() => setCategory('all')} aria-label="Remove category filter"><span>{category}</span><X size={12} /></button>}
-          {!!search.trim() && <button onClick={() => { setSearch(''); searchRef.current?.focus(); }} aria-label="Remove search filter" title={search.trim()}><span>Search: {search.trim()}</span><X size={12} /></button>}
-          {sort !== 'original' && <button onClick={() => setSort('original')} aria-label="Reset sort order"><span>{sort === 'az' ? 'Name, A–Z' : sort === 'newest' ? 'Newest first' : 'Featured first'}</span><X size={12} /></button>}
+          {filter !== 'all' && <button onClick={() => { focusDiscoveryControl('all-worlds'); setFilter('all'); }} aria-label="Remove type filter"><span>{filter === 'website' ? 'Websites' : filter === 'app' ? 'Apps' : 'Saved worlds'}</span><X size={12} /></button>}
+          {category !== 'all' && <button onClick={() => { focusDiscoveryControl('category'); setCategory('all'); }} aria-label="Remove category filter"><span>{category}</span><X size={12} /></button>}
+          {!!search.trim() && <button onClick={() => { focusDiscoveryControl('search'); setSearch(''); }} aria-label="Remove search filter" title={search.trim()}><span>Search: {search.trim()}</span><X size={12} /></button>}
+          {sort !== 'original' && <button onClick={() => { focusDiscoveryControl('sort'); setSort('original'); }} aria-label="Reset sort order"><span>{sort === 'az' ? 'Name, A–Z' : sort === 'newest' ? 'Newest first' : 'Featured first'}</span><X size={12} /></button>}
         </div>}
         {error && !projects.length ? <div className="empty-state"><WifiOff size={28} /><h3>We lost the signal.</h3><p role="alert">{error}</p><button className="secondary-button" onClick={retryProjects}>Try again</button></div> : loading && !projects.length ? <div className="project-grid" aria-busy="true" aria-label="Loading projects"><div className="skeleton-card" /><div className="skeleton-card" /><div className="skeleton-card" /></div> : <div className="project-grid" aria-busy={loading || undefined}>
           {filtered.map((project, index) => <article className="project-card" key={project.id}><button className="project-image-button" onClick={() => openWorld(project)} aria-label={`View ${project.title}`}><ProjectArt project={project} mode={preferences.mode} /><span className="card-index">{String(index + 1).padStart(2, '0')} / TURBO ORIGINAL</span>{project.featured && <span className="featured-badge"><Sparkles size={11} /> FEATURED</span>}<span className="card-open"><ArrowUpRight size={20} /></span></button><button className={`save-project-button ${savedIds.includes(project.id) ? 'saved' : ''}`} aria-label={`${savedIds.includes(project.id) ? 'Unsave' : 'Save'} ${project.title}`} aria-pressed={savedIds.includes(project.id)} onClick={() => toggleSaved(project)}><Star size={15} fill={savedIds.includes(project.id) ? 'currentColor' : 'none'} /></button><div className="project-card-body"><div className="project-tags"><span className="project-tag">{project.type === 'website' ? <Globe2 size={10} /> : <Smartphone size={10} />}{project.type}</span><span>{project.category}</span></div><button className="project-explore-link" onClick={() => openWorld(project)}><span>{project.status === 'setup-pending' ? 'View project details' : `Explore ${project.type === 'app' ? 'app' : 'website'}`}</span><ArrowUpRight size={17} /></button><p>{project.description || 'A new world in the Turbo universe. Open it and explore.'}</p>{project.url && <a className="card-launch" href={project.url} target="_blank" rel="noopener noreferrer" onClick={() => recordRecent(project.id)} aria-label={`${project.status === 'setup-pending' ? 'View source for' : 'Launch'} ${project.title}`}>{project.status === 'setup-pending' ? 'View on GitHub' : 'Open world'}<ArrowUpRight size={14} /></a>}<div className="card-foot"><span className="status-dot" /> {project.status === 'setup-pending' ? 'SETUP PENDING' : 'IN THE UNIVERSE'}<span>TURBO ORIGINAL</span></div></div></article>)}
-          {!projects.length && <div className="empty-state catalog-empty"><Compass size={29} /><h3>Your universe is waiting.</h3><p>{editable ? 'Add your first website or app to give this collection a place to begin.' : 'New worlds will appear here as they are added. You can check again any time.'}</p><button className="secondary-button" onClick={editable ? () => setDialog(true) : retryProjects}>{editable ? 'Add your first world' : 'Check for worlds'}<ArrowRight size={16} /></button></div>}
-          {!filtered.length && projects.length > 0 && <div className="empty-state filter-empty"><Compass size={29} /><h3>{filter === 'saved' && !search.trim() && category === 'all' ? 'Keep your favorite worlds close.' : filter === 'app' && !search.trim() && category === 'all' ? 'Your next app belongs here.' : 'No worlds found.'}</h3><p>{filter === 'saved' && !search.trim() && category === 'all' ? 'Tap the star on any project to save it on this device.' : filter === 'app' && !search.trim() && category === 'all' ? (editable ? 'Add an app link or upload a project to expand your universe.' : 'There are more worlds on the way. Explore the rest of the collection.') : 'Try another search or explore a different category.'}</p><button className="secondary-button" onClick={resetDiscovery}>Show all worlds <ArrowRight size={16} /></button></div>}
+          {!projects.length && <div className="empty-state catalog-empty"><Compass size={29} /><h3>{editable ? 'Your universe is waiting.' : 'No worlds have been added yet.'}</h3><p>{editable ? 'Add your first website or app to give this collection a place to begin.' : 'New worlds will appear here as they are added. You can check again any time.'}</p><button className="secondary-button" onClick={editable ? () => setDialog(true) : () => { focusDiscoveryControl('all-worlds'); retryProjects(); }}>{editable ? 'Add your first world' : 'Check for worlds'}<ArrowRight size={16} /></button></div>}
+          {!filtered.length && projects.length > 0 && <div className="empty-state filter-empty"><Compass size={29} /><h3>{filter === 'saved' && !search.trim() && category === 'all' ? 'Keep your favorite worlds close.' : filter === 'app' && !search.trim() && category === 'all' ? 'Your next app belongs here.' : 'No worlds found.'}</h3><p>{filter === 'saved' && !search.trim() && category === 'all' ? 'Tap the star on any project to save it on this device.' : filter === 'app' && !search.trim() && category === 'all' ? (editable ? 'Add an app link or upload a project to expand your universe.' : 'There are more worlds on the way. Explore the rest of the collection.') : 'Try another search or explore a different category.'}</p><button className="secondary-button" onClick={resetDiscoveryAndFocus}>Show all worlds <ArrowRight size={16} /></button></div>}
           {editable && <button className="add-world-card" onClick={() => setDialog(true)} disabled={offline}><span className="add-world-orbit"><Plus size={28} strokeWidth={1.2} /></span><span className="eyebrow">THERE’S ALWAYS ROOM FOR MORE</span><strong>Your next world<br />starts here.</strong><span className="add-world-link">Add a project <ArrowUpRight size={16} /></span><span className="add-world-hint">A website, an app, a new possibility.</span></button>}
         </div>}
         <div className="collection-note"><span><span className="status-dot" /> THE UNIVERSE IS ALWAYS EXPANDING</span>{editable ? <button className="text-button" onClick={() => setDialog(true)} disabled={offline}>Bring your projects together <ArrowRight size={15} /></button> : <span className="collection-readonly">Explore the collection. New worlds are added by Turbo.</span>}</div>

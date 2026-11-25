@@ -125,6 +125,10 @@ node bin/foundry.mjs init /path/to/app --agent claude</pre><p id="install-target
       <label for="note-body">Your thoughts<textarea id="note-body" name="body" maxlength="2000" rows="5" placeholder="What is on your mind?"></textarea></label>
       <p id="note-error" class="note-error" role="alert"></p>
       <div class="note-form-actions"><button type="button" id="delete-note" class="delete-note" hidden>Delete entry</button><div><button type="button" id="cancel-note" class="cancel-note">Cancel</button><button type="submit" id="save-note" class="save-note">Save entry <span aria-hidden="true">↗</span></button></div></div>
+      <div id="note-discard-confirmation" hidden>
+        <p class="note-error" id="note-discard-message">Discard your unsaved changes?</p>
+        <div class="note-form-actions"><div><button type="button" class="cancel-note" id="keep-editing-note" aria-describedby="note-discard-message">Keep editing</button><button type="button" class="delete-note" id="discard-note" aria-describedby="note-discard-message">Discard changes</button></div></div>
+      </div>
     </form>
   </dialog>
   <dialog class="skill-dialog" id="skill-dialog" aria-labelledby="skill-dialog-title">

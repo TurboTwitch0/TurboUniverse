@@ -27,6 +27,7 @@ try {
     permissions: ['clipboard-read', 'clipboard-write'],
   });
   const page = await context.newPage();
+  page.setDefaultTimeout(10000);
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   let releaseInitial;
@@ -184,6 +185,66 @@ try {
   await page.getByRole('button', { name: 'Toggle navigation', exact: true }).click();
   await page.locator('.section-heading').click();
   assert.equal(await page.getByRole('button', { name: 'Toggle navigation', exact: true }).getAttribute('aria-expanded'), 'false');
+  async function expectUsableFocus(target) {
+    const result = await target.evaluate(element => {
+      const box = element.getBoundingClientRect();
+      const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      return { focused: document.activeElement === element, visible: hit === element || element.contains(hit) };
+    });
+    assert.deepEqual(result, { focused: true, visible: true }, 'The destination control is focused and unobscured');
+  }
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto(origin);
+    const quickViews = page.getByRole('group', { name: 'Quick collection views' });
+    const projectFilters = page.getByRole('group', { name: 'Filter projects' });
+    await quickViews.getByRole('button', { name: 'Apps', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await page.locator('.collection-page').waitFor();
+    assert.equal(new URL(page.url()).searchParams.get('type'), 'app');
+    await expectUsableFocus(projectFilters.getByRole('button', { name: /^Apps / }));
+    await page.getByRole('button', { name: 'Remove type filter', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expectUsableFocus(projectFilters.getByRole('button', { name: /^All worlds / }));
+
+    await page.goto(origin);
+    const categoryShortcut = page.getByRole('group', { name: 'Explore ecosystem categories' }).getByRole('button').first();
+    const chosen = (await categoryShortcut.innerText()).trim();
+    await categoryShortcut.focus();
+    await page.keyboard.press('Enter');
+    const categoryControl = page.getByLabel('Category', { exact: true });
+    assert.equal(await categoryControl.inputValue(), chosen);
+    await expectUsableFocus(categoryControl);
+    await page.getByRole('button', { name: 'Remove category filter', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await categoryControl.inputValue(), 'all');
+    await expectUsableFocus(categoryControl);
+
+    const sortControl = page.getByLabel('Sort worlds', { exact: true });
+    await sortControl.selectOption('az');
+    await page.getByRole('button', { name: 'Reset sort order', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expectUsableFocus(sortControl);
+
+    await page.getByRole('searchbox', { name: 'Search projects' }).fill('zzz-no-matches');
+    await page.getByRole('button', { name: 'Show all worlds', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expectUsableFocus(projectFilters.getByRole('button', { name: /^All worlds / }));
+
+    await page.getByRole('button', { name: 'Search all worlds', exact: true }).click();
+    await expectUsableFocus(page.getByRole('searchbox', { name: 'Search projects' }));
+  }
+  const launchpad = page.locator('.project-card').filter({ has: page.getByRole('heading', { name: 'Better NEISD Launchpad', exact: true }) });
+  await launchpad.getByText(/listed page was unavailable when checked/).waitFor();
+  assert.equal(await launchpad.getByRole('link').getAttribute('href'), catalog.find(project => project.title === 'Better NEISD Launchpad').url);
+  await page.route('**/api/projects', route => route.fulfill({ json: { projects: [] } }));
+  await page.goto(`${origin}/?empty-fixture=1#collection`);
+  await page.getByRole('heading', { name: 'No worlds have been added yet.', exact: true }).waitFor();
+  assert.equal(await page.getByRole('button', { name: 'Show all worlds', exact: true }).count(), 0);
+  await page.unroute('**/api/projects');
+  await page.getByRole('button', { name: 'Check for worlds', exact: true }).click();
+  await page.getByRole('heading', { name: 'TurboHome', exact: true }).waitFor();
+  assert.equal(await page.locator('.project-card').count(), catalog.length);
   assert.deepEqual(errors, [], 'Discovery and sharing produce no browser errors');
   console.log('Discovery smoke passed: category + multi-term search, clear/reset, alphabetical sort, keyboard search from story, shareable deep links, clipboard/manual copy, reload, browser Back/Forward, reloadable section navigation, related worlds, direct launch links, and mobile layout.');
 } finally {

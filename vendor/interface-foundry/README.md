@@ -7,7 +7,9 @@ Explore the five workflows, inspect the bundled skill instructions, try three vi
 The live design lab supports creating and editing notes or decisions, searching,
 filtering, deleting with undo, and exporting the collection as JSON. Notes stay
 in this browser using local storage when available; the workspace reports when
-changes are temporary. Resetting the demo requires a second confirmation click.
+changes are temporary. Closing an editor with unsaved changes offers a choice to
+keep editing or discard the draft. Resetting the demo requires a second
+confirmation click.
 
 If another tab changes the saved collection before this tab writes, its newer
 bytes are preserved and this tab keeps its edits temporarily. Export those edits
